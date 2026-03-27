@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { writeFileSync } from "node:fs"
-import { resolve } from "node:path"
+import { mkdirSync, writeFileSync } from "node:fs"
+import { dirname, resolve } from "node:path"
 import type { Page } from "playwright"
 
 export const CAPTURE_PROBE_ID = "capture"
@@ -17,6 +17,8 @@ export async function capturePageArtifacts(
 ): Promise<ProbeCaptureArtifacts> {
   const screenshot = `screenshots/${stateId}.png`
   const dom = `logs/dom-${stateId}.html`
+  mkdirSync(dirname(resolve(baseDir, screenshot)), { recursive: true })
+  mkdirSync(dirname(resolve(baseDir, dom)), { recursive: true })
   await page.screenshot({ path: resolve(baseDir, screenshot), fullPage: true })
   const html = await page.content()
   writeFileSync(resolve(baseDir, dom), html, "utf8")
