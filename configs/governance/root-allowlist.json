@@ -2,7 +2,6 @@
   "schemaVersion": "v1",
   "mode": "strict-hallway",
   "allowedTrackedRoots": [
-    ".agents",
     ".npmrc",
     ".devcontainer",
     ".env.example",
@@ -25,12 +24,14 @@
     "docker",
     "docker-compose.yml",
     "docs",
+    "ISSUE_TEMPLATE",
     "justfile",
     "package.json",
     "packages",
     "pnpm-lock.yaml",
     "pnpm-workspace.yaml",
     "pyproject.toml",
+    "assets",
     "scripts",
     "tests",
     "tsconfig.json",
@@ -39,14 +40,19 @@
   ],
   "allowedLocalRuntimeRoots": [
     ".git",
-    ".runtime-cache"
+    ".runtime-cache",
+    "reports",
+    "test-results"
   ],
   "allowedLocalToolingRoots": [
+    ".agents",
     ".codex",
     ".cursorrules",
     ".env",
+    ".opencode",
+    ".venv",
     "node_modules",
-    ".opencode"
+    "prooftrail.egg-info"
   ],
   "forbiddenRootNames": [
     ".coverage",
@@ -62,7 +68,6 @@
     "mutants",
     "playwright-report",
     "setup.cfg",
-    "test-results",
     "tsconfig.stryker.json",
     "tmp"
   ],
@@ -74,7 +79,6 @@
     "reports": "docs/archive/reports"
   },
   "requiredDocs": [
-    "docs/adr/2026-03-14-final-form-governance-control-plane.md",
     "docs/reference/generated/governance/dependency-baselines.md",
     "docs/reference/generated/governance/repo-map.md",
     "docs/reference/generated/governance/root-allowlist.md",

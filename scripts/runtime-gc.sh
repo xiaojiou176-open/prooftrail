@@ -6,7 +6,7 @@ usage() {
 Usage: ./scripts/runtime-gc.sh [options]
 
 Options:
-  --scope <logs|runs|cache|coverage|reports|temp|dev|mcp|automation|backups|metrics|security|container-home|locks|toolchains|all>
+  --scope <logs|runs|cache|coverage|reports|temp|dev|history-rewrite|mcp|automation|backups|metrics|security|container-home|locks|toolchains|all>
                          Cleanup scope (default: RUNTIME_GC_SCOPE or all)
   --retention-days <N>   Delete logs/cache files older than N days (default: RUNTIME_GC_RETENTION_DAYS or 7)
   --keep-runs <N>        Keep latest N run directories under artifacts/runs (default: RUNTIME_GC_KEEP_RUNS or 50)
@@ -192,10 +192,10 @@ if ! [[ "$ci_keep_count" =~ ^[0-9]+$ ]]; then
   exit 1
 fi
 case "$scope" in
-  logs|runs|cache|coverage|reports|temp|dev|mcp|automation|backups|metrics|security|container-home|locks|toolchains|all)
+  logs|runs|cache|coverage|reports|temp|dev|history-rewrite|mcp|automation|backups|metrics|security|container-home|locks|toolchains|all)
     ;;
   *)
-    echo "error: --scope must be one of logs|runs|cache|coverage|reports|temp|dev|mcp|automation|backups|metrics|security|container-home|locks|toolchains|all" >&2
+    echo "error: --scope must be one of logs|runs|cache|coverage|reports|temp|dev|history-rewrite|mcp|automation|backups|metrics|security|container-home|locks|toolchains|all" >&2
     exit 1
     ;;
 esac
@@ -225,6 +225,7 @@ coverage_dir="$runtime_root/coverage"
 reports_dir="$runtime_root/reports"
 temp_dir="$runtime_root/temp"
 dev_dir="$runtime_root/dev"
+history_rewrite_dir="$runtime_root/history-rewrite"
 mcp_dir="$runtime_root/mcp"
 automation_dir="$runtime_root/automation"
 backups_dir="$runtime_root/backups"
@@ -253,6 +254,7 @@ coverage_deleted=0
 reports_deleted=0
 temp_deleted=0
 dev_deleted=0
+history_rewrite_deleted=0
 mcp_deleted=0
 automation_deleted=0
 backups_deleted=0
@@ -383,6 +385,7 @@ remove_target() {
     reports) reports_deleted=$((reports_deleted + 1)) ;;
     temp) temp_deleted=$((temp_deleted + 1)) ;;
     dev) dev_deleted=$((dev_deleted + 1)) ;;
+    history-rewrite) history_rewrite_deleted=$((history_rewrite_deleted + 1)) ;;
     mcp) mcp_deleted=$((mcp_deleted + 1)) ;;
     automation) automation_deleted=$((automation_deleted + 1)) ;;
     backups) backups_deleted=$((backups_deleted + 1)) ;;
@@ -653,6 +656,7 @@ build_result_json() {
   COVERAGE_DELETED="$coverage_deleted" \
   TEMP_DELETED="$temp_deleted" \
   DEV_DELETED="$dev_deleted" \
+  HISTORY_REWRITE_DELETED="$history_rewrite_deleted" \
   MCP_DELETED="$mcp_deleted" \
   AUTOMATION_DELETED="$automation_deleted" \
   BACKUPS_DELETED="$backups_deleted" \
@@ -720,6 +724,7 @@ payload = {
         "reports": read_int("REPORTS_DELETED"),
         "temp": read_int("TEMP_DELETED"),
         "dev": read_int("DEV_DELETED"),
+        "history_rewrite": read_int("HISTORY_REWRITE_DELETED"),
         "mcp": read_int("MCP_DELETED"),
         "automation": read_int("AUTOMATION_DELETED"),
         "backups": read_int("BACKUPS_DELETED"),
@@ -736,6 +741,26 @@ payload = {
     "errors": read_int("ERRORS"),
     "error_total": read_int("ERROR_TOTAL"),
     "status": os.getenv("STATUS", "ok"),
+    "governance": {
+        "runtime_live_policy": "configs/governance/runtime-live-policy.json",
+        "runtime_output_registry": "configs/governance/runtime-output-registry.json",
+        "safe_cleanup_exclusions": {
+            "always_protected_paths": [
+                ".runtime-cache/backups",
+                ".runtime-cache/toolchains",
+                ".venv"
+            ],
+            "conditional_rules": [
+                {
+                    "path": ".runtime-cache/artifacts/runs",
+                    "mode": "protect-non-empty-run-dirs",
+                    "allow_safe_clean_kinds": [
+                        "empty-run-stub"
+                    ]
+                }
+            ]
+        },
+    },
 }
 print(json.dumps(payload, ensure_ascii=False, separators=(",", ":")))
 PY
@@ -778,6 +803,9 @@ fi
 if [[ "$abort_requested" -eq 0 ]] && scope_enabled "dev"; then
   cleanup_old_files_when_over_threshold "$dev_dir" "dev"
 fi
+if [[ "$abort_requested" -eq 0 ]] && scope_enabled "history-rewrite"; then
+  cleanup_old_files_when_over_threshold "$history_rewrite_dir" "history-rewrite"
+fi
 if [[ "$abort_requested" -eq 0 ]] && scope_enabled "mcp"; then
   cleanup_old_files_when_over_threshold "$mcp_dir" "mcp"
 fi
@@ -806,7 +834,7 @@ if [[ "$abort_requested" -eq 0 ]]; then
   cleanup_ci_artifacts
 fi
 
-total_deleted=$((logs_deleted + runs_deleted + cache_deleted + coverage_deleted + reports_deleted + temp_deleted + dev_deleted + mcp_deleted + automation_deleted + backups_deleted + metrics_deleted + security_deleted + container_home_deleted + locks_deleted + toolchains_deleted + ci_deleted))
+total_deleted=$((logs_deleted + runs_deleted + cache_deleted + coverage_deleted + reports_deleted + temp_deleted + dev_deleted + history_rewrite_deleted + mcp_deleted + automation_deleted + backups_deleted + metrics_deleted + security_deleted + container_home_deleted + locks_deleted + toolchains_deleted + ci_deleted))
 last_run_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 ended_epoch="$(python3 - <<'PY'
 import time

@@ -7,6 +7,9 @@
       "path": ".runtime-cache/logs",
       "kind": "logs",
       "cleanupOwner": "scripts/runtime-gc.sh",
+      "cleanupClass": "review",
+      "sizeBudgetMb": null,
+      "mustKeepLatest": false,
       "retention": {
         "strategy": "rotate+gc",
         "defaultDays": 7
@@ -17,6 +20,9 @@
       "path": ".runtime-cache/artifacts",
       "kind": "evidence",
       "cleanupOwner": "scripts/runtime-gc.sh",
+      "cleanupClass": "preserve",
+      "sizeBudgetMb": null,
+      "mustKeepLatest": true,
       "retention": {
         "strategy": "run-keep-count",
         "keepRuns": 50
@@ -27,6 +33,9 @@
       "path": ".runtime-cache/cache",
       "kind": "cache",
       "cleanupOwner": "scripts/runtime-gc.sh",
+      "cleanupClass": "review",
+      "sizeBudgetMb": null,
+      "mustKeepLatest": false,
       "retention": {
         "strategy": "ttl+size-cap",
         "defaultHours": 72
@@ -37,6 +46,9 @@
       "path": ".runtime-cache/coverage",
       "kind": "coverage",
       "cleanupOwner": "scripts/runtime-gc.sh",
+      "cleanupClass": "review",
+      "sizeBudgetMb": 1536,
+      "mustKeepLatest": true,
       "retention": {
         "strategy": "ttl+keep-latest",
         "defaultDays": 7
@@ -47,6 +59,9 @@
       "path": ".runtime-cache/temp",
       "kind": "temp",
       "cleanupOwner": "scripts/runtime-gc.sh",
+      "cleanupClass": "safe-clean",
+      "sizeBudgetMb": 2048,
+      "mustKeepLatest": false,
       "retention": {
         "strategy": "ttl",
         "defaultHours": 24
@@ -57,6 +72,9 @@
       "path": ".runtime-cache/backups",
       "kind": "backup",
       "cleanupOwner": "scripts/runtime-gc.sh",
+      "cleanupClass": "preserve",
+      "sizeBudgetMb": null,
+      "mustKeepLatest": true,
       "retention": {
         "strategy": "ttl+keep-count",
         "defaultDays": 14,
@@ -68,6 +86,9 @@
       "path": ".runtime-cache/metrics",
       "kind": "metrics",
       "cleanupOwner": "scripts/runtime-gc.sh",
+      "cleanupClass": "review",
+      "sizeBudgetMb": null,
+      "mustKeepLatest": true,
       "retention": {
         "strategy": "append+rotate",
         "defaultDays": 30
@@ -78,6 +99,9 @@
       "path": ".runtime-cache/security",
       "kind": "security",
       "cleanupOwner": "scripts/runtime-gc.sh",
+      "cleanupClass": "review",
+      "sizeBudgetMb": null,
+      "mustKeepLatest": true,
       "retention": {
         "strategy": "ttl+ci-keep-count",
         "defaultDays": 14
@@ -88,6 +112,9 @@
       "path": ".runtime-cache/reports",
       "kind": "report",
       "cleanupOwner": "scripts/runtime-gc.sh",
+      "cleanupClass": "review",
+      "sizeBudgetMb": null,
+      "mustKeepLatest": true,
       "retention": {
         "strategy": "ttl+size-cap",
         "defaultHours": 168
@@ -98,6 +125,9 @@
       "path": ".runtime-cache/container-home",
       "kind": "runtime",
       "cleanupOwner": "scripts/runtime-gc.sh",
+      "cleanupClass": "review",
+      "sizeBudgetMb": 768,
+      "mustKeepLatest": false,
       "retention": {
         "strategy": "ttl+size-cap",
         "defaultDays": 7
@@ -108,9 +138,26 @@
       "path": ".runtime-cache/dev",
       "kind": "runtime",
       "cleanupOwner": "scripts/runtime-gc.sh",
+      "cleanupClass": "review",
+      "sizeBudgetMb": null,
+      "mustKeepLatest": false,
       "retention": {
         "strategy": "ttl+size-cap",
         "defaultHours": 72
+      }
+    },
+    {
+      "id": "history-rewrite",
+      "path": ".runtime-cache/history-rewrite",
+      "kind": "evidence",
+      "cleanupOwner": "scripts/runtime-gc.sh",
+      "cleanupClass": "review",
+      "sizeBudgetMb": null,
+      "mustKeepLatest": true,
+      "retention": {
+        "strategy": "ttl+keep-count",
+        "defaultDays": 14,
+        "keepCount": 10
       }
     },
     {
@@ -118,6 +165,9 @@
       "path": ".runtime-cache/mcp",
       "kind": "runtime",
       "cleanupOwner": "scripts/runtime-gc.sh",
+      "cleanupClass": "review",
+      "sizeBudgetMb": null,
+      "mustKeepLatest": false,
       "retention": {
         "strategy": "ttl+size-cap",
         "defaultHours": 72
@@ -128,6 +178,9 @@
       "path": ".runtime-cache/automation",
       "kind": "runtime",
       "cleanupOwner": "scripts/runtime-gc.sh",
+      "cleanupClass": "review",
+      "sizeBudgetMb": null,
+      "mustKeepLatest": false,
       "retention": {
         "strategy": "ttl+size-cap",
         "defaultHours": 168
@@ -138,6 +191,9 @@
       "path": ".runtime-cache/locks",
       "kind": "lock",
       "cleanupOwner": "scripts/runtime-gc.sh",
+      "cleanupClass": "review",
+      "sizeBudgetMb": null,
+      "mustKeepLatest": false,
       "retention": {
         "strategy": "stale-lock-ttl",
         "defaultHours": 24
@@ -148,10 +204,25 @@
       "path": ".runtime-cache/toolchains",
       "kind": "toolchain",
       "cleanupOwner": "scripts/runtime-gc.sh",
+      "cleanupClass": "review",
+      "sizeBudgetMb": 4096,
+      "mustKeepLatest": true,
       "retention": {
         "strategy": "manual+doctor",
         "defaultDays": 30
       }
+    }
+  ],
+  "repoExclusiveExternalLayers": [
+    {
+      "id": "pnpm-prooftrail-store",
+      "path": "${HOME}/.cache/pnpm/prooftrail",
+      "kind": "dependency-store",
+      "owner": ".npmrc",
+      "cleanupClass": "review",
+      "sizeBudgetMb": 2048,
+      "mustKeepLatest": true,
+      "notes": "Repo-scoped host pnpm store and virtual-store namespace for ProofTrail."
     }
   ],
   "rootNoisePaths": [
@@ -221,6 +292,14 @@
       "kind": "runtime-log"
     },
     {
+      "id": "preflight-logs",
+      "owner": "scripts/preflight.sh",
+      "paths": [
+        ".runtime-cache/logs/preflight/"
+      ],
+      "kind": "runtime-log"
+    },
+    {
       "id": "test-matrix-logs",
       "owner": "scripts/test-matrix.sh",
       "paths": [
@@ -246,6 +325,16 @@
         ".runtime-cache/artifacts/ci/<run_id>/"
       ],
       "kind": "ci-evidence"
+    },
+    {
+      "id": "history-rewrite-scratch",
+      "owner": "scripts/ci/prepare-history-rewrite-scratch.sh",
+      "paths": [
+        ".runtime-cache/history-rewrite/20*/scratch-summary.json",
+        ".runtime-cache/history-rewrite/20*/scratch-summary.md",
+        ".runtime-cache/history-rewrite/20*/refs.txt"
+      ],
+      "kind": "history-evidence"
     },
     {
       "id": "runtime-reachability-report",
@@ -298,6 +387,14 @@
       "kind": "cache"
     },
     {
+      "id": "record-session-cleanup-marker",
+      "owner": "apps/automation-runner/scripts/record-session.shared.ts",
+      "paths": [
+        ".runtime-cache/cache/record-session-cleanup-marker.json"
+      ],
+      "kind": "cache"
+    },
+    {
       "id": "coverage-reports",
       "owner": "scripts/ci/run-unit-coverage-gate.sh",
       "paths": [
@@ -332,6 +429,17 @@
       "owner": "scripts/dev-up.sh",
       "paths": [
         ".runtime-cache/dev/runtime-gc.preflight.json"
+      ],
+      "kind": "runtime"
+    },
+    {
+      "id": "dev-up-runtime-pointers",
+      "owner": "scripts/dev-up.sh",
+      "paths": [
+        ".runtime-cache/dev/backend.pid",
+        ".runtime-cache/dev/backend.port",
+        ".runtime-cache/dev/frontend.pid",
+        ".runtime-cache/dev/frontend.port"
       ],
       "kind": "runtime"
     },
@@ -426,9 +534,18 @@
       "id": "automation-task-store",
       "owner": "apps/api/app/core/task_store.py + apps/api/alembic.ini",
       "paths": [
+        ".runtime-cache/automation/automation_tasks.db",
         ".runtime-cache/automation/tasks.db",
         ".runtime-cache/automation/tasks.json",
         ".runtime-cache/automation/tasks.lock"
+      ],
+      "kind": "runtime"
+    },
+    {
+      "id": "automation-latest-session-pointer",
+      "owner": "apps/automation-runner/scripts/record-session.ts",
+      "paths": [
+        ".runtime-cache/automation/latest-session.json"
       ],
       "kind": "runtime"
     },

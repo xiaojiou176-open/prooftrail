@@ -9,6 +9,7 @@
     "container-home",
     "coverage",
     "dev",
+    "history-rewrite",
     "locks",
     "logs",
     "mcp",
@@ -34,6 +35,7 @@
     "container-home": "scripts/runtime-gc.sh",
     "coverage": "scripts/runtime-gc.sh",
     "dev": "scripts/runtime-gc.sh",
+    "history-rewrite": "scripts/runtime-gc.sh",
     "locks": "scripts/runtime-gc.sh",
     "logs": "scripts/runtime-gc.sh",
     "mcp": "scripts/runtime-gc.sh",
@@ -53,6 +55,7 @@
     ],
     "logs": [
       "audit",
+      "preflight",
       "runtime"
     ],
     "cache": [
@@ -168,6 +171,7 @@
         "audit",
         "backend.e2e.dev.log",
         "frontend.e2e.dev.log",
+        "preflight",
         "runtime"
       ],
       "requiredToolOutputs": [
@@ -206,6 +210,13 @@
             "backend.e2e.dev.log",
             "frontend.e2e.dev.log"
           ]
+        },
+        {
+          "id": "preflight-logs",
+          "owner": "scripts/preflight.sh",
+          "allowedEntries": [
+            "preflight"
+          ]
         }
       ]
     },
@@ -217,6 +228,7 @@
         "playwright",
         "playwright.e2e.frontend.config.mjs",
         "pytest",
+        "record-session-cleanup-marker.json",
         "ruff",
         "visual-baselines"
       ],
@@ -257,14 +269,23 @@
           "allowedEntries": [
             "visual-baselines"
           ]
+        },
+        {
+          "id": "record-session-cleanup-marker",
+          "owner": "apps/automation-runner/scripts/record-session.shared.ts",
+          "allowedEntries": [
+            "record-session-cleanup-marker.json"
+          ]
         }
       ]
     },
     {
       "bucketId": "automation",
       "allowedLiveEntries": [
+        "automation_tasks.db",
         "computer-use",
         "lifecycle",
+        "latest-session.json",
         "pytest-profile-resolve-*",
         "pytest-recon-*",
         "tasks.db",
@@ -278,9 +299,17 @@
           "id": "automation-task-store",
           "owner": "apps/api/app/core/task_store.py + apps/api/alembic.ini",
           "allowedEntries": [
+            "automation_tasks.db",
             "tasks.db",
             "tasks.json",
             "tasks.lock"
+          ]
+        },
+        {
+          "id": "automation-latest-session-pointer",
+          "owner": "apps/automation-runner/scripts/record-session.ts",
+          "allowedEntries": [
+            "latest-session.json"
           ]
         },
         {
@@ -349,6 +378,10 @@
     {
       "bucketId": "dev",
       "allowedLiveEntries": [
+        "backend.pid",
+        "backend.port",
+        "frontend.pid",
+        "frontend.port",
         "runtime-gc.preflight.json"
       ],
       "requiredToolOutputs": [
@@ -357,6 +390,31 @@
           "owner": "scripts/dev-up.sh",
           "allowedEntries": [
             "runtime-gc.preflight.json"
+          ]
+        },
+        {
+          "id": "dev-up-runtime-pointers",
+          "owner": "scripts/dev-up.sh",
+          "allowedEntries": [
+            "backend.pid",
+            "backend.port",
+            "frontend.pid",
+            "frontend.port"
+          ]
+        }
+      ]
+    },
+    {
+      "bucketId": "history-rewrite",
+      "allowedLiveEntries": [
+        "20*"
+      ],
+      "requiredToolOutputs": [
+        {
+          "id": "history-rewrite-scratch",
+          "owner": "scripts/ci/prepare-history-rewrite-scratch.sh",
+          "allowedEntries": [
+            "20*"
           ]
         }
       ]
@@ -411,5 +469,40 @@
     "securityRetentionDays": 14,
     "tempRetentionDays": 1,
     "toolchainsRetentionDays": 30
+  },
+  "spaceGovernance": {
+    "bucketCleanupClasses": {
+      "artifacts": "preserve",
+      "automation": "review",
+      "backups": "preserve",
+      "cache": "review",
+      "container-home": "review",
+      "coverage": "review",
+      "dev": "review",
+      "history-rewrite": "review",
+      "locks": "review",
+      "logs": "review",
+      "mcp": "review",
+      "metrics": "review",
+      "reports": "review",
+      "security": "review",
+      "temp": "safe-clean",
+      "toolchains": "review"
+    },
+    "protectedPaths": [
+      ".runtime-cache/backups",
+      ".runtime-cache/toolchains",
+      ".venv"
+    ],
+    "protectedPathRules": [
+      {
+        "path": ".runtime-cache/artifacts/runs",
+        "mode": "protect-non-empty-run-dirs",
+        "allowSafeCleanKinds": [
+          "empty-run-stub"
+        ],
+        "notes": "Canonical run evidence stays protected; empty run stub directories may enter the first safe-clean wave."
+      }
+    ]
   }
 }
