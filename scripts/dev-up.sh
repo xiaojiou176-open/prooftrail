@@ -9,8 +9,8 @@ source "$ROOT_DIR/scripts/lib/python-runtime.sh"
 export PYTHONDONTWRITEBYTECODE="${PYTHONDONTWRITEBYTECODE:-1}"
 ensure_project_python_env_exports
 
-RUNTIME_DIR=".runtime-cache/dev"
-LOG_DIR=".runtime-cache/logs/runtime"
+RUNTIME_DIR="$ROOT_DIR/.runtime-cache/dev"
+LOG_DIR="$ROOT_DIR/.runtime-cache/logs/runtime"
 mkdir -p "$RUNTIME_DIR" "$LOG_DIR"
 
 BACKEND_PID_FILE="$RUNTIME_DIR/backend.pid"
@@ -35,8 +35,8 @@ export RUNTIME_GC_MAX_DELETE_PER_RUN="${RUNTIME_GC_MAX_DELETE_PER_RUN:-200}"
 export RUNTIME_GC_MAX_LOG_SIZE_MB="${RUNTIME_GC_MAX_LOG_SIZE_MB:-64}"
 export RUNTIME_GC_LOG_TAIL_LINES="${RUNTIME_GC_LOG_TAIL_LINES:-4000}"
 export RUNTIME_GC_AUTO_ON_DEV_UP="${RUNTIME_GC_AUTO_ON_DEV_UP:-true}"
-export RUNTIME_GC_STATE_PATH="${RUNTIME_GC_STATE_PATH:-.runtime-cache/metrics/runtime-gc-state.json}"
-DEFAULT_DATABASE_URL="sqlite+pysqlite:///./.runtime-cache/automation/tasks.db"
+export RUNTIME_GC_STATE_PATH="${RUNTIME_GC_STATE_PATH:-$ROOT_DIR/.runtime-cache/metrics/runtime-gc-state.json}"
+DEFAULT_DATABASE_URL="sqlite+pysqlite:///$ROOT_DIR/.runtime-cache/automation/tasks.db"
 export DATABASE_URL="${DATABASE_URL:-$DEFAULT_DATABASE_URL}"
 
 PYTHON_UVICORN_BIN="$(project_uvicorn_bin)"
@@ -56,7 +56,7 @@ if ! command -v pnpm >/dev/null 2>&1; then
 fi
 
 run_db_migrations() {
-  mkdir -p .runtime-cache/automation
+  mkdir -p "$ROOT_DIR/.runtime-cache/automation"
   DATABASE_URL="$DATABASE_URL" "$PYTHON_ALEMBIC_BIN" -c apps/api/alembic.ini upgrade head
   echo "database schema ready (alembic head)"
 }
@@ -95,6 +95,9 @@ run_runtime_gc_preflight() {
   else
     echo "warn: runtime gc preflight failed, continuing dev startup (details: $gc_log)"
   fi
+  # Runtime GC may prune empty review buckets, so rebuild the active dev/log rails
+  # before writing PID files or redirecting API/web dev logs.
+  mkdir -p "$RUNTIME_DIR" "$LOG_DIR" "$ROOT_DIR/.runtime-cache/automation" "$ROOT_DIR/.runtime-cache/metrics"
 }
 
 is_pid_alive() {
@@ -118,6 +121,7 @@ select_backend_port() {
 }
 
 start_backend() {
+  mkdir -p "$RUNTIME_DIR" "$LOG_DIR" "$ROOT_DIR/.runtime-cache/automation" "$ROOT_DIR/.runtime-cache/metrics"
   if [[ -f "$BACKEND_PID_FILE" ]]; then
     local pid
     pid="$(cat "$BACKEND_PID_FILE")"
@@ -183,6 +187,7 @@ select_frontend_port() {
 }
 
 start_frontend() {
+  mkdir -p "$RUNTIME_DIR" "$LOG_DIR"
   local frontend_vite_bin="$ROOT_DIR/apps/web/node_modules/vite/bin/vite.js"
   if [[ ! -f "$frontend_vite_bin" ]]; then
     echo "warn: frontend vite runtime is missing or stale; repairing apps/web dependencies"

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs"
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs"
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path"
 import YAML from "yaml"
 
@@ -216,6 +216,56 @@ function validateLogIndexSchema(report, expected, runDir, evidenceIndexNormalize
   return issues
 }
 
+function validateProofArtifacts(manifest, runDir, evidenceIndexNormalizedPaths) {
+  const issues = []
+  const proof = manifest?.proof
+  if (!proof || typeof proof !== "object") return issues
+
+  const proofMappings = [
+    ["coveragePath", "proofCoverage"],
+    ["stabilityPath", "proofStability"],
+    ["gapsPath", "proofGaps"],
+    ["reproPath", "proofRepro"],
+  ]
+
+  for (const [proofKey, reportKey] of proofMappings) {
+    const proofRef = normalizeText(proof?.[proofKey])
+    if (!proofRef) {
+      issues.push(`manifest.proof.${proofKey} must be a non-empty string`)
+      continue
+    }
+    const reportRef = normalizeText(manifest?.reports?.[reportKey])
+    if (reportRef && reportRef !== proofRef) {
+      issues.push(`manifest.reports.${reportKey} must match manifest.proof.${proofKey}`)
+    }
+    const resolvedPath = resolveArtifact(runDir, proofRef)
+    if (!existsFile(resolvedPath)) {
+      issues.push(`manifest.proof.${proofKey} missing: ${proofRef}`)
+      continue
+    }
+    const normalizedPath = normalizeArtifactForCompare(runDir, proofRef)
+    if (!evidenceIndexNormalizedPaths.has(normalizedPath)) {
+      issues.push(`manifest.proof.${proofKey} is not indexed in manifest.evidenceIndex`)
+    }
+  }
+
+  if (!proof?.summary || typeof proof.summary !== "object") {
+    issues.push("manifest.proof.summary must exist")
+    return issues
+  }
+  if (!Number.isFinite(proof.summary.configuredCoverageRatio)) {
+    issues.push("manifest.proof.summary.configuredCoverageRatio must be numeric")
+  }
+  if (!Number.isFinite(proof.summary.gatePassRatio)) {
+    issues.push("manifest.proof.summary.gatePassRatio must be numeric")
+  }
+  if (!["stable", "degraded", "failed"].includes(normalizeText(proof.summary.stabilityStatus))) {
+    issues.push("manifest.proof.summary.stabilityStatus must be stable|degraded|failed")
+  }
+
+  return issues
+}
+
 function appendStepSummary(markdown) {
   const summaryPath = process.env.GITHUB_STEP_SUMMARY
   if (!summaryPath) return
@@ -233,12 +283,20 @@ function resolveManifestPath(options) {
   return latestManifest
 }
 
+function resolveProfilePath(profileName) {
+  const canonicalPath = resolve("configs", "profiles", `${profileName}.yaml`)
+  if (existsSync(canonicalPath)) {
+    return canonicalPath
+  }
+  return resolve("profiles", `${profileName}.yaml`)
+}
+
 function main() {
   const options = parseArgs(process.argv.slice(2))
   const manifestPath = resolveManifestPath(options)
   const runDir = dirname(manifestPath)
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"))
-  const profilePath = resolve("profiles", `${options.profile}.yaml`)
+  const profilePath = resolveProfilePath(options.profile)
   const profile = YAML.parse(readFileSync(profilePath, "utf8"))
   const profileSteps = Array.isArray(profile?.steps) ? profile.steps : []
   const checks = Array.isArray(manifest?.gateResults?.checks) ? manifest.gateResults.checks : []
@@ -383,6 +441,11 @@ function main() {
         )
       }
     }
+  }
+
+  const proofIssues = validateProofArtifacts(manifest, runDir, evidenceIndexNormalizedPaths)
+  if (proofIssues.length > 0) {
+    failures.push(...proofIssues)
   }
 
   const aiReviewEnabledByProfile = profile?.aiReview?.enabled === true

@@ -276,9 +276,6 @@ jobs:
       - name: PR run profile
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || secrets.GOOGLE_API_KEY || '' }}
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY || '' }}
-          UIQ_BASE_URL: ${{ vars.UIQ_BASE_URL || secrets.UIQ_BASE_URL || vars.BASE_URL || secrets.BASE_URL || '' }}
         run: bash scripts/ci/run-in-container.sh --task pr-run-profile --gate pr-run-profile
       - name: Upload AI review artifacts (always)
         if: ${{ always() }}
@@ -389,7 +386,8 @@ jobs:
       - name: Docs governance gate
         run: bash scripts/docs-gate.sh
 
-  pr-gate-aggregate:
+  pr_truth_gate:
+    name: pr truth deterministic gate (aggregate)
     runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
     if: ${{ always() }}
     needs:
@@ -407,7 +405,7 @@ jobs:
       - fork-readonly-governance
     steps:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
-      - name: Aggregate PR hard gates
+      - name: Aggregate deterministic PR truth gates
         run: |
           set -euo pipefail
           require_success() {
@@ -477,20 +475,20 @@ jobs:
           else
             allow_skipped "pr-quality-gate" "${{ needs.pr-quality-gate.result }}"
           fi
-      - name: generate-true-green-manifest (pr)
+      - name: Generate PR true-green manifest
         run: |
           node scripts/ci/generate-true-green-manifest.mjs \
             --layer pr \
-            --run-id "${{ github.run_id }}-${{ github.run_attempt }}-pr-gate" \
+            --run-id "${{ github.run_id }}-${{ github.run_attempt }}-pr-truth-gate" \
             --out .runtime-cache/artifacts/ci/true-green-manifest-pr.json \
             --decision passed \
-            --reason-codes gate.true_green.passed.pr.aggregate
-      - name: validate-true-green-manifest (pr)
+            --reason-codes gate.true_green.passed.pr.truth_gate
+      - name: Validate PR true-green manifest
         run: |
           node scripts/ci/validate-true-green-manifest.mjs \
             --schema contracts/true-green-manifest.schema.json \
             --input .runtime-cache/artifacts/ci/true-green-manifest-pr.json
-      - name: Upload true-green manifest (pr)
+      - name: Upload PR true-green manifest
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: uiq-pr-true-green-manifest

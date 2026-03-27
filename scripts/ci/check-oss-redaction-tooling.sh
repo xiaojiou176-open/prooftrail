@@ -213,7 +213,7 @@ from presidio_analyzer import AnalyzerEngine
 targets_path = Path(sys.argv[1])
 output_path = Path(sys.argv[2])
 targets = [line.strip() for line in targets_path.read_text(encoding="utf-8").splitlines() if line.strip()]
-engine = AnalyzerEngine()
+engine = None
 high_signal = {
     "EMAIL_ADDRESS",
     "PHONE_NUMBER",
@@ -226,7 +226,44 @@ high_signal = {
 }
 placeholder_email = re.compile(r"@example\.(com|invalid)$", re.IGNORECASE)
 technical_numeric_sentinels = {"2147483647", "9223372036854775807"}
+loopback_ip = re.compile(r"^127(?:\.\d{1,3}){3}$")
+private_ip = re.compile(r"^(?:10|192\.168|172\.(?:1[6-9]|2\d|3[0-1]))(?:\.\d{1,3}){2}$")
+fallback_patterns = {
+    "EMAIL_ADDRESS": re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.IGNORECASE),
+    "PHONE_NUMBER": re.compile(r"\b(?:\+?\d[\d(). -]{7,}\d)\b"),
+    "CREDIT_CARD": re.compile(r"\b(?:\d[ -]?){13,19}\b"),
+    "US_SSN": re.compile(r"\b\d{3}-\d{2}-\d{4}\b"),
+    "IBAN_CODE": re.compile(r"\b[A-Z]{2}\d{2}[A-Z0-9]{11,30}\b", re.IGNORECASE),
+}
 findings = []
+
+try:
+    engine = AnalyzerEngine()
+except Exception:
+    engine = None
+
+
+def collect_with_regex(target: str, text: str) -> None:
+    for entity, pattern in fallback_patterns.items():
+        for match in pattern.finditer(text[:120000]):
+            sample = match.group(0)
+            lowered = sample.lower()
+            if entity == "EMAIL_ADDRESS" and (placeholder_email.search(lowered) or "***@***" in lowered):
+                continue
+            if entity == "PHONE_NUMBER" and (
+                sample in technical_numeric_sentinels
+                or loopback_ip.match(sample)
+                or private_ip.match(sample)
+            ):
+                continue
+            findings.append(
+                {
+                    "path": target,
+                    "entity": entity,
+                    "sample": sample[:80],
+                    "detector": "regex-fallback",
+                }
+            )
 
 for target in targets:
     path = Path(target)
@@ -236,7 +273,14 @@ for target in targets:
         continue
     if not text.strip():
         continue
-    results = engine.analyze(text=text[:120000], language="en")
+    if engine is None:
+        collect_with_regex(target, text)
+        continue
+    try:
+        results = engine.analyze(text=text[:120000], language="en")
+    except Exception:
+        collect_with_regex(target, text)
+        continue
     for result in results:
         if result.entity_type not in high_signal:
             continue
@@ -245,13 +289,18 @@ for target in targets:
             lowered = sample.lower()
             if placeholder_email.search(lowered) or "***@***" in lowered:
                 continue
-        if result.entity_type in {"PHONE_NUMBER", "US_BANK_NUMBER"} and sample in technical_numeric_sentinels:
+        if result.entity_type in {"PHONE_NUMBER", "US_BANK_NUMBER"} and (
+            sample in technical_numeric_sentinels
+            or loopback_ip.match(sample)
+            or private_ip.match(sample)
+        ):
             continue
         findings.append(
             {
                 "path": target,
                 "entity": result.entity_type,
                 "sample": sample[:80],
+                "detector": "presidio",
             }
         )
 

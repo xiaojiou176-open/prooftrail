@@ -46,8 +46,9 @@ assertDocReferences("docs/quality-gates.md", [
 assertDocReferences("docs/README.md", [
   "docs/reference/generated/ci-governance-topology.md",
 ])
-assertDocReferences("docs/mcp.md", ["docs/reference/generated/mcp-tool-contract.md"])
-assertDocReferences("docs/how-to/mcp-clients-setup.md", ["docs/reference/generated/mcp-tool-contract.md"])
+assertDocReferences("docs/how-to/mcp-quickstart-1pager.md", [
+  "docs/reference/generated/mcp-tool-contract.md",
+])
 assertDocReferences("docs/index.md", [
   "docs/reference/generated/governance/dependency-baselines.md",
   "docs/reference/generated/governance/repo-map.md",
@@ -56,11 +57,11 @@ assertDocReferences("docs/index.md", [
   "docs/reference/generated/governance/upstream-registry.md",
   "docs/reference/generated/governance/upstream-customizations.md",
 ])
-assertDocReferences("docs/reference/logging-and-cache-policy.md", [
+assertDocReferences("docs/reference/public-surface-sanitization-policy.md", [
   "docs/reference/generated/governance/log-event-schema.md",
   "docs/reference/generated/governance/runtime-output-registry.md",
 ])
-assertDocReferences("docs/reference/dependency-governance.md", [
+assertDocReferences("docs/reference/dependencies-and-third-party.md", [
   "docs/reference/generated/governance/dependency-baselines.md",
 ])
 assertDocReferences("docs/reference/upstream-customizations.md", [

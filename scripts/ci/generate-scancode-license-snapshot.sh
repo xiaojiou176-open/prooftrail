@@ -46,7 +46,11 @@ resolve_scancode_cmd() {
   return 1
 }
 
-snapshot_tmp="$(mktemp "${TMPDIR:-/tmp}/prooftrail-scancode-snapshot.XXXXXX.json")"
+tmp_root="${TMPDIR:-/tmp}"
+mkdir -p "${tmp_root%/}"
+snapshot_tmp="$(mktemp "${tmp_root%/}/prooftrail-scancode-snapshot.XXXXXX")"
+rm -f "$snapshot_tmp"
+snapshot_tmp="${snapshot_tmp}.json"
 trap 'rm -f "$snapshot_tmp"' EXIT
 
 if scancode_bin="$(resolve_scancode_cmd)"; then
@@ -57,7 +61,7 @@ if scancode_bin="$(resolve_scancode_cmd)"; then
     --timeout 5 \
     --json "$snapshot_tmp" \
     "${existing_targets[@]}"
-  scanner_desc="$scancode_bin"
+  scanner_desc="scancode"
 else
   uvx --from scancode-toolkit scancode \
     --license \

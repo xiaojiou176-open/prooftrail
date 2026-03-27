@@ -233,7 +233,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         task = " ".join(sys.argv[1:])
     else:
-        task = "请分析当前屏幕，告诉我你看到了什么"
+        task = "Please analyze the current screen and describe what you see."
 
     print(f"\nTask: {task}")
     print(f"Model: {get_model_name()}")

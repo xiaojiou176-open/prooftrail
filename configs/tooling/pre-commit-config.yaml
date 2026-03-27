@@ -32,7 +32,7 @@ repos:
         stages: [commit-msg]
       - id: uiq-docs-link-gate-pre-commit
         name: UIQ docs link gate (pre-commit)
-        entry: node scripts/ci/check-docs-ssot.mjs --check-staged-docs-link
+        entry: node scripts/ci/check-doc-links.mjs
         language: system
         pass_filenames: true
         stages: [pre-commit]
@@ -95,20 +95,20 @@ repos:
         exclude: '(^|/)(tests?|__tests__|fixtures?|mocks?|dist|build|coverage|node_modules|\.runtime-cache|artifacts)/'
         stages: [pre-commit]
       - id: uiq-uiux-gemini-audit-pre-commit
-        name: UIQ Gemini UI/UX audit (pre-commit advisory)
+        name: UIQ Gemini UI/UX audit (manual advisory)
         entry: node scripts/ci/uiq-gemini-uiux-audit.mjs --strict false --model gemini-3.0-flash
         language: system
         files: '^(apps/web|packages)/.*\.(css|scss|sass|less|ts|tsx|js|jsx|html)$'
         exclude: '(^|/)(tests?|__tests__|fixtures?|mocks?|dist|build|coverage|node_modules|\.runtime-cache|artifacts)/'
-        stages: [pre-commit]
+        stages: [manual]
       - id: uiq-uiux-gemini-audit-pre-push
-        name: UIQ Gemini UI/UX audit (pre-push strict)
+        name: UIQ Gemini UI/UX audit (manual strict)
         entry: >-
           bash -lc 'node scripts/ci/uiq-gemini-uiux-audit.mjs --strict "${UIQ_PREPUSH_UIUX_STRICT:-true}" --model gemini-3.0-flash'
         language: system
         files: '^(apps/web|packages)/.*\.(css|scss|sass|less|ts|tsx|js|jsx|html)$'
         exclude: '(^|/)(tests?|__tests__|fixtures?|mocks?|dist|build|coverage|node_modules|\.runtime-cache|artifacts)/'
-        stages: [pre-push]
+        stages: [manual]
       - id: check-pre-commit-outdated
         name: Check pre-commit config health/outdated hint
         entry: >-

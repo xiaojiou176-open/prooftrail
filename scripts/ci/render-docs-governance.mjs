@@ -27,7 +27,9 @@ const OUTPUTS = {
 const PROFILE_FILES = [
   "configs/profiles/pr.yaml",
   "configs/profiles/nightly.yaml",
+  "configs/profiles/nightly-core.yaml",
   "configs/profiles/weekly.yaml",
+  "configs/profiles/weekly-core.yaml",
   "configs/profiles/tauri.regression.yaml",
   "configs/profiles/swift.regression.yaml",
 ]

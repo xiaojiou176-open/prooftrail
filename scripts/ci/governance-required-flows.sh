@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
+export PYTHONDONTWRITEBYTECODE="${PYTHONDONTWRITEBYTECODE:-1}"
 
 PROFILE="baseline"
 if [[ "${1:-}" == "--profile" ]]; then
@@ -26,19 +27,21 @@ FINAL_STATUS="passed"
 DEV_STACK_STARTED=0
 ROOT_CLEANLINESS_COMMAND="node scripts/ci/check-root-governance.mjs"
 PROFILE_KIND="internal-control-plane"
+RESULTS_TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/governance-required-flows.XXXXXX")"
 
 if [[ "$PROFILE" == "full" ]]; then
   PROFILE_KIND="repo-truth"
 fi
 
 mkdir -p "$ARTIFACT_DIR"
-RESULTS_FILE="$ARTIFACT_DIR/governance-required-flows.results.jsonl"
+RESULTS_FILE="$RESULTS_TMP_DIR/governance-required-flows.results.jsonl"
 : > "$RESULTS_FILE"
 
 cleanup() {
   if [[ "$DEV_STACK_STARTED" -eq 1 ]]; then
     bash scripts/dev-down.sh >/dev/null 2>&1 || true
   fi
+  rm -rf "$RESULTS_TMP_DIR"
   :
 }
 trap cleanup EXIT
@@ -49,7 +52,7 @@ record_step() {
   local status="$3"
   local duration_ms="$4"
   local detail="$5"
-  python3 - <<'PY' "$RESULTS_FILE" "$step_id" "$command" "$status" "$duration_ms" "$detail"
+  python3 - "$RESULTS_FILE" "$step_id" "$command" "$status" "$duration_ms" "$detail" <<'PY'
 import json
 import sys
 path, step_id, command, status, duration_ms, detail = sys.argv[1:]
@@ -119,17 +122,13 @@ run_step "contracts_generate" "pnpm contracts:generate"
 run_step "lint" "pnpm lint"
 run_step "docs_governance_render" "node scripts/ci/render-docs-governance.mjs"
 run_step "docs_gate" "bash scripts/docs-gate.sh"
-run_step "governance_contract" "pnpm governance:check"
+run_step "governance_contract" "find apps -type d -name '__pycache__' -prune -exec rm -rf {} + >/dev/null 2>&1 && pnpm governance:check"
 run_step "cold_cache_recovery" "bash scripts/ci/check-cold-cache-recovery.sh"
 
 if [[ "$PROFILE" == "full" ]]; then
-  if run_step "dev_up" "just dev-up"; then
-    DEV_STACK_STARTED=1
-    run_step "uiq_run_pr_web" "pnpm uiq run --profile pr --target web.ci --run-id governance-proof-pr-web"
-    if run_step "dev_down" "just dev-down"; then
-      DEV_STACK_STARTED=0
-    fi
-  fi
+  skip_step "dev_up" "TM_FRONTEND_PORT=43173 just dev-up" "canonical pr run autostarts target"
+  run_step "uiq_run_pr_web" "bash scripts/dev-down.sh >/dev/null 2>&1 || true && pnpm uiq run --profile pr --target web.ci --run-id governance-proof-pr-web"
+  skip_step "dev_down" "just dev-down" "canonical pr run tears down its own autostarted target"
   run_step "mainline_alignment" "pnpm mainline:alignment:check"
   run_step "test_matrix" "pnpm test:matrix"
 else
@@ -140,7 +139,7 @@ else
   skip_step "mainline_alignment" "pnpm mainline:alignment:check" "profile=baseline"
 fi
 
-python3 - <<'PY' "$RESULTS_FILE" "$JSON_OUT" "$MD_OUT" "$PROFILE_JSON_OUT" "$PROFILE_MD_OUT" "$PROFILE" "$PROFILE_KIND" "$STARTED_AT" "$FINAL_STATUS"
+python3 - "$RESULTS_FILE" "$JSON_OUT" "$MD_OUT" "$PROFILE_JSON_OUT" "$PROFILE_MD_OUT" "$PROFILE" "$PROFILE_KIND" "$STARTED_AT" "$FINAL_STATUS" <<'PY'
 import json
 import sys
 from datetime import datetime, timezone
@@ -154,6 +153,9 @@ with open(results_path, "r", encoding="utf-8") as fh:
             steps.append(json.loads(raw))
 
 finished_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+import os
+for path in (json_out, md_out, profile_json_out, profile_md_out):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
 payload = {
     "profile": profile,
     "profile_kind": profile_kind,

@@ -206,7 +206,9 @@ test("run-in-container supports pr-run-profile workflow task routing", () => {
   assert.equal(run.status, 0)
   assert.match(run.stdout, /pnpm uiq run --profile pr --target web\.ci/)
   assert.match(run.stdout, /node scripts\/ci\/verify-run-evidence\.mjs --profile pr/)
-  assert.match(run.stdout, /node scripts\/ci\/uiq-gemini-concurrency-gate\.mjs --profile pr --strict true/)
+  assert.doesNotMatch(run.stdout, /uiq-gemini-live-smoke-gate/)
+  assert.doesNotMatch(run.stdout, /test:gemini:web-audit/)
+  assert.doesNotMatch(run.stdout, /uiq-gemini-concurrency-gate/)
 })
 
 test("run-in-container supports pr-static-gate workflow task routing", () => {
@@ -238,8 +240,17 @@ test("run-in-container supports weekly core workflow task routing", () => {
   assert.equal(run.status, 0)
   assert.match(run.stdout, /command -v k6 >/)
   assert.match(run.stdout, /command -v semgrep >/)
-  assert.match(run.stdout, /pnpm uiq engines:check --profile weekly/)
-  assert.match(run.stdout, /pnpm uiq run --profile weekly --target web\.ci/)
+  assert.match(run.stdout, /pnpm uiq engines:check --profile weekly-core/)
+  assert.match(run.stdout, /pnpm uiq run --profile weekly-core --target web\.ci/)
+  assert.doesNotMatch(run.stdout, /GEMINI_API_KEY/)
+})
+
+test("run-in-container supports nightly core workflow task routing", () => {
+  const run = runDry("nightly-core-run")
+  assert.equal(run.status, 0)
+  assert.match(run.stdout, /pnpm uiq engines:check --profile nightly-core/)
+  assert.match(run.stdout, /pnpm uiq run --profile nightly-core --target web\.ci/)
+  assert.doesNotMatch(run.stdout, /GEMINI_API_KEY/)
 })
 
 test("run-in-container supports release docs gate routing", () => {

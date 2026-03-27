@@ -18,17 +18,17 @@ if [[ ! -x "$(project_python_bin)" ]]; then
   exit 1
 fi
 
-read -r -p "初始化 URL（示例: https://target.site/register）: " START_URL
+read -r -p "Initial URL (example: https://target.site/register): " START_URL
 if [[ -z "${START_URL:-}" ]]; then
   echo "error: START_URL required"
   exit 1
 fi
 
-read -r -p "成功页面选择器（可留空）: " SUCCESS_SELECTOR
+read -r -p "Success selector (optional): " SUCCESS_SELECTOR
 
 echo
-echo "[Phase 1] 手工示教录制开始。"
-echo "请在打开的浏览器里完整走完: 填邮箱/密码 -> 邮箱验证 -> 跳转完成。"
+echo "[Phase 1] Manual teaching recording starts."
+echo "In the opened browser, complete the whole flow: enter email/password -> pass email verification -> finish the redirect."
 (
   cd apps/automation-runner
   UIQ_BASE_URL="${UIQ_BASE_URL:-http://127.0.0.1:17380}" \
@@ -39,13 +39,13 @@ echo "请在打开的浏览器里完整走完: 填邮箱/密码 -> 邮箱验证 
 )
 
 echo
-echo "[Phase 2] 输入下一次自动注册使用的账号信息。"
-read -r -p "新邮箱: " FLOW_INPUT
+echo "[Phase 2] Enter the account information for the next automated signup run."
+read -r -p "New email: " FLOW_INPUT
 if [[ -z "${FLOW_INPUT:-}" ]]; then
   echo "error: email required"
   exit 1
 fi
-read -r -s -p "新密码: " FLOW_SECRET_INPUT
+read -r -s -p "New password: " FLOW_SECRET_INPUT
 echo
 if [[ -z "${FLOW_SECRET_INPUT:-}" ]]; then
   echo "error: password required"
@@ -53,11 +53,11 @@ if [[ -z "${FLOW_SECRET_INPUT:-}" ]]; then
 fi
 
 echo
-echo "OTP 将自动通过 Gmail 读取（IMAP）。请确保已配置："
+echo "OTP will be read automatically from Gmail (IMAP). Make sure these are configured:"
 echo "  GMAIL_IMAP_USER / GMAIL_IMAP_PASSWORD"
-echo "可选过滤：FLOW_OTP_SENDER_FILTER / FLOW_OTP_SUBJECT_FILTER"
+echo "Optional filters: FLOW_OTP_SENDER_FILTER / FLOW_OTP_SUBJECT_FILTER"
 echo
-echo "[Phase 3] AI 自动复跑开始。"
+echo "[Phase 3] AI auto-replay starts."
 (
   cd apps/automation-runner
   START_URL="$START_URL" \

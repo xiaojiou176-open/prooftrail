@@ -5,6 +5,7 @@ import fs from "node:fs"
 const failures = []
 
 const requiredFiles = [
+  "assets/storefront/prooftrail-hero.png",
   "assets/storefront/prooftrail-hero.svg",
   "assets/storefront/prooftrail-social-preview.svg",
   "assets/storefront/prooftrail-social-preview.png",
@@ -18,7 +19,7 @@ for (const file of requiredFiles) {
 }
 
 const readme = fs.existsSync("README.md") ? fs.readFileSync("README.md", "utf8") : ""
-if (!readme.includes("assets/storefront/prooftrail-hero.svg")) {
+if (!readme.includes("assets/storefront/prooftrail-hero.png")) {
   failures.push("README.md missing storefront hero reference")
 }
 

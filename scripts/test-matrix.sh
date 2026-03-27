@@ -607,14 +607,14 @@ resolve_suite_cmd() {
         }
         ;;
       backend-pytest)
-        [[ "$override_cmd" =~ ^((\./\.venv/bin/pytest|uv[[:space:]]+run[[:space:]]+--extra[[:space:]]+dev[[:space:]]+pytest|\.runtime-cache/toolchains/python/\.venv/bin/python[[:space:]]+-m[[:space:]]+pytest))([[:space:]][[:alnum:]_./:=,@%+-]+)*$ ]] || {
-          echo "error: override for $suite_name must start with './.venv/bin/pytest', '.runtime-cache/toolchains/python/.venv/bin/python -m pytest' or 'uv run --extra dev pytest'" >&2
+        [[ "$override_cmd" =~ ^((uv[[:space:]]+run[[:space:]]+--extra[[:space:]]+dev[[:space:]]+pytest|\.runtime-cache/toolchains/python/\.venv/bin/python[[:space:]]+-m[[:space:]]+pytest))([[:space:]][[:alnum:]_./:=,@%+-]+)*$ ]] || {
+          echo "error: override for $suite_name must start with '.runtime-cache/toolchains/python/.venv/bin/python -m pytest' or 'uv run --extra dev pytest'" >&2
           exit 1
         }
         ;;
       integration-tests)
-        [[ "$override_cmd" =~ ^((\./\.venv/bin/pytest|uv[[:space:]]+run[[:space:]]+--extra[[:space:]]+dev[[:space:]]+pytest|\.runtime-cache/toolchains/python/\.venv/bin/python[[:space:]]+-m[[:space:]]+pytest))([[:space:]][[:alnum:]_./:=,@%+-]+)*$ ]] || {
-          echo "error: override for $suite_name must start with './.venv/bin/pytest', '.runtime-cache/toolchains/python/.venv/bin/python -m pytest' or 'uv run --extra dev pytest'" >&2
+        [[ "$override_cmd" =~ ^((uv[[:space:]]+run[[:space:]]+--extra[[:space:]]+dev[[:space:]]+pytest|\.runtime-cache/toolchains/python/\.venv/bin/python[[:space:]]+-m[[:space:]]+pytest))([[:space:]][[:alnum:]_./:=,@%+-]+)*$ ]] || {
+          echo "error: override for $suite_name must start with '.runtime-cache/toolchains/python/.venv/bin/python -m pytest' or 'uv run --extra dev pytest'" >&2
           exit 1
         }
         ;;

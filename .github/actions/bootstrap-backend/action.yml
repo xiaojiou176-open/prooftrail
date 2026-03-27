@@ -73,6 +73,8 @@ runs:
         INPUT_READY_JITTER_RATIO: ${{ inputs.ready-jitter-ratio }}
       run: |
         set -euo pipefail
+        . scripts/lib/python-runtime.sh
+        ensure_project_python_env_exports
         mkdir -p .runtime-cache/logs .runtime-cache/artifacts/ci/test-output .runtime-cache/automation
 
         if [[ "${INPUT_RUN_MIGRATIONS}" == "true" ]]; then
@@ -82,14 +84,14 @@ runs:
         if [[ "${INPUT_START_SERVER}" == "true" ]]; then
           mkdir -p "$(dirname "${INPUT_LOG_FILE}")"
           launcher=()
-          if [[ -x "./.venv/bin/uvicorn" ]] && ./.venv/bin/uvicorn --version >/dev/null 2>&1; then
-            launcher=("./.venv/bin/uvicorn")
+          if [[ -x "$(project_uvicorn_bin)" ]] && "$(project_uvicorn_bin)" --version >/dev/null 2>&1; then
+            launcher=("$(project_uvicorn_bin)")
           elif command -v uv >/dev/null 2>&1; then
             launcher=("uv" "run" "uvicorn")
           elif command -v uvicorn >/dev/null 2>&1; then
             launcher=("$(command -v uvicorn)")
           else
-            echo "[bootstrap-backend] uvicorn launcher unavailable: expected ./.venv/bin/uvicorn, uvicorn, or uv" >&2
+            echo "[bootstrap-backend] uvicorn launcher unavailable: expected managed python env uvicorn, uvicorn, or uv" >&2
             exit 1
           fi
           stale_pids="$(lsof -ti tcp:${INPUT_PORT} -sTCP:LISTEN 2>/dev/null || true)"

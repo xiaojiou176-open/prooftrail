@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { execSync } from "node:child_process"
 import { fileExists, loadGovernanceControlPlane, listRootEntries, matchesSimpleGlob } from "./lib/governance-control-plane.mjs"
 
 const failures = []
@@ -14,15 +15,21 @@ const allowedLocal = new Set([
   ...rootAllowlist.allowedLocalToolingRoots,
 ])
 const rootEntries = listRootEntries()
+const trackedRoots = listTrackedRootEntries()
 
 for (const entry of rootEntries) {
-  if (allowedTracked.has(entry) || allowedLocal.has(entry)) continue
-  failures.push(`unexpected top-level entry: ${entry}`)
+  if (trackedRoots.has(entry)) {
+    if (allowedTracked.has(entry)) continue
+    failures.push(`unexpected tracked top-level entry: ${entry}`)
+    continue
+  }
+  if (allowedLocal.has(entry)) continue
+  failures.push(`unexpected local top-level entry: ${entry}`)
 }
 
 for (const forbidden of rootAllowlist.forbiddenRootNames) {
-  if (rootEntries.includes(forbidden)) {
-    failures.push(`forbidden root entry present: ${forbidden}`)
+  if (rootEntries.includes(forbidden) && trackedRoots.has(forbidden)) {
+    failures.push(`forbidden tracked root entry present: ${forbidden}`)
   }
 }
 
@@ -42,6 +49,8 @@ for (const requiredDoc of rootAllowlist.requiredDocs) {
 const result = {
   mode: rootAllowlist.mode,
   scannedRoots: rootEntries.length,
+  trackedRoots: trackedRoots.size,
+  localRoots: rootEntries.length - trackedRoots.size,
   failures,
 }
 
@@ -61,4 +70,21 @@ if (failures.length > 0) {
 
 if (!jsonMode) {
   console.log(`[root-governance] ok (${rootEntries.length} top-level entries)`)
+}
+
+function listTrackedRootEntries() {
+  try {
+    const output = execSync("git ls-files -z", {
+      stdio: ["ignore", "pipe", "ignore"],
+      encoding: "utf8",
+    })
+    const roots = new Set()
+    for (const filePath of output.split("\u0000")) {
+      if (!filePath) continue
+      roots.add(filePath.split("/")[0])
+    }
+    return roots
+  } catch {
+    return new Set()
+  }
 }

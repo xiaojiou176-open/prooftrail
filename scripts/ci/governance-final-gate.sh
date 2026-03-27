@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
+export PYTHONDONTWRITEBYTECODE="${PYTHONDONTWRITEBYTECODE:-1}"
 
 export PYTHONDONTWRITEBYTECODE="${PYTHONDONTWRITEBYTECODE:-1}"
 
@@ -15,7 +16,7 @@ Usage:
   bash scripts/ci/governance-final-gate.sh [--mode control-plane|repo-truth] [--required-flows-profile baseline|full] [--print-config]
 
 Modes:
-  control-plane  Internal governance control-plane gate. This is the compatibility target behind `pnpm governance:check:strict`.
+  control-plane  Internal governance control-plane gate.
   repo-truth     Authoritative scoped repo-truth gate. Requires internal governance, public/open-source readiness, release truth, mainline alignment, and full required-flows proof.
 EOF
 }
@@ -76,17 +77,23 @@ ARTIFACT_DIR=".runtime-cache/artifacts/ci/${UIQ_GOVERNANCE_RUN_ID}"
 STARTED_AT="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 mkdir -p "$ARTIFACT_DIR"
 RESULTS_FILE="$ARTIFACT_DIR/governance-final-gate.results.jsonl"
-: > "$RESULTS_FILE"
+RESULTS_TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/uiq-governance-final-XXXXXX")"
+RESULTS_FILE_TMP="$RESULTS_TMP_DIR/governance-final-gate.results.jsonl"
+: > "$RESULTS_FILE_TMP"
 
 cleanup() {
-  :
+  mkdir -p "$ARTIFACT_DIR" 2>/dev/null || true
+  if [[ -f "$RESULTS_FILE_TMP" ]]; then
+    cp "$RESULTS_FILE_TMP" "$RESULTS_FILE" 2>/dev/null || true
+  fi
+  rm -rf "$RESULTS_TMP_DIR" 2>/dev/null || true
 }
 trap cleanup EXIT
 
 record_step() {
   local step_id="$1"
   local status="$2"
-  python3 - <<'PY' "$RESULTS_FILE" "$step_id" "$status"
+  python3 - <<'PY' "$RESULTS_FILE_TMP" "$step_id" "$status"
 import json
 import sys
 
@@ -151,7 +158,8 @@ if [[ "$MODE" == "repo-truth" ]]; then
 fi
 run_step "governance_required_flows" bash scripts/ci/governance-required-flows.sh --profile "$REQUIRED_FLOWS_PROFILE"
 
-python3 - <<'PY' "$RESULTS_FILE" "$ARTIFACT_DIR/governance-final-gate.json" "$UIQ_GOVERNANCE_RUN_ID" "$STARTED_AT" "$MODE" "$REQUIRED_FLOWS_PROFILE"
+mkdir -p "$ARTIFACT_DIR"
+python3 - <<'PY' "$RESULTS_FILE_TMP" "$ARTIFACT_DIR/governance-final-gate.json" "$UIQ_GOVERNANCE_RUN_ID" "$STARTED_AT" "$MODE" "$REQUIRED_FLOWS_PROFILE"
 import json
 import sys
 from datetime import datetime, timezone

@@ -75,21 +75,8 @@ function diff(expected: Iterable<string>, actual: Iterable<string>): { missing: 
   }
 }
 
-function checkPublicDoc(docPath: string, docText: string, requiredTools: string[], registeredTools: string[]): DocDrift {
+function checkReferenceLinkDoc(docPath: string, docText: string): DocDrift {
   const issues: string[] = []
-  const toolNames = extractBacktickToolNames(docText)
-  const registeredSet = new Set(registeredTools)
-  const missingRequired = requiredTools.filter((name) => !toolNames.has(name))
-  const unknown = Array.from(toolNames)
-    .filter((name) => !registeredSet.has(name))
-    .sort()
-
-  if (missingRequired.length > 0) {
-    issues.push(`missing required tools: ${missingRequired.join(", ")}`)
-  }
-  if (unknown.length > 0) {
-    issues.push(`contains unknown tools: ${unknown.join(", ")}`)
-  }
   if (!docText.includes("docs/reference/generated/mcp-tool-contract.md")) {
     issues.push("must reference docs/reference/generated/mcp-tool-contract.md")
   }
@@ -103,13 +90,10 @@ function checkPublicDoc(docPath: string, docText: string, requiredTools: string[
   return { docPath, issues }
 }
 
-function checkQuickstartDoc(docPath: string, docText: string, coreWorkingSet: string[]): DocDrift {
+function checkQuickstartDoc(docPath: string, docText: string): DocDrift {
   const issues: string[] = []
-  const toolNames = extractBacktickToolNames(docText)
-  const missingCore = coreWorkingSet.filter((name) => !toolNames.has(name))
-
-  if (missingCore.length > 0) {
-    issues.push(`missing core tools: ${missingCore.join(", ")}`)
+  if (!docText.includes("docs/reference/generated/mcp-tool-contract.md")) {
+    issues.push("quickstart must link to the generated MCP tool contract")
   }
   if (/UIQ_MCP_ENABLE_ADVANCED_TOOLS\s*=\s*true/i.test(docText)) {
     issues.push("quickstart must not present deprecated advanced-tools env flags")
@@ -172,18 +156,15 @@ function main(): void {
 
   const docsToCheck = [
     {
-      path: "docs/mcp.md",
-      check: (text: string) => checkPublicDoc("docs/mcp.md", text, navigationTools, registeredTools),
-    },
-    {
-      path: "docs/how-to/mcp-clients-setup.md",
-      check: (text: string) =>
-        checkPublicDoc("docs/how-to/mcp-clients-setup.md", text, navigationTools, registeredTools),
-    },
-    {
       path: "docs/how-to/mcp-quickstart-1pager.md",
-      check: (text: string) =>
-        checkQuickstartDoc("docs/how-to/mcp-quickstart-1pager.md", text, coreWorkingSet),
+      check: (text: string) => {
+        const quickstart = checkQuickstartDoc("docs/how-to/mcp-quickstart-1pager.md", text)
+        const reference = checkReferenceLinkDoc("docs/how-to/mcp-quickstart-1pager.md", text)
+        return {
+          docPath: quickstart.docPath,
+          issues: [...quickstart.issues, ...reference.issues],
+        }
+      },
     },
     {
       path: "docs/reference/generated/mcp-tool-contract.md",

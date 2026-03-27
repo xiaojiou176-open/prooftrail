@@ -12,9 +12,10 @@ test("setup-python-uv exports UV_PYTHON for the requested interpreter", () => {
   assert.match(SETUP_PYTHON_UV, /echo "UV_PYTHON=\$PY_BIN" >> "\$GITHUB_ENV"/)
 })
 
-test("setup-deps recreates a writable venv when its python version drifts from the requested version", () => {
-  assert.match(SETUP_DEPS, /requested_python_version="\$\{\{ inputs\.python-version \}\}"/)
-  assert.match(SETUP_DEPS, /existing_python_version=\"\$\(\.venv\/bin\/python -c 'import sys; print\("\."\.join\(map\(str, sys\.version_info\[:2\]\)\)\)'\)\"/)
+test("setup-deps recreates a writable managed python env when its python version drifts from the requested version", () => {
+  assert.match(SETUP_DEPS, /requested_python_version="\$\{UIQ_SETUP_PYTHON_VERSION\}"/)
+  assert.match(SETUP_DEPS, /managed_python_env="\$\{PROJECT_PYTHON_ENV:-\$\{UV_PROJECT_ENVIRONMENT:-\.runtime-cache\/toolchains\/python\/\.venv\}\}"/)
+  assert.match(SETUP_DEPS, /existing_python_version=\"\$\("\$managed_python_bin" -c 'import sys; print\("\."\.join\(map\(str, sys\.version_info\[:2\]\)\)\)'\)\"/)
   assert.match(SETUP_DEPS, /if \[\[ "\$existing_python_version" != "\$requested_python_version" \]\]; then/)
-  assert.match(SETUP_DEPS, /rm -rf "\.venv"/)
+  assert.match(SETUP_DEPS, /rm -rf "\$managed_python_env"/)
 })

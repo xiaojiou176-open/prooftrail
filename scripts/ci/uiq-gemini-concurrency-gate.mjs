@@ -7,6 +7,14 @@ const CHECK_ID = "gemini_parallel_consistency_min"
 const DEFAULT_REPORT_REL_PATH =
   process.env.UIQ_GEMINI_REPORT_REL_PATH || "reports/ui-ux-gemini-report.json"
 
+function resolveProfilePath(profileName) {
+  const canonicalPath = resolve("configs", "profiles", `${profileName}.yaml`)
+  if (existsSync(canonicalPath)) {
+    return canonicalPath
+  }
+  return resolve("profiles", `${profileName}.yaml`)
+}
+
 function parseBoolean(raw, key) {
   if (raw === "true") return true
   if (raw === "false") return false
@@ -53,7 +61,7 @@ function parseArgs(argv) {
 }
 
 function readProfileThresholds(profileName) {
-  const profilePath = resolve("profiles", `${profileName}.yaml`)
+  const profilePath = resolveProfilePath(profileName)
   try {
     const profile = YAML.parse(readFileSync(profilePath, "utf8"))
     return {

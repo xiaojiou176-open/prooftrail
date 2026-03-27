@@ -7,6 +7,7 @@ cd "$ROOT_DIR"
 ORIGINAL_RUNTIME_ROOT="$ROOT_DIR/.runtime-cache"
 BACKUP_PARENT="$(mktemp -d "${TMPDIR:-/tmp}/uiq-cold-cache-recovery-XXXXXX")"
 BACKUP_RUNTIME_ROOT="$BACKUP_PARENT/runtime-cache"
+COLD_CACHE_DB_PATH="$BACKUP_PARENT/cold-cache-recovery.sqlite3"
 RESTORE_NEEDED=0
 REPORT_FILE_TMP="$BACKUP_PARENT/cold-cache-recovery.json"
 RESULTS_FILE_TMP="$BACKUP_PARENT/cold-cache-recovery-results.jsonl"
@@ -18,19 +19,36 @@ cleanup() {
   local exit_code=$?
   rm -rf "$ORIGINAL_RUNTIME_ROOT" 2>/dev/null || true
   if [[ "$RESTORE_NEEDED" -eq 1 && -d "$BACKUP_RUNTIME_ROOT" ]]; then
-    mv "$BACKUP_RUNTIME_ROOT" "$ORIGINAL_RUNTIME_ROOT"
+    if [[ -e "$ORIGINAL_RUNTIME_ROOT" ]]; then
+      rm -rf "$ORIGINAL_RUNTIME_ROOT" 2>/dev/null || true
+    fi
+    mkdir -p "$(dirname "$ORIGINAL_RUNTIME_ROOT")"
+    if ! mv "$BACKUP_RUNTIME_ROOT" "$ORIGINAL_RUNTIME_ROOT"; then
+      rm -rf "$ORIGINAL_RUNTIME_ROOT" 2>/dev/null || true
+      mv "$BACKUP_RUNTIME_ROOT" "$ORIGINAL_RUNTIME_ROOT"
+    fi
   else
     mkdir -p "$ORIGINAL_RUNTIME_ROOT"
+  fi
+  if [[ -d "$ORIGINAL_RUNTIME_ROOT/runtime-cache" ]]; then
+    rm -rf "$ORIGINAL_RUNTIME_ROOT/runtime-cache"
   fi
   mkdir -p "$ARTIFACT_DIR"
   if [[ -f "$REPORT_FILE_TMP" ]]; then
     cp "$REPORT_FILE_TMP" "$ARTIFACT_DIR/cold-cache-recovery.json"
   fi
+  rm -f "$COLD_CACHE_DB_PATH" 2>/dev/null || true
   rm -rf "$BACKUP_PARENT"
   exit "$exit_code"
 }
 
 trap cleanup EXIT
+
+# The repo-truth gate may already have started the local dev stack earlier in
+# the run. Stop any active stack before moving the runtime root, otherwise the
+# still-running backend can recreate SQLite state inside the fresh cold-cache
+# root and invalidate the migration rehearsal.
+bash scripts/dev-down.sh >/dev/null 2>&1 || true
 
 if [[ -d "$ORIGINAL_RUNTIME_ROOT" ]]; then
   mkdir -p "$(dirname "$BACKUP_RUNTIME_ROOT")"
@@ -52,7 +70,7 @@ GOVERNANCE_STATIC_RECOVERY_COMMAND="node scripts/ci/check-root-governance.mjs &&
 
 COMMANDS=(
   "$GOVERNANCE_STATIC_RECOVERY_COMMAND"
-  "PROJECT_PYTHON_ENV=.runtime-cache/toolchains/python/.venv UV_PROJECT_ENVIRONMENT=.runtime-cache/toolchains/python/.venv uv sync --frozen --extra dev >/dev/null 2>&1 && bash scripts/dev-up.sh && bash scripts/dev-down.sh"
+  "export PROJECT_PYTHON_ENV=.runtime-cache/toolchains/python/.venv UV_PROJECT_ENVIRONMENT=.runtime-cache/toolchains/python/.venv DATABASE_URL=sqlite+pysqlite:///${COLD_CACHE_DB_PATH} && uv sync --frozen --extra dev >/dev/null 2>&1 && rm -f ${COLD_CACHE_DB_PATH} && bash scripts/dev-up.sh && bash scripts/dev-down.sh && rm -f ${COLD_CACHE_DB_PATH}"
   "pnpm env:check"
   "node --import tsx --test apps/mcp-server/tests/core.constants.test.ts"
 )
@@ -61,7 +79,7 @@ COMMANDS=(
 for cmd in "${COMMANDS[@]}"; do
   echo "[cold-cache] $cmd"
   if bash -lc "$cmd"; then
-    python3 - <<'PY' "$RESULTS_FILE_TMP" "$cmd" "passed"
+    python3 - "$RESULTS_FILE_TMP" "$cmd" "passed" <<'PY'
 import json
 import sys
 path, command, status = sys.argv[1:]
@@ -69,14 +87,14 @@ with open(path, "a", encoding="utf-8") as fh:
     fh.write(json.dumps({"command": command, "status": status}, ensure_ascii=True) + "\n")
 PY
   else
-    python3 - <<'PY' "$RESULTS_FILE_TMP" "$cmd" "failed"
+    python3 - "$RESULTS_FILE_TMP" "$cmd" "failed" <<'PY'
 import json
 import sys
 path, command, status = sys.argv[1:]
 with open(path, "a", encoding="utf-8") as fh:
     fh.write(json.dumps({"command": command, "status": status}, ensure_ascii=True) + "\n")
 PY
-    python3 - <<'PY' "$REPORT_FILE_TMP" "$STARTED_AT" "$RESULTS_FILE_TMP"
+    python3 - "$REPORT_FILE_TMP" "$STARTED_AT" "$RESULTS_FILE_TMP" <<'PY'
 import json
 import sys
 path, started_at, results_path = sys.argv[1:]
@@ -100,7 +118,7 @@ PY
   fi
 done
 
-python3 - <<'PY' "$REPORT_FILE_TMP" "$STARTED_AT" "$RESULTS_FILE_TMP"
+python3 - "$REPORT_FILE_TMP" "$STARTED_AT" "$RESULTS_FILE_TMP" <<'PY'
 import json
 import sys
 path, started_at, results_path = sys.argv[1:]
