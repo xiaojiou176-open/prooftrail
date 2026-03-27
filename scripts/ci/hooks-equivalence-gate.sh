@@ -232,10 +232,11 @@ verify_prepush_policy_contract() {
 verify_precommit_policy_contract() {
   bash scripts/ci/pre-commit-required-gates.sh --dry-run 2>&1 | tee "$PRECOMMIT_CANONICAL_DRYRUN_LOG"
   grep -q "mode=strict" "$PRECOMMIT_CANONICAL_DRYRUN_LOG"
-  grep -q "mutation-ts-strict" "$PRECOMMIT_CANONICAL_DRYRUN_LOG"
-  grep -q "security-scan" "$PRECOMMIT_CANONICAL_DRYRUN_LOG"
+  grep -q "heavy=false" "$PRECOMMIT_CANONICAL_DRYRUN_LOG"
+  grep -q "heavy gates delegated to pre-push/CI" "$PRECOMMIT_CANONICAL_DRYRUN_LOG"
 
   UIQ_PRECOMMIT_REQUIRED_MODE=strict \
+  UIQ_PRECOMMIT_REQUIRED_HEAVY_GATES=true \
     bash scripts/ci/pre-commit-required-gates.sh --dry-run 2>&1 | tee "$PRECOMMIT_STRICT_DRYRUN_LOG"
   grep -q "mode=strict" "$PRECOMMIT_STRICT_DRYRUN_LOG"
   grep -q "mutation-ts-strict" "$PRECOMMIT_STRICT_DRYRUN_LOG"
@@ -251,7 +252,7 @@ run_step "observability_contract" bash scripts/ci/check-observability-contract.s
 run_gate_with_container_toggle "coverage" "unit_coverage_gate" bash scripts/ci/run-unit-coverage-gate.sh || ((failed_steps += 1))
 run_step "test_truth_gate" node scripts/ci/uiq-test-truth-gate.mjs --profile ci-equivalence --strict true --scope staged-or-changed || ((failed_steps += 1))
 run_step "py_test_truth_gate" python3 scripts/ci/uiq-pytest-truth-gate.py --profile ci-equivalence --strict true || ((failed_steps += 1))
-run_step "docs_link_gate" node scripts/ci/check-docs-ssot.mjs --check-ci-docs-link --base-ref "$DOCS_LINK_BASE_REF" --head-ref "$DOCS_LINK_HEAD_REF" || ((failed_steps += 1))
+run_step "docs_link_gate" node scripts/ci/check-doc-links.mjs || ((failed_steps += 1))
 run_step "atomic_commit_gate" bash scripts/ci/atomic-commit-gate.sh --from "$DOCS_LINK_BASE_REF" --to "$DOCS_LINK_HEAD_REF" || ((failed_steps += 1))
 run_step "secret_leak_gitleaks" run_gitleaks_precommit || ((failed_steps += 1))
 run_step "workflow_actionlint" run_actionlint_precommit || ((failed_steps += 1))

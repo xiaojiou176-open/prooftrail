@@ -1,82 +1,82 @@
 # Computer Use - Gemini Only
 
-本目录收敛为 **google-genai SDK** 的 Gemini Computer Use 能力，不再依赖 OpenAI 或 langchain 中间层。
+This directory standardizes on the **google-genai SDK** for Gemini Computer Use.
+It no longer depends on OpenAI or LangChain wrappers.
 
-## 当前实现
+## Current implementation
 
-| 项目 | 值 |
-|------|----|
+| Item | Value |
+|------|-------|
 | **Provider** | Google Gemini |
-| **默认模型** | `models/gemini-3.1-pro-preview` |
-| **主入口** | `gemini-computer-use.py` |
-| **API 方法** | `client.models.generate_content()` |
-| **必需环境变量** | `GEMINI_API_KEY` |
+| **Default model** | `models/gemini-3.1-pro-preview` |
+| **Primary entrypoint** | `gemini-computer-use.py` |
+| **API method** | `client.models.generate_content()` |
+| **Required environment variable** | `GEMINI_API_KEY` |
 
-## 安装
+## Install
 
 ```bash
 cd scripts/computer-use
 pip install -r requirements.txt
 ```
 
-## 环境变量
+## Environment variables
 
 - `GEMINI_API_KEY`
-- `GEMINI_MODEL_PRIMARY`（默认 `models/gemini-3.1-pro-preview`）
-- `COMPUTER_USE_TASK`（可选，自定义任务指令）
+- `GEMINI_MODEL_PRIMARY` (default: `models/gemini-3.1-pro-preview`)
+- `COMPUTER_USE_TASK` (optional custom task prompt)
 
-## 使用
+## Usage
 
 ```bash
 export GEMINI_API_KEY="xxx"
-export GEMINI_MODEL_PRIMARY="models/gemini-3.1-pro-preview"   # 可选，默认即此值
-export GEMINI_THINKING_LEVEL="high"                   # 可选，默认 high
-# 高风险动作确认闸门（默认拒绝 delete/pay/send/purchase/submit）
+export GEMINI_MODEL_PRIMARY="models/gemini-3.1-pro-preview"   # optional
+export GEMINI_THINKING_LEVEL="high"                           # optional
+# High-risk action confirmation gate (delete/pay/send/purchase/submit are denied by default)
 export COMPUTER_USE_CONFIRM_HIGH_RISK="true"
-python3 gemini-computer-use.py "分析当前屏幕，找到登录按钮并点击"
+python3 gemini-computer-use.py "Analyze the current screen, find the sign-in button, and click it"
 ```
 
-### 高风险动作确认闸门
+### High-risk action confirmation gate
 
-- 运行期会在执行前检查 action 名称是否包含：`delete/pay/send/purchase/submit`。
-- 默认拒绝这些动作，并返回可观测阻断结果。
-- 只有显式设置 `COMPUTER_USE_CONFIRM_HIGH_RISK=true` 才会放行。
+- At runtime, the tool checks whether the action name contains `delete/pay/send/purchase/submit`.
+- Those actions are blocked by default and return an observable denial result.
+- They are allowed only when `COMPUTER_USE_CONFIRM_HIGH_RISK=true` is explicitly set.
 
-## 工作原理
+## How it works
 
-```
+```text
 ┌─────────────────────────────────────────────────────┐
-│                    你的电脑屏幕                      │
+│                  Your desktop screen                │
 │                                                     │
 │   ┌─────────────────────────────────────────────┐   │
-│   │        Chrome (完全正常的浏览器)              │   │
+│   │      Chrome (a normal user browser)         │   │
 │   │                                             │   │
 │   │   ┌─────────────────────────────────────┐   │   │
-│   │   │        Stripe 支付页面               │   │   │
+│   │   │       Stripe payment page           │   │   │
 │   │   │                                     │   │   │
-│   │   │   看起来完全像真人在操作！           │   │   │
+│   │   │   Looks like a real user session    │   │   │
 │   │   │                                     │   │   │
 │   │   └─────────────────────────────────────┘   │   │
 │   └─────────────────────────────────────────────┘   │
 │                                                     │
-│   PyAutoGUI 在 OS 层面控制鼠标键盘                 │
-│   ↑                                                │
-│   AI 分析截图，决定下一步动作                       │
+│   PyAutoGUI controls mouse and keyboard at the OS   │
+│   level                                             │
+│   ↑                                                 │
+│   AI inspects screenshots and decides the next step │
 └─────────────────────────────────────────────────────┘
 ```
 
-**为什么无法检测？**
+**Why it is harder to detect**
 
-1. **没有 WebDriver** - 不是 Playwright/Selenium
-2. **没有 CDP 连接** - 不是 DevTools Protocol
-3. **真实鼠标移动** - PyAutoGUI 产生真实的 OS 事件
-4. **真实键盘输入** - 每个按键都是真实的
-5. **无自动化标记** - 浏览器完全正常启动
+1. **No WebDriver** - it is not Playwright/Selenium
+2. **No CDP connection** - it is not using the DevTools Protocol
+3. **Real mouse movement** - PyAutoGUI emits OS-level events
+4. **Real keyboard input** - every keystroke is sent as a real event
+5. **No automation markers** - the browser launches like a normal session
 
-## 安全提示
+## Safety notes
 
-⚠️ **紧急停止**: 将鼠标移动到屏幕左上角
-
-⚠️ 不要在脚本运行时移动窗口
-
-⚠️ 确保目标窗口可见且在前台
+- **Emergency stop**: move the mouse to the top-left corner of the screen
+- Do not move or resize the target window while the script is running
+- Make sure the target window is visible and in the foreground

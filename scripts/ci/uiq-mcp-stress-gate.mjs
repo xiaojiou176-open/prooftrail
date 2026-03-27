@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process"
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { resolve } from "node:path"
 import YAML from "yaml"
 
@@ -99,6 +99,14 @@ function formatRate(value) {
   return Number(value.toFixed(6))
 }
 
+function resolveProfilePath(profileName) {
+  const canonicalPath = resolve("configs", "profiles", `${profileName}.yaml`)
+  if (existsSync(canonicalPath)) {
+    return canonicalPath
+  }
+  return resolve("profiles", `${profileName}.yaml`)
+}
+
 function resolveThreshold(options) {
   if (options.flakeRateMax !== undefined) {
     return {
@@ -108,7 +116,7 @@ function resolveThreshold(options) {
       profileReadError: "",
     }
   }
-  const profilePath = resolve("profiles", `${options.profile}.yaml`)
+  const profilePath = resolveProfilePath(options.profile)
   try {
     const profile = YAML.parse(readFileSync(profilePath, "utf8"))
     const raw = profile?.gates?.flakeRateMax

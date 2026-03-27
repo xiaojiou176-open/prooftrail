@@ -842,8 +842,9 @@ jobs:
             exit 0
           fi
           echo "enabled=true" >> "$GITHUB_OUTPUT"
-      - name: Gemini live API smoke gate (CI required)
-        if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false) && steps.live_ci_contract.outputs.enabled == 'true' }}
+      - name: Gemini live API smoke gate (workflow_dispatch advisory)
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_automation_profile == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false) && steps.live_ci_contract.outputs.enabled == 'true' }}
+        continue-on-error: true
         env:
           UIQ_GEMINI_LIVE_SMOKE_REQUIRED: "true"
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || secrets.GOOGLE_API_KEY || '' }}
@@ -851,8 +852,9 @@ jobs:
           UIQ_BASE_URL: ${{ vars.UIQ_BASE_URL || secrets.UIQ_BASE_URL || vars.BASE_URL || secrets.BASE_URL || '' }}
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
         run: bash scripts/ci/run-in-container.sh --task live-smoke --gate ci-live-smoke
-      - name: Gemini web audit gate (CI required)
-        if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false) && steps.live_ci_contract.outputs.enabled == 'true' }}
+      - name: Gemini web audit gate (workflow_dispatch advisory)
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_automation_profile == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false) && steps.live_ci_contract.outputs.enabled == 'true' }}
+        continue-on-error: true
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || secrets.GOOGLE_API_KEY || '' }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY || '' }}
@@ -1557,6 +1559,7 @@ jobs:
           mode: post
 
   internal_governance_control_plane_gate:
+    name: control-plane green (internal governance)
     needs: [changes]
     if: ${{ github.repository_owner != 'xiaojiou176-open' && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.docs == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.ci_gatechain == 'true') }}
     runs-on: [self-hosted, shared-pool]
@@ -1571,7 +1574,7 @@ jobs:
       - name: Install root deps for governance gate
         run: pnpm install --frozen-lockfile
       - name: Internal governance control-plane gate
-        run: pnpm governance:check:strict
+        run: pnpm governance:control-plane:check
       - name: Upload governance score report
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -1587,7 +1590,8 @@ jobs:
         with:
           mode: post
 
-  required_ci_gate:
+  repo_truth_required_gate:
+    name: repo truth deterministic gate (aggregate)
     runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
     if: ${{ always() }}
     needs:
@@ -1643,14 +1647,14 @@ jobs:
           node-version: "20"
       - name: Install root deps for manifest validators
         run: pnpm install --frozen-lockfile
-      - name: Aggregate required CI hard gates (success only)
+      - name: Aggregate deterministic repo-truth CI gates
         run: |
           set -euo pipefail
           require_success() {
             local gate="$1"
             local result="$2"
             if [[ "$result" != "success" ]]; then
-              echo "::error::required_ci_gate dependency '$gate' must be success, got '$result'"
+              echo "::error::repo_truth_required_gate dependency '$gate' must be success, got '$result'"
               exit 1
             fi
           }
@@ -1666,7 +1670,7 @@ jobs:
             local gate="$1"
             local result="$2"
             if [[ "$result" != "success" && "$result" != "skipped" ]]; then
-              echo "::error::required_ci_gate optional dependency '$gate' invalid result '$result' (allowed: success/skipped)"
+              echo "::error::repo_truth_required_gate optional dependency '$gate' invalid result '$result' (allowed: success/skipped)"
               exit 1
             fi
           }
@@ -1727,20 +1731,20 @@ jobs:
           fi
 
           allow_skipped "security" "${{ needs.security.result }}"
-      - name: generate-true-green-manifest (ci)
+      - name: Generate repo-truth true-green manifest (ci)
         run: |
           node scripts/ci/generate-true-green-manifest.mjs \
             --layer ci \
-            --run-id "${{ github.run_id }}-${{ github.run_attempt }}-required-ci-gate" \
+            --run-id "${{ github.run_id }}-${{ github.run_attempt }}-repo-truth-required-gate" \
             --out .runtime-cache/artifacts/ci/true-green-manifest-ci.json \
             --decision passed \
-            --reason-codes gate.true_green.passed.ci.required_gate
-      - name: validate-true-green-manifest (ci)
+            --reason-codes gate.true_green.passed.ci.repo_truth_required_gate
+      - name: Validate repo-truth true-green manifest (ci)
         run: |
           node scripts/ci/validate-true-green-manifest.mjs \
             --schema contracts/true-green-manifest.schema.json \
             --input .runtime-cache/artifacts/ci/true-green-manifest-ci.json
-      - name: Upload true-green manifest (ci)
+      - name: Upload repo-truth true-green manifest (ci)
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: uiq-ci-true-green-manifest

@@ -38,13 +38,14 @@
     "stale:truth:surfaces:check": "node scripts/ci/check-stale-truth-surfaces.mjs",
     "public:readiness:check": "pnpm public:collaboration:check && pnpm public:redaction:check && pnpm public:history:check && pnpm public:artifacts:check && pnpm release:supply-chain:check && pnpm stale:truth:surfaces:check",
     "public:readiness:deep-check": "node scripts/ci/check-public-readiness-deep.mjs",
+    "public:truth:check": "pnpm public:readiness:deep-check",
     "showcase:check": "node scripts/ci/check-showcase-freshness.mjs && node scripts/ci/check-proof-surface-generators.mjs",
     "proof:surface:check": "node scripts/ci/check-proof-surface-generators.mjs",
     "release:supply-chain:check": "node scripts/ci/check-release-supply-chain.mjs",
     "release:proof:verify": "node scripts/ci/check-release-supply-chain.mjs",
+    "release:truth:check": "pnpm release:proof:verify",
     "docs:value-narrative:check": "node scripts/ci/check-value-narrative.mjs",
     "governance:check": "node scripts/ci/check-root-governance.mjs && node scripts/ci/check-root-semantic-cleanliness.mjs && node scripts/ci/check-source-tree-runtime-residue.mjs && node scripts/ci/check-runtime-governance.mjs && node scripts/ci/check-runtime-live-inventory.mjs && node scripts/ci/check-runtime-size-budgets.mjs && node scripts/ci/check-log-governance.mjs && node scripts/ci/check-module-boundaries.mjs && node scripts/ci/check-run-tool-boundary.mjs && node scripts/ci/check-public-surface-boundaries.mjs && node scripts/ci/check-dependency-governance.mjs && node scripts/ci/check-upstream-governance.mjs && node scripts/ci/check-path-drift-governance.mjs && node scripts/ci/check-repo-identity-drift.mjs && node scripts/ci/check-relocation-readiness.mjs && node scripts/ci/render-docs-governance.mjs --check",
-    "governance:check:strict": "bash scripts/ci/governance-final-gate.sh --mode control-plane",
     "governance:score": "node scripts/ci/governance-score-report.mjs",
     "upstream:mode:check": "node scripts/ci/check-upstream-mode-consistency.mjs",
     "governance:check:cold-cache": "bash scripts/ci/check-cold-cache-recovery.sh",
@@ -166,7 +167,7 @@
     "typescript": "5.9.3",
     "vite": "7.3.1",
     "vitest": "3.2.4",
-    "yaml": "2.8.2",
+    "yaml": "2.8.3",
     "zod": "4.3.6"
   },
   "commitlint": {
@@ -176,7 +177,6 @@
   },
   "pnpm": {
     "overrides": {
-      "ajv": "8.18.0",
       "axios": "1.13.5",
       "basic-ftp": "5.2.0",
       "esbuild": "0.27.4",
@@ -188,6 +188,7 @@
       "hono": "4.12.7",
       "js-yaml": "4.1.1",
       "minimatch": "10.2.3",
+      "picomatch": "4.0.4",
       "socket.io-parser": "4.2.6",
       "tmp": "0.2.5",
       "underscore": "1.13.8",

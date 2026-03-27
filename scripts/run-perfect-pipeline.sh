@@ -3,6 +3,8 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
+source "$ROOT_DIR/scripts/lib/python-runtime.sh"
+ensure_project_python_env_exports
 
 MODE="${1:-manual}"
 if [[ "$MODE" != "manual" && "$MODE" != "midscene" ]]; then
@@ -38,7 +40,7 @@ else
   ./scripts/run-pipeline.sh "$MODE" ui-only
 fi
 
-RESOLVED_SESSION_AND_NOTE="$(SESSION_ID="$SESSION_ID" ./.venv/bin/python - <<'PY'
+RESOLVED_SESSION_AND_NOTE="$(SESSION_ID="$SESSION_ID" "$(project_python_bin)" - <<'PY'
 import json
 import os
 from pathlib import Path

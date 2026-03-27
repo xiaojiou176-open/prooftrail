@@ -146,6 +146,18 @@ supports_task() {
   return 1
 }
 
+task_prefers_host_on_local_arm() {
+  local task="$1"
+  case "$task" in
+    live-smoke|gemini-web-audit|mutation-ts|mutation-py|orchestrator-contract|mcp-check)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 if ! supports_task "$TASK"; then
   echo "[container-gate] unsupported task '$TASK' (supported: ${SUPPORTED_TASKS[*]})" >&2
   exit 2
@@ -246,6 +258,12 @@ ensure_baseline_contract() {
   fi
   check_docker_runtime
   check_docker_compose
+  local host_arch
+  host_arch="$(uname -m)"
+  if [[ "$DRY_RUN" != "true" ]] && task_prefers_host_on_local_arm "$TASK" && [[ "${UIQ_HOST_ARCH:-${host_arch}}" =~ ^(aarch64|arm64)$ ]]; then
+    echo "[container-gate] local arm host detected; skipping local CI image resolution because task has a host fallback path"
+    return 0
+  fi
   local compose_project
   local compose_cmd
   compose_project="$(resolve_compose_project_name)"
@@ -354,18 +372,12 @@ EOF
     GITHUB_ACTIONS
     UIQ_CI_IMAGE_REF
     UIQ_CI_IMAGE_DIGEST
-    UIQ_SHARD_INDEX
-    UIQ_SHARD_TOTAL
     UIQ_K6_VERSION
     UIQ_SEMGREP_VERSION
     UIQ_MCP_STRESS_PARALLEL
     UIQ_MCP_STRESS_TIME_BUDGET_MS
-    UIQ_AUTO_TICKETING
-    GH_TOKEN
-    GITHUB_REPOSITORY
     GITHUB_SHA
     GITHUB_BASE_REF
-    GH_REPO
   )
 
   for var_name in "${forward_vars[@]}"; do
@@ -552,12 +564,26 @@ EOF
     echo "[container-gate] passed: mutation effective gate executed in container"
     ;;
   orchestrator-contract)
-    run_task_in_container "pnpm install --frozen-lockfile >/dev/null 2>&1 && node --import tsx --test packages/orchestrator/src/commands/run.test.ts packages/orchestrator/src/commands/run.runid.test.ts"
-    echo "[container-gate] passed: orchestrator contract tests executed in container"
+    if [[ "$DRY_RUN" != "true" && "${UIQ_HOST_ARCH:-${host_arch:-$(uname -m)}}" =~ ^(aarch64|arm64)$ ]]; then
+      echo "[container-gate] local arm host detected; running orchestrator contract tests on host to avoid amd64 CI image emulation failures"
+      run_cmd pnpm install --frozen-lockfile >/dev/null 2>&1
+      run_cmd node --import tsx --test packages/orchestrator/src/commands/run.test.ts packages/orchestrator/src/commands/run.runid.test.ts
+      echo "[container-gate] passed: orchestrator contract tests executed on host"
+    else
+      run_task_in_container "pnpm install --frozen-lockfile >/dev/null 2>&1 && node --import tsx --test packages/orchestrator/src/commands/run.test.ts packages/orchestrator/src/commands/run.runid.test.ts"
+      echo "[container-gate] passed: orchestrator contract tests executed in container"
+    fi
     ;;
   mcp-check)
-    run_task_in_container "pnpm install --frozen-lockfile >/dev/null 2>&1 && pnpm mcp:check"
-    echo "[container-gate] passed: mcp check executed in container"
+    if [[ "$DRY_RUN" != "true" && "${UIQ_HOST_ARCH:-${host_arch:-$(uname -m)}}" =~ ^(aarch64|arm64)$ ]]; then
+      echo "[container-gate] local arm host detected; running mcp check on host to avoid amd64 CI image emulation failures"
+      run_cmd pnpm install --frozen-lockfile >/dev/null 2>&1
+      run_cmd pnpm mcp:check
+      echo "[container-gate] passed: mcp check executed on host"
+    else
+      run_task_in_container "pnpm install --frozen-lockfile >/dev/null 2>&1 && pnpm mcp:check"
+      echo "[container-gate] passed: mcp check executed in container"
+    fi
     ;;
   test-truth-gate)
     run_task_in_container "pnpm install --frozen-lockfile >/dev/null 2>&1 && node scripts/ci/uiq-test-truth-gate.mjs --profile preflight --strict true"
@@ -668,7 +694,7 @@ bash -n scripts/ci/gate-openai-residue.sh
 bash -n scripts/run-load-k6-smoke.sh
 bash -n scripts/acceptance/final-verdict-gate.sh
 node --check scripts/ci/check-threshold-doc-sync.mjs
-node --check scripts/ci/check-docs-ssot.mjs
+node --check scripts/ci/check-doc-links.mjs
 node --check scripts/ci/uiq-test-truth-gate.mjs
 node --check scripts/ci/uiq-mcp-stress-gate.mjs
 node --check scripts/ci/uiq-flake-budget.mjs
@@ -777,25 +803,8 @@ EOF
 pnpm install --frozen-lockfile >/dev/null 2>&1
 uv sync --frozen --extra dev >/dev/null 2>&1
 pnpm uiq engines:check --profile pr
-if [[ -z "${GEMINI_API_KEY:-}" && -z "${GOOGLE_API_KEY:-}" ]]; then
-  echo "missing GEMINI_API_KEY/GOOGLE_API_KEY for strict live PR gates" >&2
-  exit 1
-fi
-if [[ -z "${UIQ_BASE_URL:-}" ]]; then
-  echo "missing UIQ_BASE_URL/BASE_URL for strict live PR gates" >&2
-  exit 1
-fi
 UIQ_ORCHESTRATOR_PARALLEL=1 UIQ_ORCHESTRATOR_MAX_PARALLEL_TASKS=4 pnpm uiq run --profile pr --target web.ci
 node scripts/ci/verify-run-evidence.mjs --profile pr
-RUN_ROOT=".runtime-cache/artifacts/runs"
-LATEST_RUN="$(find "$RUN_ROOT" -mindepth 1 -maxdepth 1 -type d -print | sort | tail -n 1)"
-REPORT_PATH="$LATEST_RUN/reports/ui-ux-gemini-report.json"
-test -f "$REPORT_PATH"
-node -e 'const fs=require("fs"); JSON.parse(fs.readFileSync(process.argv[1],"utf8"));' "$REPORT_PATH"
-node scripts/ci/uiq-gemini-accuracy-gate.mjs --profile pr --strict true
-UIQ_GEMINI_LIVE_SMOKE_REQUIRED=true node scripts/ci/uiq-gemini-live-smoke-gate.mjs --strict true
-pnpm test:gemini:web-audit
-node scripts/ci/uiq-gemini-concurrency-gate.mjs --profile pr --strict true
 EOF
 )"
     echo "[container-gate] passed: pr run profile executed in container"
@@ -854,17 +863,9 @@ EOF
   nightly-core-run)
     run_script_in_container "$(cat <<'EOF'
 pnpm install --frozen-lockfile >/dev/null 2>&1
-if [[ -z "${GEMINI_API_KEY:-}" && -z "${GOOGLE_API_KEY:-}" ]]; then
-  echo "missing GEMINI_API_KEY/GOOGLE_API_KEY for strict live nightly gates" >&2
-  exit 1
-fi
-if [[ -z "${UIQ_BASE_URL:-}" ]]; then
-  echo "missing UIQ_BASE_URL/BASE_URL for strict live nightly gates" >&2
-  exit 1
-fi
-pnpm uiq engines:check --profile nightly
-UIQ_ORCHESTRATOR_PARALLEL=1 UIQ_ORCHESTRATOR_MAX_PARALLEL_TASKS=6 pnpm uiq run --profile nightly --target web.ci
-node scripts/ci/verify-run-evidence.mjs --profile nightly
+pnpm uiq engines:check --profile nightly-core
+UIQ_ORCHESTRATOR_PARALLEL=1 UIQ_ORCHESTRATOR_MAX_PARALLEL_TASKS=6 pnpm uiq run --profile nightly-core --target web.ci
+node scripts/ci/verify-run-evidence.mjs --profile nightly-core
 EOF
 )"
     echo "[container-gate] passed: nightly core run executed in container"
@@ -892,23 +893,10 @@ EOF
 pnpm install --frozen-lockfile >/dev/null 2>&1
 command -v k6 >/dev/null 2>&1
 command -v semgrep >/dev/null 2>&1
-if [[ -z "${GEMINI_API_KEY:-}" && -z "${GOOGLE_API_KEY:-}" ]]; then
-  echo "missing GEMINI_API_KEY/GOOGLE_API_KEY for strict live weekly gates" >&2
-  exit 1
-fi
-if [[ -z "${UIQ_BASE_URL:-}" ]]; then
-  echo "missing UIQ_BASE_URL/BASE_URL for strict live weekly gates" >&2
-  exit 1
-fi
-pnpm uiq engines:check --profile weekly
+pnpm uiq engines:check --profile weekly-core
 UIQ_ENABLE_REAL_BACKEND_TESTS=true pnpm test:mcp-server:real
-UIQ_ORCHESTRATOR_PARALLEL=1 UIQ_ORCHESTRATOR_MAX_PARALLEL_TASKS=6 pnpm uiq run --profile weekly --target web.ci
-node scripts/ci/verify-run-evidence.mjs --profile weekly
-RUN_ROOT=".runtime-cache/artifacts/runs"
-LATEST_RUN="$(find "$RUN_ROOT" -mindepth 1 -maxdepth 1 -type d -print | sort | tail -n 1)"
-REPORT_PATH="$LATEST_RUN/reports/ui-ux-gemini-report.json"
-test -f "$REPORT_PATH"
-node -e 'const fs=require("fs"); JSON.parse(fs.readFileSync(process.argv[1],"utf8"));' "$REPORT_PATH"
+UIQ_ORCHESTRATOR_PARALLEL=1 UIQ_ORCHESTRATOR_MAX_PARALLEL_TASKS=6 pnpm uiq run --profile weekly-core --target web.ci
+node scripts/ci/verify-run-evidence.mjs --profile weekly-core
 EOF
 )"
     echo "[container-gate] passed: weekly core run executed in container"

@@ -27,6 +27,10 @@ const allowedFixturePrefixes = [
   "apps/automation-runner/tests/fixtures/wrappers/",
 ]
 
+const allowedTrackedArtifacts = new Set([
+  "assets/storefront/prooftrail-social-preview.png",
+])
+
 const tracked = execFileSync("git", ["ls-files"], { encoding: "utf8" })
   .trim()
   .split("\n")
@@ -41,6 +45,10 @@ const failures = tracked.filter((file) => {
     file.endsWith(".har.json") &&
     allowedFixturePrefixes.some((prefix) => file.startsWith(prefix))
   ) {
+    return false
+  }
+
+  if (allowedTrackedArtifacts.has(file)) {
     return false
   }
 

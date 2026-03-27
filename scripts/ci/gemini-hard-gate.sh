@@ -16,7 +16,7 @@ steps=(
   "Gemini-only policy gate|pnpm gemini-only-policy"
   "Gemini live smoke gate|node scripts/ci/uiq-gemini-live-smoke-gate.mjs --strict true"
   "Automation routing gate|pnpm test:automation:routing"
-  "Docs SSOT gate|node scripts/ci/check-docs-ssot.mjs"
+  "Docs truth surface gate|node scripts/ci/check-doc-truth-surfaces.mjs"
 )
 
 if [[ -f "${LOAD_ENV_LIB}" ]]; then
@@ -175,7 +175,7 @@ run_parallel_group "core-gemini-checks" \
   "${steps[4]}"
 
 run_step_sync "6" "Automation routing gate" "pnpm test:automation:routing"
-run_step_sync "7" "Docs SSOT gate" "node scripts/ci/check-docs-ssot.mjs"
+run_step_sync "7" "Docs truth surface gate" "node scripts/ci/check-doc-truth-surfaces.mjs"
 
 STEP_LABELS_FILE="$(mktemp)"
 STEP_COMMANDS_FILE="$(mktemp)"

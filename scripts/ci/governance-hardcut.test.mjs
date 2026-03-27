@@ -17,7 +17,7 @@ function withFixture(t, callback) {
   mkdirSync(join(root, "apps/api/app/core"), { recursive: true })
   mkdirSync(join(root, "apps/mcp-server/src/core"), { recursive: true })
   writeFileSync(join(root, ".gitignore"), "/.runtime-cache/\n", "utf8")
-  writeFileSync(join(root, "docs/reference/logging-and-cache-policy.md"), "docs/reference/generated/governance/log-event-schema.md\ndocs/reference/generated/governance/runtime-output-registry.md\n", "utf8")
+  writeFileSync(join(root, "docs/reference/public-surface-sanitization-policy.md"), "docs/reference/generated/governance/log-event-schema.md\ndocs/reference/generated/governance/runtime-output-registry.md\n", "utf8")
   writeFileSync(join(root, "apps/api/app/core/observability.py"), "", "utf8")
   writeFileSync(join(root, "apps/mcp-server/src/core/io.ts"), "", "utf8")
   writeControlPlane(root)

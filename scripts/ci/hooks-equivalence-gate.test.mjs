@@ -54,7 +54,7 @@ printf '0\n'
       "scripts/ci/run-unit-coverage-gate.sh": 0,
       "scripts/ci/uiq-test-truth-gate.mjs": 0,
       "scripts/ci/uiq-pytest-truth-gate.py": 0,
-      "scripts/ci/check-docs-ssot.mjs": 0,
+      "scripts/ci/check-doc-links.mjs": 0,
       "scripts/ci/atomic-commit-gate.sh": 0,
       "scripts/ci/pre-push-required-gates.sh": 0,
       "scripts/ci/pre-commit-required-gates.sh": 0,

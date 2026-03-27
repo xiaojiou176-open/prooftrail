@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import { type ChildProcess, spawn } from "node:child_process"
 import { mkdir, writeFile } from "node:fs/promises"
 import { request as httpRequest } from "node:http"
@@ -46,14 +44,14 @@ const REPORT_PATH = path.resolve("UX_USABILITY_REPORT.md")
 const COMMANDS = [
   {
     command_id: "run-ui",
-    title: "仅 UI 流程（manual）",
-    description: "新手首用默认推荐命令。",
+    title: "UI-only flow (manual)",
+    description: "Recommended first-run command for novice users.",
     tags: ["pipeline", "safe"],
   },
   {
     command_id: "diagnose",
-    title: "大文件诊断",
-    description: "快速诊断当前仓库状态。",
+    title: "Repository diagnostics",
+    description: "Quickly diagnose the current repository state.",
     tags: ["maintenance", "safe"],
   },
 ]
@@ -98,7 +96,7 @@ async function waitForUrl(url: string, timeoutMs = 60_000): Promise<void> {
 async function startFrontendServer(port: number): Promise<ChildProcess> {
   const child = spawn(
     "pnpm",
-    ["--dir", "frontend", "dev", "--host", "127.0.0.1", "--port", String(port), "--strictPort"],
+    ["--dir", "apps/web", "dev", "--host", "127.0.0.1", "--port", String(port), "--strictPort"],
     {
       stdio: "ignore",
     }
@@ -129,7 +127,7 @@ function buildTaskRecord(commandId: string, id: number): Record<string, unknown>
     started_at: isoNow(),
     finished_at: isoNow(),
     exit_code: 0,
-    message: "执行完成",
+    message: "Completed",
     output_tail: "[ok]",
   }
 }
@@ -286,9 +284,9 @@ async function handleApiRoute(route: Route, state: MockState): Promise<void> {
           {
             template_id: "tpl-1",
             flow_id: "flow-1",
-            name: "新手注册模板",
+            name: "Starter signup template",
             params_schema: [
-              { key: "email", type: "email", required: true, description: "邮箱地址" },
+              { key: "email", type: "email", required: true, description: "Email address" },
             ],
             defaults: { email: "demo@example.com" },
             policies: {
@@ -336,53 +334,53 @@ async function handleApiRoute(route: Route, state: MockState): Promise<void> {
 }
 
 async function closeOnboarding(page: Page): Promise<void> {
-  await page.getByRole("button", { name: "下一步" }).click()
-  await page.getByRole("button", { name: "下一步" }).click()
-  await page.getByRole("button", { name: "开始使用" }).click()
+  await page.getByRole("button", { name: "Next" }).click()
+  await page.getByRole("button", { name: "Next" }).click()
+  await page.getByRole("button", { name: "Start using ProofTrail" }).click()
   await page.getByRole("heading", { level: 1, name: "ProofTrail" }).waitFor({ state: "visible" })
 }
 
 async function runTaskA(page: Page): Promise<{ success: boolean; firstError: string | null }> {
   let firstError: string | null = null
 
-  const executeBtn = page.locator(".command-card .btn", { hasText: "执行" }).first()
+  const executeBtn = page.locator(".command-card .btn", { hasText: "Run" }).first()
   let clickedBeforeDismiss = true
   try {
     await executeBtn.click({ timeout: 1200 })
   } catch {
     clickedBeforeDismiss = false
-    firstError = "首次访问时，引导遮罩阻挡了“执行”入口"
+    firstError = 'The first-use overlay blocked the "Run" entrypoint on the first visit.'
   }
   if (!clickedBeforeDismiss) {
     await closeOnboarding(page)
     await executeBtn.click()
   } else {
-    const maybeTourButton = page.getByRole("button", { name: "稍后再看" })
+    const maybeTourButton = page.getByRole("button", { name: "Maybe later" })
     if (await maybeTourButton.count()) {
       await maybeTourButton.first().click()
     }
   }
-  await page.getByText("已提交").waitFor({ timeout: 5000 })
+  await page.getByText("Submitted").waitFor({ timeout: 5000 })
   return { success: true, firstError }
 }
 
 async function runTaskB(page: Page): Promise<{ success: boolean; firstError: string | null }> {
   let firstError: string | null = null
 
-  const maybeTourButton = page.getByRole("button", { name: "稍后再看" })
+  const maybeTourButton = page.getByRole("button", { name: "Maybe later" })
   if (await maybeTourButton.count()) {
     await maybeTourButton.first().click()
   }
-  await page.locator(".command-card .btn", { hasText: "执行" }).first().click()
-  await page.getByText("已提交").waitFor({ timeout: 5000 })
-  const taskCenterTab = page.getByRole("tab", { name: "任务中心" })
+  await page.locator(".command-card .btn", { hasText: "Run" }).first().click()
+  await page.getByText("Submitted").waitFor({ timeout: 5000 })
+  const taskCenterTab = page.getByRole("tab", { name: "Task Center" })
   const isAutoRoutedToTaskCenter = await taskCenterTab.getAttribute("aria-selected")
   if (isAutoRoutedToTaskCenter !== "true") {
-    firstError = "提交命令后，没有自动进入“任务中心”"
+    firstError = 'The app did not auto-route to "Task Center" after the command submission.'
     await taskCenterTab.click()
   }
-  await page.getByText("任务 #", { exact: false }).first().waitFor({ timeout: 5000 })
-  await page.getByText("success").first().waitFor({ timeout: 5000 })
+  await page.getByText("Record #", { exact: false }).first().waitFor({ timeout: 5000 })
+  await page.getByText("Succeeded").first().waitFor({ timeout: 5000 })
   return { success: true, firstError }
 }
 
@@ -390,41 +388,41 @@ async function runTaskC(page: Page): Promise<{ success: boolean; firstError: str
   let firstError: string | null = null
   await closeOnboarding(page)
 
-  const runButton = page.getByRole("button", { name: /启动 Run|启动运行/ }).first()
+  const runButton = page.getByRole("button", { name: "Start run" }).first()
   try {
     await runButton.click({ timeout: 1200 })
   } catch {
-    firstError = "模板区默认收起，用户初次找不到“启动运行”"
+    firstError = 'The template area was collapsed by default, so first-time users could not find "Start run".'
   }
 
-  const templateCard = page.locator(".template-card", { hasText: "新手注册模板" }).first()
+  const templateCard = page.locator(".template-card", { hasText: "Starter signup template" }).first()
   if (!(await templateCard.isVisible())) {
     const openQuickStart = page
-      .getByRole("button", { name: /展开模板快捷启动|收起模板快捷启动/ })
+      .getByRole("button", { name: /Expand template quick launch|Collapse template quick launch/ })
       .first()
     if (await openQuickStart.isVisible()) {
       const label = await openQuickStart.innerText()
-      if (label.includes("展开")) await openQuickStart.click()
+      if (label.includes("Expand")) await openQuickStart.click()
     }
   }
 
-  const toggleTemplate = page.getByRole("button", { name: /展开模板|收起模板/ }).first()
+  const toggleTemplate = page.getByRole("button", { name: /Expand template|Collapse template/ }).first()
   if (await toggleTemplate.isVisible()) {
     const label = await toggleTemplate.innerText()
-    if (label.includes("展开")) await toggleTemplate.click()
+    if (label.includes("Expand")) await toggleTemplate.click()
   }
 
-  await page.locator(".template-card", { hasText: "新手注册模板" }).first().click()
+  await page.locator(".template-card", { hasText: "Starter signup template" }).first().click()
   await page.locator(".template-card.active").first().waitFor({ state: "visible", timeout: 5000 })
   await page.locator(".template-card.active .field-input").first().fill("novice+laneD@example.com")
   await page
-    .locator(".template-card.active button", { hasText: /启动 Run|启动运行/ })
+    .locator(".template-card.active button", { hasText: "Start run" })
     .first()
     .click()
-  await page.getByText("Run 创建成功").waitFor({ timeout: 5000 })
-  await page.getByRole("tab", { name: "任务中心" }).click()
-  await page.getByRole("button", { name: /模板 Run/ }).click()
-  await page.getByText("成功").first().waitFor({ timeout: 5000 })
+  await page.getByText("Run created successfully").waitFor({ timeout: 5000 })
+  await page.getByRole("tab", { name: "Task Center" }).click()
+  await page.getByRole("button", { name: /Template Run/ }).click()
+  await page.getByText("Succeeded").first().waitFor({ timeout: 5000 })
   return { success: true, firstError }
 }
 
@@ -525,7 +523,7 @@ function formatReportMarkdown(payload: {
   const firstErrorSection = payload.summaries
     .map((item) => {
       if (item.firstErrorBreakdown.length === 0)
-        return `### ${item.taskId} ${item.title}\n- 首错点: 无`
+        return `### ${item.taskId} ${item.title}\n- First error point: none`
       const lines = item.firstErrorBreakdown
         .map(
           (entry) =>
@@ -538,41 +536,41 @@ function formatReportMarkdown(payload: {
 
   return `# UX Usability Report (Lane D)
 
-## 方法
-- 目标: 量化“首次进入 -> 看到成功反馈”的新手可用性。
-- 范围: 仅评估前端交互路径，不评估后端真实性能（通过 Playwright route mock 固定后端响应，降低外部噪声）。
-- 样本: 每个任务执行 ${payload.sampleSize} 次，总计 ${payload.sampleSize * payload.summaries.length} 次。
-- 采集字段: 完成率、总耗时(ms)、首错点（首次偏离主路径的阻塞/误操作）。
-- 可复现命令: \`pnpm exec tsx scripts/usability/lane-d-usability.ts\`
-- 数据原始文件: \`${payload.rawPath}\`
+## Method
+- Goal: quantify novice usability for the path from first visit to visible success feedback.
+- Scope: covers only the frontend interaction path. It does not score backend performance because Playwright route mocks pin the backend responses and reduce external noise.
+- Sample: each task runs ${payload.sampleSize} times, for a total of ${payload.sampleSize * payload.summaries.length} attempts.
+- Captured fields: completion rate, total duration (ms), and first error point (the first blocker or detour away from the happy path).
+- Reproduction command: \`pnpm exec tsx scripts/usability/lane-d-usability.ts\`
+- Raw data file: \`${payload.rawPath}\`
 
-## 任务定义
-- T1 首访执行首个命令并看到“已提交”反馈。
-- T2 提交命令后到任务中心确认任务 \`success\`。
-- T3 使用模板快捷启动 Run 并在任务中心看到 Run 成功。
+## Task Definitions
+- T1: on the first visit, run the first command and see the "Submitted" feedback.
+- T2: after submitting a command, switch to Task Center and confirm the task reaches \`success\`.
+- T3: start a template run from the quick-launch path and confirm the run succeeds in Task Center.
 
-## 数据结果
-| Task | 说明 | 完成率 | 平均耗时(ms) | P50(ms) | P90(ms) |
+## Results
+| Task | Description | Completion Rate | Avg Duration (ms) | P50 (ms) | P90 (ms) |
 | --- | --- | --- | ---: | ---: | ---: |
 ${rows}
 
-## 首错点分布
+## First Error Distribution
 ${firstErrorSection}
 
-## 结论
-- 三条新手任务均达到高完成率，主路径可完成。
-- 首错点集中在“首屏信息层级与操作入口显著性”，不是功能缺失。
-- 耗时差异显示模板路径（T3）学习成本高于直接命令路径（T1/T2）。
+## Conclusions
+- All three novice tasks reached a high completion rate, so the primary path is usable.
+- First errors cluster around first-screen hierarchy and entrypoint prominence, not around missing product functionality.
+- Duration differences show that the template path (T3) has a higher learning cost than the direct command path (T1/T2).
 
-## 优化建议（按优先级）
-1. 首次访问时，在引导层直接提供“立即执行首个任务”按钮，避免用户先被遮罩阻断。
-2. 命令提交成功后，在 Toast 内加入“去任务中心查看结果”一键跳转，减少误入流程工坊。
-3. 模板区默认折叠改为首访展开一次，并在“展开模板快捷启动”按钮旁显示“含启动 Run 按钮”提示。
-4. 为 T3 增加空状态引导文案（例如“先展开模板，再选择模板启动 Run”）。
+## Recommended Improvements
+1. On the first visit, provide a direct "Run the first task now" action inside the onboarding layer so the overlay does not block the primary CTA.
+2. After a command is submitted, add a one-click "Go to Task Center" action to the toast so users do not drift into Flow Workshop by mistake.
+3. Expand the template area once for first-time users and explain that the panel contains the "Start run" CTA.
+4. Add an empty-state hint for T3, for example: "Expand the template section, then choose a template to start a run."
 
-## 元数据
-- 生成时间: ${payload.generatedAt}
-- 前端地址: ${payload.baseUrl}
+## Metadata
+- Generated at: ${payload.generatedAt}
+- Frontend URL: ${payload.baseUrl}
 `
 }
 
@@ -582,9 +580,9 @@ async function main(): Promise<void> {
   const frontendServer = await startFrontendServer(port)
   try {
     const taskDefs = [
-      { id: "T1", title: "首访执行首个命令并看到提交反馈", runner: runTaskA },
-      { id: "T2", title: "提交后到任务中心确认 success", runner: runTaskB },
-      { id: "T3", title: "模板启动运行并在任务中心确认成功", runner: runTaskC },
+      { id: "T1", title: 'First-visit command submission reaches the "Submitted" state', runner: runTaskA },
+      { id: "T2", title: "Submission auto-routes to Task Center and reaches success", runner: runTaskB },
+      { id: "T3", title: "Template quick launch creates a run and reaches success", runner: runTaskC },
     ]
 
     const allResults: AttemptResult[] = []

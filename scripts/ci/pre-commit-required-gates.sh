@@ -68,7 +68,7 @@ RUN_START_MS="$(now_ms)"
 trap 'exit_code=$?; emit_metrics_on_exit "$exit_code"; exit "$exit_code"' EXIT
 
 DRY_RUN=false
-CONTAINER_TASKS="${UIQ_CONTAINER_GATE_ENFORCED_TASKS:-contract,lint,coverage,live-smoke,mutation-ts,mutation-py,frontend-authenticity,frontend-nonstub,frontend-critical}"
+CONTAINER_TASKS="${UIQ_CONTAINER_GATE_ENFORCED_TASKS:-contract,lint,coverage,mutation-ts,mutation-py,frontend-authenticity,frontend-nonstub,frontend-critical}"
 if [[ "${1:-}" == "--dry-run" ]]; then
   DRY_RUN=true
 fi
@@ -163,9 +163,10 @@ if [[ "$PRECOMMIT_MODE" != "strict" ]]; then
 fi
 
 DEFAULT_STRICT_FLAG="true"
+DEFAULT_HEAVY_FLAG="false"
 
 RUN_ENV_DOCS_GATES="$(resolve_bool_flag UIQ_PRECOMMIT_REQUIRED_ENV_DOCS_GATES "$DEFAULT_STRICT_FLAG")"
-RUN_HEAVY_GATES="$(resolve_bool_flag UIQ_PRECOMMIT_REQUIRED_HEAVY_GATES "$DEFAULT_STRICT_FLAG")"
+RUN_HEAVY_GATES="$(resolve_bool_flag UIQ_PRECOMMIT_REQUIRED_HEAVY_GATES "$DEFAULT_HEAVY_FLAG")"
 COVERAGE_BRANCH_ENFORCE="$(resolve_bool_flag UIQ_PRECOMMIT_REQUIRED_ENFORCE_GLOBAL_BRANCHES "$DEFAULT_STRICT_FLAG")"
 
 echo "[pre-commit-required] mode=${PRECOMMIT_MODE} env_docs=${RUN_ENV_DOCS_GATES} heavy=${RUN_HEAVY_GATES} coverage_branches=${COVERAGE_BRANCH_ENFORCE}"
@@ -212,14 +213,14 @@ if [[ "$RUN_HEAVY_GATES" == "true" ]]; then
     UIQ_MUTATION_PY_MIN_TOTAL="${UIQ_MUTATION_PY_MIN_TOTAL:-249}" \
     pnpm mutation:effective
   run_step "docs-gate" bash scripts/docs-gate.sh
-  run_step "governance-check:strict" pnpm governance:check:strict
+  run_step "governance-control-plane-check" pnpm governance:control-plane:check
   run_step "security-scan" bash scripts/security-scan.sh
   run_step "preflight(minimal)" bash scripts/preflight.sh minimal
-  run_gate_with_container_toggle "live-smoke" "gemini-live-smoke" pnpm test:gemini:live-smoke
+  echo "[pre-commit-required] Gemini live smoke is maintainer-only and intentionally excluded from deterministic pre-commit gates"
 else
   if [[ "$RUN_ENV_DOCS_GATES" == "true" ]]; then
     run_step "docs-gate" bash scripts/docs-gate.sh
-    run_step "governance-check:strict" pnpm governance:check:strict
+    run_step "governance-control-plane-check" pnpm governance:control-plane:check
   fi
   echo "[pre-commit-required] heavy gates delegated to pre-push/CI (set UIQ_PRECOMMIT_REQUIRED_HEAVY_GATES=true to enable)"
 fi

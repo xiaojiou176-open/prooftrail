@@ -55,6 +55,14 @@ function parseCsv(raw) {
   return values.length > 0 ? values : [...DEFAULT_DYNAMIC_FIELDS]
 }
 
+function resolveProfilePath(profileName) {
+  const canonicalPath = resolve("configs", "profiles", `${profileName}.yaml`)
+  if (existsSync(canonicalPath)) {
+    return canonicalPath
+  }
+  return resolve("profiles", `${profileName}.yaml`)
+}
+
 function findLatestManifest(runsDir) {
   const absRunsDir = resolve(runsDir)
   const candidates = []
@@ -519,7 +527,7 @@ function main() {
   const runDir = dirname(manifestPath)
   const runId = String(manifest?.runId || "unknown")
 
-  const profilePath = resolve("profiles", `${options.profile}.yaml`)
+  const profilePath = resolveProfilePath(options.profile)
   const profile = YAML.parse(readFileSync(profilePath, "utf8"))
   const flakeRateMaxRaw = profile?.gates?.flakeRateMax
   const flakeRateMax = Number.isFinite(Number(flakeRateMaxRaw))

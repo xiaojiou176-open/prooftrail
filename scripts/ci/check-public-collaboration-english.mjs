@@ -29,10 +29,19 @@ const canonicalPublicFiles = [
   "docs/reference/public-surface-sanitization-policy.md",
 ]
 
+const engineeringFacingEnglishFiles = [
+  "scripts/computer-use/README.md",
+  "scripts/computer-use/gemini-computer-use.py",
+  "scripts/train-and-auto-replay.sh",
+  "scripts/usability/lane-d-usability.ts",
+  "apps/web/src/testing/button-manifest.ts",
+  "tests/frontend-e2e/support/button-behavior-harness.ts",
+]
+
 const failures = []
 const hanPattern = /\p{Script=Han}/u
 
-for (const target of canonicalPublicFiles) {
+for (const target of [...canonicalPublicFiles, ...engineeringFacingEnglishFiles]) {
   if (!fs.existsSync(target)) {
     failures.push(`missing required public collaboration surface: ${target}`)
     continue
@@ -49,4 +58,6 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log(`[public-collaboration-english] ok (${canonicalPublicFiles.length} surface(s))`)
+console.log(
+  `[public-collaboration-english] ok (${canonicalPublicFiles.length + engineeringFacingEnglishFiles.length} surface(s))`
+)

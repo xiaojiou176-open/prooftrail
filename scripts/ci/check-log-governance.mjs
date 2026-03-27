@@ -85,7 +85,7 @@ writeSample(
 )
 writeSample("log-contract-entrypoint.sample.json", entrypointSample, entrypointValidation)
 
-const loggingPolicy = readRepoText("docs/reference/logging-and-cache-policy.md")
+const loggingPolicy = readRepoText("docs/reference/public-surface-sanitization-policy.md")
 for (const token of [
   "docs/reference/generated/governance/log-event-schema.md",
   "docs/reference/generated/governance/runtime-output-registry.md",
@@ -219,6 +219,15 @@ function ensureManagedPythonExecutable(managedPythonExecutable) {
   )
 }
 
+function resolveManagedPythonExecutable() {
+  const managedPythonExecutable = path.join(
+    subprocessEnv.PROJECT_PYTHON_ENV,
+    "bin/python"
+  )
+  ensureManagedPythonExecutable(managedPythonExecutable)
+  return fs.existsSync(managedPythonExecutable) ? managedPythonExecutable : "python3"
+}
+
 function emitMcpSample() {
   const tempRuntimeRoot = path.join(artifactRoot, "mcp-runtime")
   fs.mkdirSync(tempRuntimeRoot, { recursive: true })
@@ -260,8 +269,9 @@ function emitUniversalAuditSample() {
   const automationRuntimeRoot = path.join(tempRuntimeRoot, "automation")
   const universalDataRoot = path.join(automationRuntimeRoot, "universal")
   fs.mkdirSync(tempRuntimeRoot, { recursive: true })
+  const pythonExecutable = resolveManagedPythonExecutable()
   const output = execFileSync(
-    path.join(subprocessEnv.PROJECT_PYTHON_ENV, "bin/python"),
+    pythonExecutable,
     [
       "-c",
       `
@@ -287,8 +297,9 @@ print(json.dumps({"payload": json.loads(line), "runtime_path": str(service._audi
 function emitVonageAuditSample() {
   const tempRuntimeRoot = path.join(artifactRoot, "vonage-runtime")
   fs.mkdirSync(tempRuntimeRoot, { recursive: true })
+  const pythonExecutable = resolveManagedPythonExecutable()
   const output = execFileSync(
-    path.join(subprocessEnv.PROJECT_PYTHON_ENV, "bin/python"),
+    pythonExecutable,
     [
       "-c",
       `
@@ -311,7 +322,7 @@ print(json.dumps({"payload": json.loads(line), "runtime_path": str(service._audi
 }
 
 function emitEntrypointSample() {
-  const backendLogPath = path.join(repoRoot, ".runtime-cache/logs/runtime/backend.dev.log")
+  const backendLogPath = path.join(repoRoot, ".runtime-cache/logs/runtime/apps.api.app.log")
   const frontendLogPath = path.join(repoRoot, ".runtime-cache/logs/runtime/frontend.dev.log")
   try {
     try {

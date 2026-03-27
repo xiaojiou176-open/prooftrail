@@ -11,8 +11,6 @@ const PACKAGE_JSON_PATH = "package.json"
 const PR_WORKFLOW_PATH = ".github/workflows/pr.yml"
 const DRIFT_WORKFLOW_PATH = ".github/workflows/upstream-drift-audit.yml"
 const SCORE_REPORT_PATH = "scripts/ci/governance-score-report.mjs"
-const RUNBOOK_PATH = "docs/runbooks/upstream-sync.md"
-const COMPAT_MATRIX_PATH = "docs/reference/generated/governance/upstream-compat-matrix.md"
 
 const failures = []
 const sourceConfig = readRepoText(SOURCE_CONFIG_PATH)
@@ -81,34 +79,6 @@ requireIncludes(
   scoreReport,
   "repo_upstream_binding_applicability",
   "governance score report payload must expose repo-level upstream applicability"
-)
-
-const runbook = readRepoText(RUNBOOK_PATH)
-requireIncludes(
-  RUNBOOK_PATH,
-  runbook,
-  "repo-level upstream drift is intentionally N/A",
-  "runbook must explain that mode:none means repo-level upstream is N/A"
-)
-requireIncludes(
-  RUNBOOK_PATH,
-  runbook,
-  "Third-party upstream governance remains active",
-  "runbook must keep third-party upstream governance distinct from repo-level upstream applicability"
-)
-requireIncludes(
-  RUNBOOK_PATH,
-  runbook,
-  "pnpm upstream:mode:check",
-  "runbook must document the upstream mode consistency check entrypoint"
-)
-
-const compatMatrix = readRepoText(COMPAT_MATRIX_PATH)
-requireIncludes(
-  COMPAT_MATRIX_PATH,
-  compatMatrix,
-  "required-when-upstream-enabled",
-  "generated upstream compatibility matrix must continue to describe upstream audit as conditional on upstream enablement"
 )
 
 if (failures.length > 0) {

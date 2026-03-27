@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process"
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { createRequire } from "node:module"
 import { dirname, resolve } from "node:path"
 import YAML from "yaml"
@@ -19,8 +19,16 @@ function parseArgs(argv) {
   return options
 }
 
+function resolveProfilePath(profileName) {
+  const canonicalPath = resolve("configs", "profiles", `${profileName}.yaml`)
+  if (existsSync(canonicalPath)) {
+    return canonicalPath
+  }
+  return resolve("profiles", `${profileName}.yaml`)
+}
+
 function loadProfile(profileName) {
-  const profilePath = resolve("profiles", `${profileName}.yaml`)
+  const profilePath = resolveProfilePath(profileName)
   const raw = readFileSync(profilePath, "utf8")
   return YAML.parse(raw)
 }

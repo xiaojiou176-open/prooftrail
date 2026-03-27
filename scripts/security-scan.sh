@@ -112,8 +112,21 @@ for index, item in enumerate(payload.get("exceptions", [])):
     package = item.get("package")
     reason = item.get("reason")
     ticket = item.get("ticket")
-    if not vuln_id or not expires_on or not package or not reason or not ticket:
-      raise SystemExit(f"python audit exception[{index}] missing required fields")
+    missing_fields = [
+        name
+        for name, value in (
+            ("id", vuln_id),
+            ("expiresOn", expires_on),
+            ("package", package),
+            ("reason", reason),
+            ("ticket", ticket),
+        )
+        if not value
+    ]
+    if missing_fields:
+      raise SystemExit(
+          f"python audit exception[{index}] missing required fields: {', '.join(missing_fields)}"
+      )
     expiry = datetime.fromisoformat(f"{expires_on}T23:59:59+00:00")
     if expiry < now:
       raise SystemExit(f"python audit exception expired: {vuln_id}")
@@ -129,7 +142,12 @@ done < "$PYTHON_AUDIT_IGNORE_FILE"
 
 # Audit the fully pinned freeze list directly to avoid pip-audit temp venv bootstrap
 # failures in some local Python builds while keeping strict vulnerability gating.
-uvx --from pip-audit pip-audit --strict --no-deps --disable-pip "${PIP_AUDIT_IGNORE_ARGS[@]}" -r "$REQ_FILE"
+PIP_AUDIT_CMD=(uvx --from pip-audit pip-audit --strict --no-deps --disable-pip)
+if (( ${#PIP_AUDIT_IGNORE_ARGS[@]} > 0 )); then
+  PIP_AUDIT_CMD+=("${PIP_AUDIT_IGNORE_ARGS[@]}")
+fi
+PIP_AUDIT_CMD+=(-r "$REQ_FILE")
+"${PIP_AUDIT_CMD[@]}"
 
 echo "[security 7/9] backend sast (bandit)"
 uvx --from bandit bandit -ll -r apps/api/app

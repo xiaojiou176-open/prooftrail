@@ -93,6 +93,11 @@ install_workspace_deps_serialized() {
   rmdir "$lock_dir" 2>/dev/null || true
 }
 
+if [[ "${1:-}" == "--workspace-install-only" ]]; then
+  install_workspace_deps_serialized
+  exit 0
+fi
+
 run_root_typecheck() {
   pnpm typecheck || {
     echo "[lint-all] root typecheck prerequisites missing, installing workspace deps..."
@@ -141,13 +146,13 @@ if (( failed == 0 )); then
   launch_task "3" "frontend eslint" run_long_with_heartbeat "frontend-eslint" \
     "pnpm --dir apps/web lint || { \
       echo '[lint-all] frontend lint prerequisites missing, installing frontend deps...'; \
-      CI=true pnpm install --frozen-lockfile || CI=true pnpm install --no-frozen-lockfile; \
+      bash scripts/ci/lint-all.sh --workspace-install-only; \
       pnpm --dir apps/web lint; \
     }"
   launch_task "4" "automation eslint" run_long_with_heartbeat "automation-eslint" \
     "pnpm --dir apps/automation-runner lint || { \
       echo '[lint-all] automation lint prerequisites missing, installing automation deps...'; \
-      pnpm --dir apps/automation-runner install --frozen-lockfile --ignore-workspace || pnpm --dir apps/automation-runner install --no-frozen-lockfile --ignore-workspace; \
+      bash scripts/ci/lint-all.sh --workspace-install-only; \
       pnpm --dir apps/automation-runner lint; \
     }"
   wait_tasks

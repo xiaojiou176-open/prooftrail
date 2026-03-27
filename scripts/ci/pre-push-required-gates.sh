@@ -166,7 +166,7 @@ if [[ "$MODE" == "strict" ]]; then
   run_step "openai-residue-gate" bash scripts/ci/gate-openai-residue.sh
   run_step "hooks-equivalence-gate" bash scripts/ci/hooks-equivalence-gate.sh
   run_step "docs-gate" bash scripts/docs-gate.sh
-  run_step "governance-check:strict" pnpm governance:check:strict
+  run_step "governance-control-plane-check" pnpm governance:control-plane:check
 else
   run_step "openai-residue-gate" bash scripts/ci/gate-openai-residue.sh
   echo "[pre-push-required] balanced mode: env/docs/hooks-equivalence delegated to CI"

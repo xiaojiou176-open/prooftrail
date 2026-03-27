@@ -15,8 +15,17 @@ expectScript("public:history:check", "node scripts/ci/check-history-sensitive-su
 requireIncludes("README.md", "docs/README.md", "README must route readers to the thin docs index")
 requireIncludes("README.md", "docs/architecture.md", "README must route readers to architecture truth")
 requireIncludes("README.md", "auditable browser automation platform", "README must keep the public product identity")
-requireIncludes("docs/README.md", "thin public documentation surface", "docs index must describe the thin public surface")
-requireIncludes("docs/reference/public-surface-sanitization-policy.md", "thin public surface", "public surface policy must describe the thin public surface")
+requireIncludes("README.md", "docs/index.md", "README must route readers to the public docs hub")
+requireIncludes(
+  "docs/README.md",
+  "one public doc surface",
+  "docs index must describe the single live public doc surface"
+)
+requireIncludes(
+  "docs/reference/public-surface-sanitization-policy.md",
+  "The intended public documentation surface includes:",
+  "public surface policy must enumerate the governed live public surface"
+)
 
 if (failures.length > 0) {
   console.error("[repo-truth-semantics] failed:")

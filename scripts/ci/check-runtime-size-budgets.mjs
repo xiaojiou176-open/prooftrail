@@ -10,8 +10,8 @@ const runtimeRoot = path.join(repoRoot, runtimeRegistry.runtimeRoot)
 
 function sizeBytes(absPath) {
   if (!fs.existsSync(absPath)) return 0
-  const stat = fs.statSync(absPath)
-  if (stat.isFile()) return stat.size
+  const stat = fs.lstatSync(absPath)
+  if (stat.isSymbolicLink() || stat.isFile()) return stat.size
   let total = 0
   for (const entry of fs.readdirSync(absPath, { withFileTypes: true })) {
     total += sizeBytes(path.join(absPath, entry.name))

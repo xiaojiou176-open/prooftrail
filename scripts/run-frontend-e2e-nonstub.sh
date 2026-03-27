@@ -85,14 +85,14 @@ if ! curl -fsS "http://127.0.0.1:${backend_port}/health/" >/dev/null 2>&1; then
   effective_universal_runtime_dir="./${isolated_universal_runtime_dir}"
   mkdir -p "$isolated_universal_data_dir" "$isolated_universal_runtime_dir"
   launcher=()
-  if command -v uv >/dev/null 2>&1; then
-    launcher=("uv" "run" "--extra" "dev" "uvicorn")
-  elif [[ -x "$(project_uvicorn_bin)" ]] && "$(project_uvicorn_bin)" --version >/dev/null 2>&1; then
+  if [[ -x "$(project_uvicorn_bin)" ]] && "$(project_uvicorn_bin)" --version >/dev/null 2>&1; then
     launcher=("$(project_uvicorn_bin)")
+  elif command -v uv >/dev/null 2>&1; then
+    launcher=("uv" "run" "--extra" "dev" "uvicorn")
   elif command -v uvicorn >/dev/null 2>&1; then
     launcher=("$(command -v uvicorn)")
   else
-    echo "[frontend-nonstub-backend] uvicorn launcher unavailable: expected ./.venv/bin/uvicorn, uvicorn, or uv" >&2
+    echo "[frontend-nonstub-backend] uvicorn launcher unavailable: expected managed python env uvicorn, uvicorn, or uv" >&2
     exit 1
   fi
   echo "[frontend-nonstub-backend] backend not running, starting temporary backend on http://127.0.0.1:${backend_port}"

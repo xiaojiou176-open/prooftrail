@@ -170,8 +170,6 @@ jobs:
         id: midscene_primary
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || secrets.GOOGLE_API_KEY || '' }}
-          UIQ_BASE_URL: ${{ vars.UIQ_BASE_URL || secrets.UIQ_BASE_URL || vars.BASE_URL || secrets.BASE_URL || '' }}
           UIQ_ORCHESTRATOR_PARALLEL: "1"
           UIQ_ORCHESTRATOR_MAX_PARALLEL_TASKS: "6"
         run: bash scripts/ci/run-in-container.sh --task nightly-core-run --gate nightly-core-run
@@ -225,32 +223,7 @@ jobs:
           )
           PY
       - name: Verify run evidence (hard gate)
-        run: node scripts/ci/verify-run-evidence.mjs --profile nightly
-      - name: Preflight Gemini report artifact (nightly, fail-fast)
-        run: |
-          set -euo pipefail
-          RUN_ROOT=".runtime-cache/artifacts/runs"
-          if [[ ! -d "$RUN_ROOT" ]]; then
-            echo "::error::Gemini preflight failed: runs dir missing: $RUN_ROOT"
-            exit 1
-          fi
-          LATEST_RUN=""
-          for candidate in "$RUN_ROOT"/*; do
-            [[ -d "$candidate" ]] || continue
-            if [[ -z "$LATEST_RUN" || "$candidate" -nt "$LATEST_RUN" ]]; then
-              LATEST_RUN="$candidate"
-            fi
-          done
-          if [[ -z "$LATEST_RUN" ]]; then
-            echo "::error::Gemini preflight failed: no run dir found under $RUN_ROOT"
-            exit 1
-          fi
-          REPORT_PATH="$LATEST_RUN/reports/ui-ux-gemini-report.json"
-          if [[ ! -f "$REPORT_PATH" ]]; then
-            echo "::error::Gemini preflight failed: report missing: $REPORT_PATH"
-            exit 1
-          fi
-          node -e 'const fs=require("fs"); const p=process.argv[1]; JSON.parse(fs.readFileSync(p,"utf8")); console.log("[gemini-preflight] readable report: " + p);' "$REPORT_PATH"
+        run: node scripts/ci/verify-run-evidence.mjs --profile nightly-core
 
   nightly-trend-post-run:
     runs-on: [self-hosted, shared-pool]

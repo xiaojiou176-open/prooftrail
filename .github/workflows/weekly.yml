@@ -110,8 +110,6 @@ jobs:
       - name: Weekly core run (Linux/Web required, containerized)
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || secrets.GOOGLE_API_KEY || '' }}
-          UIQ_BASE_URL: ${{ vars.UIQ_BASE_URL || secrets.UIQ_BASE_URL || vars.BASE_URL || secrets.BASE_URL || '' }}
           UIQ_ORCHESTRATOR_PARALLEL: "1"
           UIQ_ORCHESTRATOR_MAX_PARALLEL_TASKS: "6"
           UIQ_ENABLE_REAL_BACKEND_TESTS: "true"

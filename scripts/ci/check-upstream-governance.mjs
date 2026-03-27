@@ -4,6 +4,8 @@ import { loadGovernanceControlPlane, readRepoText } from "./lib/governance-contr
 
 const failures = []
 const { upstreamRegistry, upstreamCompatMatrix, upstreamCustomizations } = loadGovernanceControlPlane()
+const upstreamSource = readRepoText("configs/upstream/source.yaml")
+const repoUpstreamDisabled = /^\s*mode:\s*none\s*$/m.test(upstreamSource)
 
 const requiredEntryIds = [
   "ci-node-base-image",
@@ -18,8 +20,11 @@ const requiredEntryIds = [
   "playwright-cli",
   "mcp-sdk",
   "gemini-sdk",
-  "upstream-repo-binding",
 ]
+
+if (!repoUpstreamDisabled) {
+  requiredEntryIds.push("upstream-repo-binding")
+}
 
 const byId = new Map()
 for (const entry of upstreamRegistry.entries) {
@@ -116,7 +121,7 @@ if (!customizationsReferenceDoc.includes("configs/governance/upstream-customizat
 for (const [relativePath, forbiddenToken] of [
   ["apps/automation-runner/scripts/run-curlconverter-safe.sh", "pnpm dlx curlconverter"],
   ["apps/automation-runner/scripts/run-har-to-k6-safe.sh", "pnpm dlx har-to-k6"],
-  ["docs/runbooks/external-tool-commands.md", "pnpm dlx"],
+  ["docs/reference/dependencies-and-third-party.md", "pnpm dlx"],
 ]) {
   const content = readRepoText(relativePath)
   if (content.includes(forbiddenToken)) {

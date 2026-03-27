@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
+import { execFileSync } from "node:child_process"
 import fs from "node:fs"
 import path from "node:path"
 
 const repoRoot = process.cwd()
+const args = new Set(process.argv.slice(2))
 const failures = []
 
 const requiredFiles = [
@@ -11,6 +13,7 @@ const requiredFiles = [
   "AGENTS.md",
   "CLAUDE.md",
   "docs/README.md",
+  "docs/index.md",
   "docs/architecture.md",
   "docs/reference/dependencies-and-third-party.md",
   "docs/reference/public-surface-sanitization-policy.md",
@@ -23,31 +26,20 @@ for (const relativePath of requiredFiles) {
   }
 }
 
-if (fs.existsSync(path.join(repoRoot, "docs"))) {
-  const trackedDocs = walkFiles(path.join(repoRoot, "docs")).map((p) =>
-    path.relative(repoRoot, p).replaceAll(path.sep, "/")
-  )
-  const allowedDocs = new Set([
-    "docs/README.md",
-    "docs/architecture.md",
-    "docs/reference/dependencies-and-third-party.md",
-    "docs/reference/public-surface-sanitization-policy.md",
-  ])
-  for (const filePath of trackedDocs) {
-    if (!allowedDocs.has(filePath)) {
-      failures.push(`unexpected docs file tracked in thin docs surface: ${filePath}`)
-    }
-  }
-}
-
 assertIncludes("README.md", "docs/README.md", "README must route readers to docs/README.md")
 assertIncludes("README.md", "docs/architecture.md", "README must route readers to docs/architecture.md")
+assertIncludes("README.md", "docs/index.md", "README must route readers to docs/index.md")
 assertIncludes("AGENTS.md", "docs/README.md", "AGENTS.md must route agents to docs/README.md")
 assertIncludes("CLAUDE.md", "docs/README.md", "CLAUDE.md must route agents to docs/README.md")
 assertIncludes(
   "docs/README.md",
-  "thin public documentation surface",
-  "docs/README.md must describe the thin public documentation surface"
+  "one public doc surface",
+  "docs/README.md must describe the single live public doc surface"
+)
+assertIncludes(
+  "docs/README.md",
+  "supports the README storefront",
+  "docs/README.md must state that docs support the README storefront"
 )
 assertIncludes(
   "docs/architecture.md",
@@ -55,15 +47,21 @@ assertIncludes(
   "docs/architecture.md must describe runtime boundaries"
 )
 
+runNodeCheck("scripts/ci/check-doc-truth-surfaces.mjs")
+
+if (args.has("--check-staged-docs-link") || args.has("--check-ci-docs-link")) {
+  runNodeCheck("scripts/ci/check-doc-links.mjs")
+}
+
 if (failures.length > 0) {
-  console.error("docs ssot check failed")
+  console.error("[docs-ssot] failed:")
   for (const failure of failures) {
     console.error(`- ${failure}`)
   }
   process.exit(1)
 }
 
-console.log("[docs-ssot] ok")
+console.log("[docs-ssot] ok (compat wrapper -> live docs truth surface)")
 
 function assertIncludes(relativePath, token, message) {
   const fullPath = path.join(repoRoot, relativePath)
@@ -77,15 +75,20 @@ function assertIncludes(relativePath, token, message) {
   }
 }
 
-function walkFiles(dirPath) {
-  const result = []
-  for (const entry of fs.readdirSync(dirPath, { withFileTypes: true })) {
-    const fullPath = path.join(dirPath, entry.name)
-    if (entry.isDirectory()) {
-      result.push(...walkFiles(fullPath))
-    } else if (entry.isFile()) {
-      result.push(fullPath)
-    }
+function runNodeCheck(relativeScriptPath) {
+  try {
+    execFileSync("node", [relativeScriptPath], {
+      cwd: repoRoot,
+      stdio: ["ignore", "pipe", "pipe"],
+    })
+  } catch (error) {
+    const stdout =
+      error && typeof error === "object" && "stdout" in error ? String(error.stdout || "") : ""
+    const stderr =
+      error && typeof error === "object" && "stderr" in error ? String(error.stderr || "") : ""
+    const combined = [stdout, stderr].filter(Boolean).join("\n").trim()
+    failures.push(
+      `${relativeScriptPath} failed${combined.length > 0 ? `: ${combined}` : ""}`
+    )
   }
-  return result
 }

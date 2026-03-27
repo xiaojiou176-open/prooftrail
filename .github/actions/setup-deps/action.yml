@@ -169,31 +169,37 @@ runs:
         set -euo pipefail
         cd "$GITHUB_WORKSPACE"
         requested_python_version="${UIQ_SETUP_PYTHON_VERSION}"
-        if [[ -d ".venv" ]]; then
+        managed_python_env="${PROJECT_PYTHON_ENV:-${UV_PROJECT_ENVIRONMENT:-.runtime-cache/toolchains/python/.venv}}"
+        managed_python_bin="${managed_python_env}/bin/python"
+        if [[ -d "$managed_python_env" ]]; then
           broken_venv=0
-          if [[ -L ".venv/bin/python3" ]] && [[ ! -e ".venv/bin/python3" ]]; then
+          if [[ -L "${managed_python_env}/bin/python3" ]] && [[ ! -e "${managed_python_env}/bin/python3" ]]; then
             broken_venv=1
           fi
-          if [[ -x ".venv/bin/python" ]]; then
-            existing_python_version="$(.venv/bin/python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')"
+          if [[ -x "$managed_python_bin" ]]; then
+            existing_python_version="$("$managed_python_bin" -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')"
             if [[ "$existing_python_version" != "$requested_python_version" ]]; then
-              echo "[setup-deps] removing drifted .venv: expected Python $requested_python_version, found $existing_python_version"
+              echo "[setup-deps] removing drifted managed python env: expected Python $requested_python_version, found $existing_python_version"
               broken_venv=1
             fi
           fi
-          if [[ ! -w ".venv" ]] || [[ -d ".venv/lib64" && ! -w ".venv/lib64" ]]; then
+          if [[ ! -w "$managed_python_env" ]] || [[ -d "${managed_python_env}/lib64" && ! -w "${managed_python_env}/lib64" ]]; then
             if command -v sudo >/dev/null 2>&1; then
-              sudo chown -R "$(id -u):$(id -g)" ".venv" || true
+              sudo chown -R "$(id -u):$(id -g)" "$managed_python_env" || true
             fi
           fi
-          if [[ "$broken_venv" -eq 1 ]] || [[ ! -w ".venv" ]] || [[ -d ".venv/lib64" && ! -w ".venv/lib64" ]]; then
+          if [[ "$broken_venv" -eq 1 ]] || [[ ! -w "$managed_python_env" ]] || [[ -d "${managed_python_env}/lib64" && ! -w "${managed_python_env}/lib64" ]]; then
             if command -v sudo >/dev/null 2>&1; then
-              sudo rm -rf ".venv" || rm -rf ".venv"
+              sudo rm -rf "$managed_python_env" || rm -rf "$managed_python_env"
             else
-              rm -rf ".venv"
+              rm -rf "$managed_python_env"
             fi
           fi
         fi
+        export PROJECT_PYTHON_ENV="$managed_python_env"
+        export UV_PROJECT_ENVIRONMENT="$managed_python_env"
+        echo "PROJECT_PYTHON_ENV=$managed_python_env" >> "$GITHUB_ENV"
+        echo "UV_PROJECT_ENVIRONMENT=$managed_python_env" >> "$GITHUB_ENV"
         ${{ inputs.uv-sync-command }}
 
     - name: Setup Playwright
