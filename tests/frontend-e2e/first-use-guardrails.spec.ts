@@ -162,13 +162,13 @@ async function clickLocateConfig(page: Page) {
     await byTestId.click()
     return
   }
-  await page.getByRole('button', { name: '定位到配置' }).click()
+  await page.getByRole('button', { name: 'Go to configuration' }).click()
 }
 
 async function getBaseUrlInput(page: Page) {
   const byTestId = page.getByTestId(PARAM_BASE_URL_INPUT_TEST_ID)
   if ((await byTestId.count()) > 0) return byTestId
-  return page.getByRole('textbox', { name: '你要操作的网站地址（BASE_URL）' })
+  return page.getByRole('textbox', { name: 'Target site URL (UIQ_BASE_URL)' })
 }
 
 pwTest.describe('@frontend-first-use guardrails', () => {
@@ -178,8 +178,8 @@ pwTest.describe('@frontend-first-use guardrails', () => {
     await bootstrapFirstUse(page)
     await page.goto('/')
 
-    await expect(page.getByText('首用引导', { exact: true })).toBeVisible()
-    const startStepButton = page.getByRole('button', { name: '开始第 1 步' })
+    await expect(page.getByText('First-use guide', { exact: true })).toBeVisible()
+    const startStepButton = page.getByRole('button', { name: 'Start step 1' })
     if ((await startStepButton.count()) > 0) {
       await startStepButton.click()
     }
@@ -189,9 +189,9 @@ pwTest.describe('@frontend-first-use guardrails', () => {
     await expect(baseUrlInput).toBeVisible({ timeout: 15_000 })
     await baseUrlInput.fill('invalid-url')
 
-    const enterRunBtn = page.getByRole('button', { name: '我已配置，进入运行' })
+    const enterRunBtn = page.getByRole('button', { name: 'Configuration done, continue to run' })
     await expect(enterRunBtn).toBeDisabled()
-    await expect(page.getByText('请先填写有效的 baseUrl / startUrl（可留空）并设置 successSelector。')).toBeVisible()
+    await expect(page.getByText('Enter a valid baseUrl, an optional startUrl, and a successSelector before continuing.')).toBeVisible()
 
     await baseUrlInput.fill('http://127.0.0.1:17380')
     await expect(enterRunBtn).toBeEnabled()
@@ -208,8 +208,8 @@ pwTest.describe('@frontend-first-use guardrails', () => {
 
     await page.goto('/')
 
-    await expect(page.getByText('尚未检测到成功/失败结果，请先在任务中心等待任务完成。')).toBeVisible({ timeout: 15_000 })
-    await expect(page.getByRole('button', { name: '完成首用引导' })).toBeDisabled({ timeout: 15_000 })
+    await expect(page.getByText('No success or failure result is visible yet. Wait for the task to finish in Task Center first.')).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByRole('button', { name: 'Complete the first-use guide' })).toBeDisabled({ timeout: 15_000 })
   })
 })
 
@@ -238,16 +238,16 @@ pwTest.describe('@frontend-first-use resume', () => {
     await expect(templateRunsTab).toHaveAttribute('role', 'tab')
     await templateRunsTab.click()
     await expect(page.getByTestId(TASK_CENTER_PANEL_TEMPLATE_RUNS_TEST_ID)).toBeVisible()
-    await expect(page.getByText('该运行记录正在等待验证码，请输入后提交：')).toBeVisible()
+    await expect(page.getByText('This run is waiting for an OTP. Enter it and submit to continue:')).toBeVisible()
 
-    await page.getByPlaceholder('输入验证码').fill('123456')
-    await page.getByRole('button', { name: '提交' }).click()
+    await page.getByPlaceholder('Enter OTP').fill('123456')
+    await page.getByRole('button', { name: 'Submit' }).click()
 
-    await expect(page.getByText('验证码已提交，运行任务已继续')).toBeVisible()
+    await expect(page.getByText('OTP submitted and the run resumed')).toBeVisible()
     await expect.poll(() => submitted.length).toBe(1)
     await expect(submitted[0]).toEqual({ runId: 'run-waiting-otp-001', otpCode: '123456' })
-    await expect(page.getByText('该运行记录正在等待验证码，请输入后提交：')).toHaveCount(0)
-    await expect(page.locator('.task-detail-column .chip', { hasText: '运行中' })).toBeVisible()
+    await expect(page.getByText('This run is waiting for an OTP. Enter it and submit to continue:')).toHaveCount(0)
+    await expect(page.locator('.task-detail-column .chip', { hasText: 'Running' })).toBeVisible()
   })
 
   pwTest('@frontend-first-use resume waiting-user run can resume after submit', async ({ page }) => {
@@ -274,15 +274,15 @@ pwTest.describe('@frontend-first-use resume', () => {
     await expect(templateRunsTab).toHaveAttribute('role', 'tab')
     await templateRunsTab.click()
     await expect(page.getByTestId(TASK_CENTER_PANEL_TEMPLATE_RUNS_TEST_ID)).toBeVisible()
-    await expect(page.getByText('该运行记录正在等待补充输入，请填写后提交：')).toBeVisible()
+    await expect(page.getByText('This run is waiting for additional input. Provide it and submit to continue:')).toBeVisible()
 
-    await page.getByPlaceholder('输入补充信息').fill('manual-input-001')
-    await page.getByRole('button', { name: '提交' }).click()
+    await page.getByPlaceholder('Enter additional input').fill('manual-input-001')
+    await page.getByRole('button', { name: 'Submit' }).click()
 
-    await expect(page.getByText('补充输入已提交，运行任务已继续')).toBeVisible()
+    await expect(page.getByText('additional input submitted and the run resumed')).toBeVisible()
     await expect.poll(() => submitted.length).toBe(1)
     await expect(submitted[0]).toEqual({ runId: 'run-waiting-user-001', otpCode: 'manual-input-001' })
-    await expect(page.getByText('该运行记录正在等待补充输入，请填写后提交：')).toHaveCount(0)
-    await expect(page.locator('.task-detail-column .chip', { hasText: '运行中' })).toBeVisible()
+    await expect(page.getByText('This run is waiting for additional input. Provide it and submit to continue:')).toHaveCount(0)
+    await expect(page.locator('.task-detail-column .chip', { hasText: 'Running' })).toBeVisible()
   })
 })

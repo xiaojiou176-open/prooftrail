@@ -263,7 +263,10 @@ def build_command_specs() -> dict[str, CommandSpec]:
             command_id="backend-test",
             title="Run backend tests",
             description="Run the backend test suite with pytest",
-            argv=["./.venv/bin/pytest"],
+            argv=_shell_argv(
+                ". scripts/lib/python-runtime.sh && ensure_project_python_env_exports && "
+                "\"$(project_python_bin)\" -m pytest"
+            ),
             tags=["backend", "test"],
         ),
     }

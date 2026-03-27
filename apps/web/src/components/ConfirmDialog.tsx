@@ -29,8 +29,8 @@ interface ConfirmDialogProps {
 function ConfirmDialog({
   title,
   message,
-  confirmLabel = "确认",
-  cancelLabel = "取消",
+  confirmLabel = "Confirm",
+  cancelLabel = "Cancel",
   variant = "default",
   onConfirm,
   onCancel,

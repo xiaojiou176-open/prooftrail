@@ -42,14 +42,14 @@ describe("HelpPanel behavior", () => {
     })
 
     const closeButtons = Array.from(
-      document.body.querySelectorAll('button[aria-label="关闭帮助面板"]')
+      document.body.querySelectorAll('button[aria-label="Close help panel"]')
     ) as HTMLButtonElement[]
     expect(closeButtons).toHaveLength(2)
     const [overlayButton, closeButton] = closeButtons
     expect(document.activeElement).toBe(closeButton)
 
     const restartButton = Array.from(document.body.querySelectorAll("button")).find((button) =>
-      button.textContent?.includes("重新走一遍首用引导")
+      button.textContent?.includes("Restart the first-use guide")
     ) as HTMLButtonElement | undefined
     expect(restartButton).not.toBeUndefined()
 

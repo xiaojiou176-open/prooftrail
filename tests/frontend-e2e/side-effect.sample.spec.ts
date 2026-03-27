@@ -43,12 +43,12 @@ async function getBackendUnavailableReason(): Promise<string | null> {
 
 test('@frontend-e2e-side-effect @frontend-smoke-stub command run mutates task state', async ({ page }) => {
   const harness = await bootstrapButtonBehaviorApp(page)
-  const commandCard = page.locator('article.command-card', { hasText: '运行流水线任务' })
+  const commandCard = page.locator('article.command-card', { hasText: 'Run pipeline task' })
 
-  await commandCard.getByRole('button', { name: '执行' }).click()
+  await commandCard.getByRole('button', { name: 'Run' }).click()
 
   await expect.poll(() => harness.calls.runCommand).toBe(1)
-  await expect(page.getByText('已提交 运行流水线任务')).toBeVisible()
+  await expect(page.getByText('Submitted Run pipeline task')).toBeVisible()
 })
 
 test('@frontend-nonstub @nonstub @frontend-smoke-live @frontend-smoke-canary real backend smoke canary is reachable', async ({ page }) => {

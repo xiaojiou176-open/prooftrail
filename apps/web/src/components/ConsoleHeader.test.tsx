@@ -47,8 +47,8 @@ describe("ConsoleHeader", () => {
       tabs[2]?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }))
     })
 
-    const help = container.querySelector('button[aria-label="帮助"]')
-    const restart = container.querySelector('button[aria-label="重新开始引导"]')
+    const help = container.querySelector('button[aria-label="Help"]')
+    const restart = container.querySelector('button[aria-label="Restart onboarding"]')
     act(() => {
       help?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
       restart?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
@@ -57,9 +57,9 @@ describe("ConsoleHeader", () => {
     expect(onViewChange).toHaveBeenCalled()
     expect(onOpenHelp).toHaveBeenCalledTimes(1)
     expect(onRestartTour).toHaveBeenCalledTimes(1)
-    expect(container.textContent).toContain("运行")
-    expect(container.textContent).toContain("成功")
-    expect(container.textContent).toContain("失败")
+    expect(container.textContent).toContain("Running")
+    expect(container.textContent).toContain("Succeeded")
+    expect(container.textContent).toContain("Failed")
   })
 
   it("supports roving focus keyboard controls for tabs", function () {

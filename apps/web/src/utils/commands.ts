@@ -13,12 +13,12 @@ const HIGH_RISK_COMMAND_IDS = new Set([
 ])
 
 export const categoryMeta: Record<CommandCategory, { label: string; className: string }> = {
-  init: { label: "初始化", className: "cat-init" },
-  pipeline: { label: "流水线", className: "cat-pipeline" },
-  frontend: { label: "前端", className: "cat-frontend" },
-  automation: { label: "自动化", className: "cat-automation" },
-  maintenance: { label: "维护", className: "cat-maintenance" },
-  backend: { label: "后端", className: "cat-backend" },
+  init: { label: "Initialize", className: "cat-init" },
+  pipeline: { label: "Pipeline", className: "cat-pipeline" },
+  frontend: { label: "Frontend", className: "cat-frontend" },
+  automation: { label: "Automation", className: "cat-automation" },
+  maintenance: { label: "Maintenance", className: "cat-maintenance" },
+  backend: { label: "Backend", className: "cat-backend" },
 }
 
 export function guessCategory(command: Command): CommandCategory {

@@ -77,11 +77,11 @@ const runStatusLabel: Record<UniversalRun["status"], string> = UNIVERSAL_RUN_STA
 const runRecordSourceLabel: Record<RunRecordSource, string> = RUN_RECORD_SOURCE_LABEL
 
 const runRecordDetailHint: RunRecordViewHint = {
-  title: "运行记录详情",
+  title: "Run Record Details",
   sections: ["source", "status", "progress", "timeline", "output"],
 }
 
-const runRecordDetailHintText = `${runRecordDetailHint.title}：来源 / 状态 / 进度 / 时间 / 输出`
+const runRecordDetailHintText = `${runRecordDetailHint.title}: Source / Status / Progress / Timeline / Output`
 const runInputFieldId = "task-center-run-input"
 const subTabIds = {
   tasks: "task-center-tab-command-runs",
@@ -100,13 +100,13 @@ const PROVIDER_PROTECTED_PAYMENT_STEP_REASON = "provider_protected_payment_step"
 const getRunInputCopy = (status: UniversalRun["status"]): { hint: string; placeholder: string } => {
   if (status === "waiting_otp") {
     return {
-      hint: "该运行记录正在等待验证码，请输入后提交：",
-      placeholder: "输入验证码",
+      hint: "This run is waiting for an OTP. Enter it and submit to continue:",
+      placeholder: "Enter OTP",
     }
   }
   return {
-    hint: "该运行记录正在等待补充输入，请填写后提交：",
-    placeholder: "输入补充信息",
+    hint: "This run is waiting for additional input. Provide it and submit to continue:",
+    placeholder: "Enter additional input",
   }
 }
 
@@ -240,8 +240,8 @@ function TaskCenterView({
 
   const formatRunErrorMessage = (message: string): string =>
     formatActionableErrorMessage(message, {
-      action: "按当前步骤修正输入后重试",
-      troubleshootingEntry: "查看本页“运行日志”与任务中心详情",
+      action: "Correct the current step input and retry.",
+      troubleshootingEntry: "Review the run log and the Task Center detail panel on this page.",
     })
 
   return (
@@ -256,31 +256,31 @@ function TaskCenterView({
           <div className="task-center-hero">
             <div className="task-center-hero-copy">
               <p className="launch-section-kicker">{"Operations Deck"}</p>
-              <h2 className="task-center-hero-title">{"先定位当前任务，再沿着状态、详情和终端收敛问题"}</h2>
+              <h2 className="task-center-hero-title">{"Locate the current run first, then narrow the problem through status, details, and terminal output"}</h2>
               <p className="task-center-hero-body">
                 {
-                  "左侧负责筛选与切换运行记录，右侧聚焦当前上下文，底部终端负责解释执行过程。默认先看主任务，再进入更深的调试动作。"
+                  "Use the left side to filter and switch between run records, the right side to focus the current context, and the bottom terminal to explain what happened. Start with the main run before diving into deeper debugging actions."
                 }
               </p>
             </div>
             <div className="task-center-hero-stats">
               <div className="task-center-stat">
-                <span className="task-center-stat-label">{"运行中"}</span>
+                <span className="task-center-stat-label">{"Running"}</span>
                 <strong className="task-center-stat-value">{runningTasks}</strong>
               </div>
               <div className="task-center-stat">
-                <span className="task-center-stat-label">{"等待输入"}</span>
+                <span className="task-center-stat-label">{"Waiting"}</span>
                 <strong className="task-center-stat-value">{waitingRuns}</strong>
               </div>
               <div className="task-center-stat">
-                <span className="task-center-stat-label">{"失败记录"}</span>
+                <span className="task-center-stat-label">{"Failed records"}</span>
                 <strong className="task-center-stat-value danger">{taskFailures}</strong>
               </div>
             </div>
           </div>
         </Card>
         {/* Sub-tabs for command/template run records */}
-        <div role="tablist" aria-label="任务中心运行记录类型">
+        <div role="tablist" aria-label="Task Center run record types">
           <TabsList className="task-center-subtabs">
             <TabsTrigger
             ref={(node: HTMLButtonElement | null) => {
@@ -297,7 +297,7 @@ function TaskCenterView({
             onKeyDown={(event: ReactKeyboardEvent<HTMLButtonElement>) => handleSubTabKeyDown(event, 0)}
             data-testid={TASK_CENTER_TAB_COMMAND_RUNS_TEST_ID}
           >
-            {"运行记录（命令）"}
+            {"Run Records (Command)"}
             <span className="task-center-subtab-count">{tasks.length}</span>
             </TabsTrigger>
             <TabsTrigger
@@ -315,7 +315,7 @@ function TaskCenterView({
             onKeyDown={(event: ReactKeyboardEvent<HTMLButtonElement>) => handleSubTabKeyDown(event, 1)}
             data-testid={TASK_CENTER_TAB_TEMPLATE_RUNS_TEST_ID}
           >
-            {"运行记录（模板）"}
+            {"Run Records (Template)"}
             <span className="task-center-subtab-count">{runs.length}</span>
             </TabsTrigger>
           </TabsList>
@@ -342,10 +342,10 @@ function TaskCenterView({
             onCommandFilterChange={onCommandFilterChange}
             taskLimit={taskLimit}
             onTaskLimitChange={onTaskLimitChange}
-            listTitle="运行记录"
+            listTitle="Run Records"
             sourceLabel={runRecordSourceLabel.command}
-            emptyTitle="暂无运行记录"
-            emptyDescription="在快速启动执行命令后，运行记录会出现在这里。"
+            emptyTitle="No run records yet"
+            emptyDescription="Run a command from Quick Launch to see records here."
             refreshTestId={TASK_CENTER_COMMAND_RUNS_REFRESH_TEST_ID}
           />
         </div>
@@ -357,14 +357,14 @@ function TaskCenterView({
           data-testid={TASK_CENTER_PANEL_TEMPLATE_RUNS_TEST_ID}
         >
           <div className="form-row justify-between">
-            <h2 className="section-title m-0">{"运行记录"}</h2>
+            <h2 className="section-title m-0">{"Run Records"}</h2>
             <Button
               variant="ghost"
               size="sm"
               data-testid={TASK_CENTER_TEMPLATE_RUNS_REFRESH_TEST_ID}
               onClick={onRefreshTasks}
             >
-              {"刷新"}
+              {"Refresh"}
             </Button>
           </div>
           {runs.length === 0 ? (
@@ -382,15 +382,15 @@ function TaskCenterView({
                   <path d="M8 12h8" />
                 </svg>
               }
-              title="暂无运行记录"
-              description="在快速启动页面选择模板并启动后，运行记录会出现在这里。"
-              action={{ label: "去快速启动", onClick: onGoToLaunch }}
+              title="No run records yet"
+              description="Template run records appear here after you select a template and start a run from Quick Launch."
+              action={{ label: "Go to Quick Launch", onClick: onGoToLaunch }}
             />
           ) : (
             <ul
               className="task-list"
               role="listbox"
-              aria-label="运行记录列表（模板）"
+              aria-label="Run records list (template)"
               aria-activedescendant={selectedRunOptionId}
               tabIndex={0}
               onKeyDown={handleTemplateRunsListKeyDown}
@@ -405,8 +405,8 @@ function TaskCenterView({
                   onClick={() => onSelectedRunIdChange(run.run_id)}
                 >
                   <div className="task-item-info">
-                    <strong>{`${runRecordSourceLabel.template} \u00B7 记录 #${run.run_id.slice(0, 8)}`}</strong>
-                    <p>{`${runStatusLabel[run.status]} \u00B7 步骤 ${run.step_cursor}`}</p>
+                    <strong>{`${runRecordSourceLabel.template} \u00B7 Record #${run.run_id.slice(0, 8)}`}</strong>
+                    <p>{`${runStatusLabel[run.status]} \u00B7 Step ${run.step_cursor}`}</p>
                   </div>
                   <Badge variant={run.status === "success" ? "success" : "default"}>
                     {runStatusLabel[run.status]}
@@ -424,44 +424,44 @@ function TaskCenterView({
             <div>
               <p className="launch-section-kicker">{"Current Focus"}</p>
               <h3 className="launch-section-title">
-                {subTab === "tasks" ? "命令运行上下文" : "模板运行上下文"}
+                {subTab === "tasks" ? "Command run context" : "Template run context"}
               </h3>
             </div>
             <Badge variant={subTab === "tasks" ? "secondary" : "success"}>
-              {subTab === "tasks" ? "命令主线" : "模板主线"}
+              {subTab === "tasks" ? "Command mainline" : "Template mainline"}
             </Badge>
           </div>
           <p className="task-center-summary-desc">
             {subTab === "tasks"
-              ? "优先确认当前任务状态、错误与输出，再决定是否取消或重试。"
-              : "优先确认模板运行是否需要输入、等待恢复或查看步骤日志。"}
+              ? "Check the current task status, errors, and output first, then decide whether to cancel or retry."
+              : "Check whether the template run needs input, is waiting to resume, or needs step log review before doing anything else."}
           </p>
         </Card>
 
         {subTab === "tasks" ? (
           selectedTask ? (
             <RunDetailCard
-              title={`运行记录 #${selectedTask.task_id.slice(0, 8)}`}
+              title={`Run Record #${selectedTask.task_id.slice(0, 8)}`}
               status={selectedTask.status}
               isSuccess={selectedTask.status === "success"}
               detailHint={runRecordDetailHintText}
             >
               <DetailFieldRow
                 fields={[
-                  { label: "来源", value: runRecordSourceLabel.command },
-                  { label: "命令编号（命令 ID）", value: selectedTask.command_id },
+                  { label: "Source", value: runRecordSourceLabel.command },
+                  { label: "Command ID", value: selectedTask.command_id },
                   {
-                    label: "尝试",
+                    label: "Attempt",
                     value: `${selectedTask.attempt} / ${selectedTask.max_attempts}`,
                   },
                 ]}
               />
               <DetailFieldRow
                 fields={[
-                  { label: "创建时间", value: new Date(selectedTask.created_at).toLocaleString() },
+                  { label: "Created At", value: new Date(selectedTask.created_at).toLocaleString() },
                   selectedTask.finished_at
                     ? {
-                        label: "完成时间",
+                        label: "Finished At",
                         value: new Date(selectedTask.finished_at).toLocaleString(),
                       }
                     : null,
@@ -469,13 +469,13 @@ function TaskCenterView({
               />
               {selectedTask.message && (
                 <div className="field">
-                  <span className="field-label">{"消息"}</span>
+                  <span className="field-label">{"Message"}</span>
                   <span className="hint-text">{selectedTask.message}</span>
                 </div>
               )}
               {selectedTask.exit_code !== null && selectedTask.exit_code !== undefined && (
                 <div className="field">
-                  <span className="field-label">{"退出码"}</span>
+                  <span className="field-label">{"Exit Code"}</span>
                   <span className="text-sm">{selectedTask.exit_code}</span>
                 </div>
               )}
@@ -495,32 +495,32 @@ function TaskCenterView({
                   <path d="M9 9h6M9 13h4" />
                 </svg>
               }
-              title="选择一条运行记录查看详情"
-              description="从左侧运行记录列表（命令）中选择一条记录查看详细信息和输出日志。"
+              title="Select a run record to inspect the details"
+              description="Choose a record from the command run list on the left to inspect its details and output log."
             />
           )
         ) : selectedRun ? (
           <RunDetailCard
-            title={`运行记录 #${selectedRun.run_id.slice(0, 8)}`}
+            title={`Run Record #${selectedRun.run_id.slice(0, 8)}`}
             status={runStatusLabel[selectedRun.status]}
             isSuccess={selectedRun.status === "success"}
             detailHint={runRecordDetailHintText}
           >
             <DetailFieldRow
               fields={[
-                { label: "来源", value: runRecordSourceLabel.template },
-                { label: "模板编号（模板 ID）", value: selectedRun.template_id.slice(0, 12) },
-                { label: "步骤进度", value: `第 ${selectedRun.step_cursor} 步` },
+                { label: "Source", value: runRecordSourceLabel.template },
+                { label: "Template ID", value: selectedRun.template_id.slice(0, 12) },
+                { label: "Step Progress", value: `Step ${selectedRun.step_cursor}` },
               ]}
             />
             <DetailFieldRow
               fields={[
-                { label: "创建时间", value: new Date(selectedRun.created_at).toLocaleString() },
+                { label: "Created At", value: new Date(selectedRun.created_at).toLocaleString() },
               ]}
             />
             {selectedRun.last_error && (
               <div className="field">
-                <span className="field-label">{"最后错误"}</span>
+                <span className="field-label">{"Last Error"}</span>
                 <span className="error-text">{formatRunErrorMessage(selectedRun.last_error)}</span>
               </div>
             )}
@@ -528,7 +528,7 @@ function TaskCenterView({
               <Card tone="raised" className="mt-3 p-3" data-testid="task-center-waiting-card">
                 <p className="hint-text mb-2">
                   {selectedRunIsProviderProtectedWait
-                    ? "已打开支付页，请手动完成后点击继续"
+                    ? "The payment page is already open. Complete the provider step manually, then continue here."
                     : runInputCopy?.hint}
                 </p>
                 {selectedRunIsProviderProtectedWait ? (
@@ -539,12 +539,12 @@ function TaskCenterView({
                       onSubmitOtp(selectedRun.run_id, selectedRun.status, selectedRun.wait_context)
                     }
                   >
-                    {"继续执行"}
+                    {"Continue"}
                   </Button>
                 ) : (
                   <div className="field-row">
                     <label className="field-label" htmlFor={runInputFieldId}>
-                      {selectedRun.status === "waiting_otp" ? "验证码" : "补充输入"}
+                      {selectedRun.status === "waiting_otp" ? "OTP" : "Additional Input"}
                     </label>
                     <Input
                       id={runInputFieldId}
@@ -564,7 +564,7 @@ function TaskCenterView({
                         )
                       }
                     >
-                      {"提交"}
+                      {"Submit"}
                     </Button>
                   </div>
                 )}
@@ -572,7 +572,7 @@ function TaskCenterView({
             )}
             {selectedRun.logs && selectedRun.logs.length > 0 && (
               <div className="mt-3">
-                <h3 className="section-subtitle">{"运行日志"}</h3>
+                <h3 className="section-subtitle">{"Run Log"}</h3>
                 <LogStream logs={selectedRun.logs} />
               </div>
             )}
@@ -592,8 +592,8 @@ function TaskCenterView({
                 <path d="M9 9h6M9 13h4" />
               </svg>
             }
-            title="选择一条运行记录查看详情"
-            description="从左侧运行记录列表（模板）中选择一条记录查看其状态、参数和日志。"
+            title="Select a run record to inspect the details"
+            description="Choose a record from the template run list on the left to inspect its status, parameters, and logs."
           />
         )}
       </div>

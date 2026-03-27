@@ -12,7 +12,7 @@ import { type LoadConfig, runLoad } from "../load.js"
 import { type PerfConfig, type PerfResult, runPerf } from "../perf.js"
 import { runSecurity, type SecurityConfig, type SecurityResult } from "../security.js"
 import { loadStateModel } from "../state-model.js"
-import { startTargetRuntime } from "../target-runtime.js"
+import { persistRuntimeStartResult, startTargetRuntime } from "../target-runtime.js"
 import type { TestSuiteResult } from "../test-suite.js"
 import { runVisual, type VisualConfig, type VisualResult } from "../visual.js"
 import {
@@ -106,6 +106,9 @@ export async function runProfile(
     enabled: isWebTarget && autostartEnabled,
     baseDir,
     startCommands: target.start,
+    apiEnvOverrides: isWebTarget
+      ? { AUTOMATION_ALLOW_LOCAL_NO_TOKEN: "true", APP_ENV: "test" }
+      : undefined,
     healthcheckUrl: target.healthcheck?.url ?? effectiveBaseUrl,
   }
   const healthcheckUrl = startConfig.healthcheckUrl
@@ -275,7 +278,13 @@ export async function runProfile(
   const ensureRuntimeReady = async (stepId: string, signal: AbortSignal): Promise<void> => {
     throwIfAborted(signal)
     if (!isWebTarget) return
-    if (await waitForRuntimeReady(8_000, signal)) return
+    if (await waitForRuntimeReady(8_000, signal)) {
+      if (!runtimeStart.healthcheckPassed) {
+        runtimeStart.healthcheckPassed = true
+        persistRuntimeStartResult(baseDir, runtimeStart)
+      }
+      return
+    }
     if (
       !startConfig.enabled ||
       (!startConfig.startCommands?.web && !startConfig.startCommands?.api)

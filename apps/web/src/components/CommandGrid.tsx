@@ -93,7 +93,7 @@ function CommandGrid({
 
   return (
     <>
-      <div role="tablist" aria-label="命令分类">
+      <div role="tablist" aria-label="Command categories">
         <TabsList className="command-category-tabs">
           {tabs.map((cat, index) => (
             <TabsTrigger
@@ -113,7 +113,7 @@ function CommandGrid({
               onClick={() => onActiveTabChange(cat)}
               onKeyDown={(event: KeyboardEvent<HTMLButtonElement>) => handleTabKeyDown(event, index)}
             >
-              {cat === "all" ? "全部" : categoryMeta[cat].label}
+              {cat === "all" ? "All" : categoryMeta[cat].label}
               <span className="command-category-count">{categoryCounts[cat] ?? 0}</span>
             </TabsTrigger>
           ))}
@@ -129,7 +129,7 @@ function CommandGrid({
         {commandState === "loading" && (
           <Card className="loading-card" role="status" aria-live="polite">
             <div className="spinner" aria-hidden="true" />
-            {"命令加载中..."}
+            {"Loading commands..."}
           </Card>
         )}
         {commandState === "error" && (
@@ -151,13 +151,13 @@ function CommandGrid({
                 <path d="M12 9v4M12 17h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <p className="empty-state-title">{"暂无可用命令"}</p>
-            <p className="empty-state-desc">{"后端未返回任何命令，请检查服务是否正常运行。"}</p>
+            <p className="empty-state-title">{"No commands available"}</p>
+            <p className="empty-state-desc">{"The backend returned no commands. Check whether the service is running."}</p>
           </div>
         )}
         {commandState === "success" && filteredCommands.length === 0 && (
           <div className="empty-state grid-full">
-            <p className="empty-state-title">{"该分类下暂无命令"}</p>
+            <p className="empty-state-title">{"No commands in this category"}</p>
           </div>
         )}
         {filteredCommands.map((command) => {
@@ -187,7 +187,7 @@ function CommandGrid({
                   disabled={isRunning}
                   onClick={() => onRunCommand(command)}
                 >
-                  {isRunning ? "执行中..." : dangerous ? "危险执行" : "执行"}
+                  {isRunning ? "Running..." : dangerous ? "Dangerous run" : "Run"}
                 </Button>
               </div>
             </Card>

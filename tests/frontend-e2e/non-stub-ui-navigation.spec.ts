@@ -106,10 +106,12 @@ pwTest("@frontend-nonstub @nonstub live command catalog is rendered through the 
   await expect
     .poll(async () => {
       const texts = await commandCards.allTextContents()
-      return texts.some((text) => /初始化环境|打开首页|运行前端端到端测试|维护/.test(text))
+      return texts.some((text) =>
+        /Initialize|Open homepage|Run frontend end-to-end tests|Maintenance/.test(text)
+      )
     })
     .toBe(true)
-  await expect(page.getByRole("button", { name: "执行" }).first()).toBeVisible()
+  await expect(page.getByRole("button", { name: "Run" }).first()).toBeVisible()
 })
 
 pwTest("@frontend-nonstub @nonstub live task filtering works from the real UI", async ({ page }) => {
@@ -119,12 +121,12 @@ pwTest("@frontend-nonstub @nonstub live task filtering works from the real UI", 
   await page.goto("/")
   const commandCard = page.locator(".command-card").filter({ hasText: command.command_id }).first()
   await expect(commandCard).toBeVisible()
-  await commandCard.getByRole("button", { name: /执行|危险执行/ }).click()
-  const confirmButton = page.getByRole("button", { name: "确认执行" })
+  await commandCard.getByRole("button", { name: /Run|Dangerous run/ }).click()
+  const confirmButton = page.getByRole("button", { name: "Confirm dangerous command" })
   if ((await confirmButton.count()) > 0) {
     await confirmButton.click()
   }
-  await expect(page.locator("body")).toContainText("已提交", { timeout: 20_000 })
+  await expect(page.locator("body")).toContainText("Submitted", { timeout: 20_000 })
 
   const seededTask = await expect
     .poll(
@@ -141,12 +143,12 @@ pwTest("@frontend-nonstub @nonstub live task filtering works from the real UI", 
     .not.toBeNull()
 
   const latestTask = (await latestTaskByCommand(command.command_id)) as TaskRecord
-  await page.getByRole("tab", { name: "任务中心" }).click()
-  await page.getByLabel("按状态过滤任务").selectOption(latestTask.status)
-  await page.getByLabel("按命令编号筛选运行记录").fill(command.command_id)
-  await page.getByLabel("任务显示数量").selectOption("20")
-  await page.locator(".task-list-column").getByRole("button", { name: "刷新" }).first().click()
-  const taskList = page.getByRole("list", { name: "运行记录列表（命令）" })
+  await page.getByRole("tab", { name: "Task Center" }).click()
+  await page.getByLabel("Filter tasks by status").selectOption(latestTask.status)
+  await page.getByLabel("Filter run records by command ID").fill(command.command_id)
+  await page.getByLabel("Run count limit").selectOption("20")
+  await page.locator(".task-list-column").getByRole("button", { name: "Refresh" }).first().click()
+  const taskList = page.getByRole("list", { name: "Run records list (command)" })
   const taskItems = taskList.locator("li")
   await expect(taskList).toBeVisible()
   await expect
@@ -164,12 +166,12 @@ pwTest("@frontend-nonstub @nonstub real command execution requires an explicit s
   await page.goto("/")
   const commandCard = page.locator(".command-card").filter({ hasText: command.command_id }).first()
   await expect(commandCard).toBeVisible()
-  await commandCard.getByRole("button", { name: /执行|危险执行/ }).click()
-  const confirmButton = page.getByRole("button", { name: "确认执行" })
+  await commandCard.getByRole("button", { name: /Run|Dangerous run/ }).click()
+  const confirmButton = page.getByRole("button", { name: "Confirm dangerous command" })
   if ((await confirmButton.count()) > 0) {
     await confirmButton.click()
   }
-  await expect(page.locator("body")).toContainText("已提交", { timeout: 20_000 })
+  await expect(page.locator("body")).toContainText("Submitted", { timeout: 20_000 })
 
   await expect
     .poll(
@@ -184,10 +186,10 @@ pwTest("@frontend-nonstub @nonstub real command execution requires an explicit s
   const latestTask = await latestTaskByCommand(command.command_id)
   expect(latestTask?.status).not.toBe("failed")
 
-  await page.getByRole("tab", { name: "任务中心" }).click()
-  await page.getByLabel("按状态过滤任务").selectOption("all")
-  await page.getByLabel("按命令编号筛选运行记录").fill(command.command_id)
-  await page.locator(".task-list-column").getByRole("button", { name: "刷新" }).first().click()
+  await page.getByRole("tab", { name: "Task Center" }).click()
+  await page.getByLabel("Filter tasks by status").selectOption("all")
+  await page.getByLabel("Filter run records by command ID").fill(command.command_id)
+  await page.locator(".task-list-column").getByRole("button", { name: "Refresh" }).first().click()
   const taskRow = page.locator(".task-list li").filter({ hasText: latestTask?.task_id.slice(0, 8) ?? "" }).first()
   await expect(taskRow).toBeVisible({ timeout: 20_000 })
   await expect(taskRow).toContainText(command.command_id)

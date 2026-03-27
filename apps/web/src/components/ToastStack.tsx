@@ -18,13 +18,13 @@ function ToastStack({ notices, onDismiss }: ToastStackProps) {
   if (notices.length === 0) return null
 
   return (
-    <ToastViewport role="region" aria-label="系统通知" aria-live="polite" aria-atomic="false">
+    <ToastViewport role="region" aria-label="System notices" aria-live="polite" aria-atomic="false">
       {notices.map((notice) => (
         <Toast
           key={notice.id}
           level={notice.level}
           onClick={() => onDismiss(notice.id)}
-          aria-label={`关闭通知: ${notice.message}`}
+          aria-label={`Dismiss notice: ${notice.message}`}
         >
           <ToastIcon aria-hidden="true">
             {iconMap[notice.level]}

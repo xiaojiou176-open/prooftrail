@@ -15,13 +15,13 @@ function EvidenceScreenshotPair({
   afterImageUrl,
   beforeAlt,
   afterAlt,
-  beforeLabel = "执行前",
-  afterLabel = "执行后",
+  beforeLabel = "Before",
+  afterLabel = "After",
   emptyHint,
 }: EvidenceScreenshotPairProps) {
   const hasAnyScreenshot = Boolean(beforeImageUrl || afterImageUrl)
-  const resolvedBeforeAlt = beforeAlt.trim() || `${beforeLabel}流程步骤证据图`
-  const resolvedAfterAlt = afterAlt.trim() || `${afterLabel}流程步骤证据图`
+  const resolvedBeforeAlt = beforeAlt.trim() || `${beforeLabel} step evidence image`
+  const resolvedAfterAlt = afterAlt.trim() || `${afterLabel} step evidence image`
 
   return (
     <>

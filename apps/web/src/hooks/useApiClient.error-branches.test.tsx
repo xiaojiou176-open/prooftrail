@@ -227,15 +227,15 @@ describe("useApiClient error branches", () => {
     })
 
     expect(store.setDiagnostics).toHaveBeenCalledWith(null)
-    expect(store.setDiagnosticsError).toHaveBeenCalledWith(expect.stringContaining("诊断失败"))
-    expect(store.setAlertError).toHaveBeenCalledWith(expect.stringContaining("告警失败"))
+    expect(store.setDiagnosticsError).toHaveBeenCalledWith(expect.stringContaining("Diagnostics failed"))
+    expect(store.setAlertError).toHaveBeenCalledWith(expect.stringContaining("alerts degraded"))
     expect(store.setAlerts).toHaveBeenCalledWith(null)
-    expect(store.setFlowError).toHaveBeenCalledWith(expect.stringContaining("流程预览失败"))
+    expect(store.setFlowError).toHaveBeenCalledWith(expect.stringContaining("Flow preview failed"))
     expect(store.setLatestFlow).toHaveBeenCalledWith(null)
     expect(store.setFlowDraft).toHaveBeenNthCalledWith(1, null)
     expect(store.setFlowDraft).toHaveBeenNthCalledWith(2, null)
-    expect(store.setReconstructionError).toHaveBeenCalledWith(expect.stringContaining("请先执行 Preview"))
-    expect(store.pushNotice).toHaveBeenCalledWith("error", expect.stringContaining("编排执行失败"))
+    expect(store.setReconstructionError).toHaveBeenCalledWith(expect.stringContaining("Run Preview first"))
+    expect(store.pushNotice).toHaveBeenCalledWith("error", expect.stringContaining("orchestrate failed"))
     expect(store.setProfileResolved).not.toHaveBeenCalled()
     expect(store.setReconstructionPreview).not.toHaveBeenCalled()
     expect(store.setReconstructionGenerated).not.toHaveBeenCalled()
@@ -333,10 +333,10 @@ describe("useApiClient error branches", () => {
     expect(store.pushNotice).toHaveBeenCalledWith("error", expect.stringContaining("replay latest failed"))
     expect(store.pushNotice).toHaveBeenCalledWith("error", expect.stringContaining("replay step failed"))
     expect(store.pushNotice).toHaveBeenCalledWith("error", expect.stringContaining("replay from step failed"))
-    expect(store.pushNotice).toHaveBeenCalledWith("success", "模板创建成功")
-    expect(store.pushNotice).toHaveBeenCalledWith("success", "模板更新成功")
-    expect(store.pushNotice).toHaveBeenCalledWith("success", "运行任务创建成功")
-    expect(store.pushNotice).toHaveBeenCalledWith("success", "继续执行已提交，运行任务已继续")
+    expect(store.pushNotice).toHaveBeenCalledWith("success", "Template created successfully")
+    expect(store.pushNotice).toHaveBeenCalledWith("success", "Template updated successfully")
+    expect(store.pushNotice).toHaveBeenCalledWith("success", "Run created successfully")
+    expect(store.pushNotice).toHaveBeenCalledWith("success", "continue action submitted and the run resumed")
     expect(store.setStudioError).toHaveBeenCalledWith(expect.stringContaining("studio explode"))
 
     const createTemplateCall = fetchMock.mock.calls.find((call) => String(call[0]).includes("/api/templates"))
@@ -444,27 +444,29 @@ describe("useApiClient error branches", () => {
       "submit-otp-raw"
     )
 
-    expect(store.setDiagnosticsError).toHaveBeenCalledWith(expect.stringContaining("诊断失败"))
-    expect(store.setAlertError).toHaveBeenCalledWith(expect.stringContaining("告警失败"))
+    expect(store.setDiagnosticsError).toHaveBeenCalledWith(expect.stringContaining("Diagnostics failed"))
+    expect(store.setAlertError).toHaveBeenCalledWith(expect.stringContaining("Alert refresh failed"))
     expect(store.setReconstructionError).toHaveBeenCalledWith(
-      expect.stringContaining("Profile 解析失败")
+      expect.stringContaining("Profile resolution failed")
     )
-    expect(store.setFeedbackText).toHaveBeenCalledWith(expect.stringContaining("命令执行失败"))
+    expect(store.setFeedbackText).toHaveBeenCalledWith(
+      expect.stringContaining("Command execution failed")
+    )
 
     const errorNotices = store.pushNotice.mock.calls
       .filter((call) => call[0] === "error")
       .map((call) => String(call[1]))
-    expect(errorNotices.some((message) => message.includes("编排执行失败"))).toBe(true)
-    expect(errorNotices.some((message) => message.includes("导入最新 Flow 失败"))).toBe(true)
-    expect(errorNotices.some((message) => message.includes("取消任务失败"))).toBe(true)
-    expect(errorNotices.some((message) => message.includes("流程草稿保存失败"))).toBe(true)
-    expect(errorNotices.some((message) => message.includes("回放触发失败"))).toBe(true)
-    expect(errorNotices.some((message) => message.includes("单步试跑触发失败"))).toBe(true)
-    expect(errorNotices.some((message) => message.includes("从步骤恢复触发失败"))).toBe(true)
-    expect(errorNotices.some((message) => message.includes("创建模板失败"))).toBe(true)
-    expect(errorNotices.some((message) => message.includes("更新模板失败"))).toBe(true)
-    expect(errorNotices.some((message) => message.includes("创建运行任务失败"))).toBe(true)
-    expect(errorNotices.some((message) => message.includes("提交验证码失败"))).toBe(true)
+    expect(errorNotices.some((message) => message.includes("Orchestration from artifacts failed"))).toBe(true)
+    expect(errorNotices.some((message) => message.includes("Import latest flow failed"))).toBe(true)
+    expect(errorNotices.some((message) => message.includes("Task cancel failed"))).toBe(true)
+    expect(errorNotices.some((message) => message.includes("Flow draft save failed"))).toBe(true)
+    expect(errorNotices.some((message) => message.includes("Replay trigger failed"))).toBe(true)
+    expect(errorNotices.some((message) => message.includes("Step replay trigger failed"))).toBe(true)
+    expect(errorNotices.some((message) => message.includes("Resume from step trigger failed"))).toBe(true)
+    expect(errorNotices.some((message) => message.includes("Template creation failed"))).toBe(true)
+    expect(errorNotices.some((message) => message.includes("Template update failed"))).toBe(true)
+    expect(errorNotices.some((message) => message.includes("Run creation failed"))).toBe(true)
+    expect(errorNotices.some((message) => message.includes("Submitting OTP failed"))).toBe(true)
   })
 
   it("covers success branches for action flows, replay flows and studio persistence", async function () {
@@ -634,16 +636,16 @@ describe("useApiClient error branches", () => {
     expect(store.setProfileResolved).toHaveBeenCalledWith({ profile_id: "profile-1" })
     expect(store.setReconstructionPreview).toHaveBeenCalledWith({ preview_id: "preview-1" })
     expect(store.setReconstructionGenerated).toHaveBeenCalledWith({ generated_id: "gen-1" })
-    expect(store.pushNotice).toHaveBeenCalledWith("success", "已完成 artifacts 编排")
-    expect(store.pushNotice).toHaveBeenCalledWith("warn", "已取消任务 task-1")
-    expect(store.pushNotice).toHaveBeenCalledWith("success", "已触发流程回放")
-    expect(store.pushNotice).toHaveBeenCalledWith("success", "已触发单步试跑 step-1")
-    expect(store.pushNotice).toHaveBeenCalledWith("success", "已触发从步骤 step-1 继续")
-    expect(store.pushNotice).toHaveBeenCalledWith("success", "已导入最新 Flow")
-    expect(store.pushNotice).toHaveBeenCalledWith("success", "模板创建成功")
-    expect(store.pushNotice).toHaveBeenCalledWith("success", "模板更新成功")
-    expect(store.pushNotice).toHaveBeenCalledWith("success", "运行任务创建成功")
-    expect(store.pushNotice).toHaveBeenCalledWith("success", "验证码已提交，运行任务已继续")
+    expect(store.pushNotice).toHaveBeenCalledWith("success", "Artifacts orchestration completed")
+    expect(store.pushNotice).toHaveBeenCalledWith("warn", "Cancelled task task-1")
+    expect(store.pushNotice).toHaveBeenCalledWith("success", "Flow replay triggered")
+    expect(store.pushNotice).toHaveBeenCalledWith("success", "Step replay triggered for step-1")
+    expect(store.pushNotice).toHaveBeenCalledWith("success", "Resume from step step-1 triggered")
+    expect(store.pushNotice).toHaveBeenCalledWith("success", "Imported the latest flow")
+    expect(store.pushNotice).toHaveBeenCalledWith("success", "Template created successfully")
+    expect(store.pushNotice).toHaveBeenCalledWith("success", "Template updated successfully")
+    expect(store.pushNotice).toHaveBeenCalledWith("success", "Run created successfully")
+    expect(store.pushNotice).toHaveBeenCalledWith("success", "OTP submitted and the run resumed")
     expect(store.setSelectedStudioRunId).toHaveBeenCalledWith("run-submit")
     expect(store.setStepEvidence).toHaveBeenCalledWith({ step_id: "step-1", ok: true })
 
@@ -712,7 +714,7 @@ describe("useApiClient error branches", () => {
     })
 
     expect(store.setStudioError).toHaveBeenCalledWith(
-      expect.stringContaining("Universal Studio 数据加载失败")
+      expect.stringContaining("Universal Studio data loading failed")
     )
   })
 
@@ -739,7 +741,7 @@ describe("useApiClient error branches", () => {
       await api?.importLatestFlow()
     })
 
-    expect(store.pushNotice).toHaveBeenCalledWith("success", "已导入最新 Flow")
+    expect(store.pushNotice).toHaveBeenCalledWith("success", "Imported the latest flow")
   })
 
   it("covers studio selection callbacks, guard branches, and non-Error fallbacks", async function () {
@@ -808,9 +810,9 @@ describe("useApiClient error branches", () => {
     const errorNotices = store.pushNotice.mock.calls
       .filter((call) => call[0] === "error")
       .map((call) => String(call[1]))
-    expect(errorNotices.some((message) => message.includes("请选择一个 Flow"))).toBe(true)
-    expect(errorNotices.some((message) => message.includes("请选择一个模板"))).toBe(true)
-    expect(errorNotices.some((message) => message.includes("流程草稿为空"))).toBe(true)
+    expect(errorNotices.some((message) => message.includes("Select a flow first"))).toBe(true)
+    expect(errorNotices.some((message) => message.includes("Select a template first"))).toBe(true)
+    expect(errorNotices.some((message) => message.includes("Flow draft is empty"))).toBe(true)
 
     store.setSelectedStudioFlowId = vi.fn(() => {
       throw "raw-refresh-failure"
@@ -829,7 +831,7 @@ describe("useApiClient error branches", () => {
     })
 
     expect(store.setStudioError).toHaveBeenCalledWith(
-      expect.stringContaining("Universal Studio 刷新失败")
+      expect.stringContaining("Universal Studio refresh failed")
     )
   })
 })

@@ -257,30 +257,30 @@ export type RunRecordSource = "command" | "template"
 export type RunRecordDetailSection = "source" | "status" | "progress" | "timeline" | "output"
 
 export type RunRecordViewHint = {
-  title: "运行记录详情"
+  title: "Run Record Details"
   sections: RunRecordDetailSection[]
 }
 
-// UI 语义映射：保持协议字段不变，仅提供新手友好的展示文案。
+// UI label mapping: protocol fields stay unchanged while display copy stays beginner-friendly.
 export const RUN_RECORD_SOURCE_LABEL: Record<RunRecordSource, string> = {
-  command: "命令执行",
-  template: "模板运行",
+  command: "Command Run",
+  template: "Template Run",
 }
 
 export const RUN_RECORD_DETAIL_SECTION_LABEL: Record<RunRecordDetailSection, string> = {
-  source: "来源",
-  status: "状态",
-  progress: "进度",
-  timeline: "时间线",
-  output: "输出",
+  source: "Source",
+  status: "Status",
+  progress: "Progress",
+  timeline: "Timeline",
+  output: "Output",
 }
 
 export const UNIVERSAL_RUN_STATUS_LABEL: Record<UniversalRun["status"], string> = {
-  queued: "排队中",
-  running: "运行中",
-  waiting_user: "等待用户输入",
-  waiting_otp: "等待验证码",
-  success: "成功",
-  failed: "失败",
-  cancelled: "已取消",
+  queued: "Queued",
+  running: "Running",
+  waiting_user: "Waiting for User Input",
+  waiting_otp: "Waiting for OTP",
+  success: "Succeeded",
+  failed: "Failed",
+  cancelled: "Cancelled",
 }

@@ -81,6 +81,7 @@ export function collectFailureLocations(
     .map((check) => {
       const normalizedCheck = normalizeCheckReasonCode(check)
       return {
+        acId: typeof check.acId === "string" && check.acId.trim().length > 0 ? check.acId.trim() : check.id,
         checkId: check.id,
         status: check.status,
         reasonCode:

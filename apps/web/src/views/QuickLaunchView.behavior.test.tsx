@@ -119,10 +119,10 @@ describe("QuickLaunchView behavior", () => {
     })
 
     const startButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "开始第 1 步"
+      (button) => button.textContent === "Start step 1"
     )
     const locateButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "定位到配置"
+      (button) => button.textContent === "Go to configuration"
     )
 
     act(() => {
@@ -178,7 +178,7 @@ describe("QuickLaunchView behavior", () => {
     })
 
     const selectTemplateButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "选择模板"
+      (button) => button.textContent === "Select template"
     )
     act(() => {
       selectTemplateButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
@@ -235,7 +235,7 @@ describe("QuickLaunchView behavior", () => {
     expect(onRunParamsChange).toHaveBeenCalled()
 
     const runButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "启动运行任务"
+      (button) => button.textContent === "Start run"
     )
     act(() => {
       runButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
@@ -246,13 +246,13 @@ describe("QuickLaunchView behavior", () => {
       'button[aria-controls="quick-launch-params-panel"]'
     ) as HTMLButtonElement
     expect(sidebarToggle.getAttribute("aria-expanded")).toBe("true")
-    expect(sidebarToggle.getAttribute("aria-label")).toBe("收起参数面板")
+    expect(sidebarToggle.getAttribute("aria-label")).toBe("Collapse parameter rail")
 
     act(() => {
       sidebarToggle.dispatchEvent(new MouseEvent("click", { bubbles: true }))
     })
     expect(sidebarToggle.getAttribute("aria-expanded")).toBe("false")
-    expect(sidebarToggle.getAttribute("aria-label")).toBe("展开参数面板")
+    expect(sidebarToggle.getAttribute("aria-label")).toBe("Expand parameter rail")
     const paramsPanel = container.querySelector("#quick-launch-params-panel") as HTMLDivElement
     expect(paramsPanel.hidden).toBe(true)
   })
@@ -296,8 +296,10 @@ describe("QuickLaunchView behavior", () => {
       )
     })
 
-    expect(container.textContent).toContain("请先填写有效的 baseUrl / startUrl（可留空）并设置 successSelector。")
-    expect(container.textContent).toContain("暂无模板")
+    expect(container.textContent).toContain(
+      "Enter a valid baseUrl, an optional startUrl, and a successSelector before continuing."
+    )
+    expect(container.textContent).toContain("No templates yet")
 
     act(() => {
       root.render(
@@ -337,9 +339,11 @@ describe("QuickLaunchView behavior", () => {
       )
     })
 
-    expect(container.textContent).toContain("尚未检测到成功/失败结果，请先在任务中心等待任务完成。")
+    expect(container.textContent).toContain(
+      "No success or failure result is visible yet. Wait for the task to finish in Task Center first."
+    )
     const completeButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "完成首用引导"
+      (button) => button.textContent === "Complete the first-use guide"
     ) as HTMLButtonElement | undefined
     expect(completeButton?.disabled).toBe(true)
   })
@@ -386,13 +390,13 @@ describe("QuickLaunchView behavior", () => {
       )
     })
 
-    expect(container.textContent).toContain(" / 超时 120s")
-    expect(container.textContent).not.toContain(" / 验证码")
+    expect(container.textContent).toContain(" / Timeout 120s")
+    expect(container.textContent).not.toContain(" / OTP")
 
     const optionalInput = container.querySelector(
       `#template-param-${optionalTemplate.template_id}-note`
     ) as HTMLInputElement
-    expect(optionalInput.placeholder).toBe("选填")
+    expect(optionalInput.placeholder).toBe("Optional")
 
     act(() => {
       fireEvent.input(optionalInput, { target: { value: "memo" } })
@@ -438,7 +442,7 @@ describe("QuickLaunchView behavior", () => {
     })
 
     const selectTemplateButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "选择模板"
+      (button) => button.textContent === "Select template"
     )
     act(() => {
       selectTemplateButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
@@ -489,7 +493,7 @@ describe("QuickLaunchView behavior", () => {
     })
 
     const runStageButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "我已配置，进入运行"
+      (button) => button.textContent === "Configuration done, continue to run"
     ) as HTMLButtonElement | undefined
 
     act(() => {
@@ -549,9 +553,11 @@ describe("QuickLaunchView behavior", () => {
       )
     })
 
-    expect(container.textContent).toContain("步骤状态：配置 ✅ / 触发运行 ✅ / 查看结果 ✅")
-    expect(container.textContent).toContain(" / 验证码")
-    expect(container.textContent).toContain(" / 超时 120s")
+    expect(container.textContent).toContain(
+      "Progress: configure ✅ / trigger a run ✅ / review a result ✅"
+    )
+    expect(container.textContent).toContain(" / OTP")
+    expect(container.textContent).toContain(" / Timeout 120s")
 
     const passwordInput = container.querySelector(
       `#template-param-${secretTemplate.template_id}-password`

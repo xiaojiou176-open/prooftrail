@@ -112,6 +112,7 @@ export type TargetConfig = {
   }
   scope?: {
     domains?: string[]
+    allowLocalhostAnyPort?: boolean
   }
   app?: string
   bundleId?: string
@@ -264,7 +265,13 @@ export type BaseUrlPolicyResult = {
   requestedOrigin: string
   allowedOrigins: string[]
   matched: boolean
-  reason: "non_web_target" | "no_scope_domains" | "origin_allowed" | "origin_not_in_scope_domains"
+  reason:
+    | "non_web_target"
+    | "no_scope_domains"
+    | "origin_allowed"
+    | "origin_not_in_scope_domains"
+    | "localhost_origin_allowed"
+    | "localhost_any_port_requires_localhost"
 }
 
 export type DiagnosticTruncation = {
@@ -298,9 +305,10 @@ export type BlockedStepDetail = {
 }
 
 export type FailureLocation = {
+  acId: string
   checkId: string
   status: "failed" | "blocked"
-  reasonCode: string
+  reasonCode?: string
   stepId: string
   artifactPath: string
 }

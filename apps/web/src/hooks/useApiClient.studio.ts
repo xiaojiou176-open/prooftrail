@@ -26,13 +26,13 @@ export function useApiClientStudio({
 
   const resolveProfile = useCallback(async () => {
     const payload = await runAction<ProfileResolvePayload>(
-      "Profile 解析失败",
+      "Profile resolution failed",
       (formatted) => {
         store.setReconstructionError(formatted)
         store.pushNotice("error", formatted)
       },
       async () =>
-        requestJson<ProfileResolvePayload>("/api/profiles/resolve", "Profile 解析失败", {
+        requestJson<ProfileResolvePayload>("/api/profiles/resolve", "Profile resolution failed", {
           method: "POST",
           headers: { "Content-Type": "application/json", ...buildHeaders() },
           body: JSON.stringify({
@@ -48,13 +48,13 @@ export function useApiClientStudio({
 
   const previewReconstruction = useCallback(async () => {
     const payload = await runAction<ReconstructionPreviewPayload>(
-      "重建预览失败",
+      "Reconstruction preview failed",
       (formatted) => {
         store.setReconstructionError(formatted)
         store.pushNotice("error", formatted)
       },
       async () =>
-        requestJson<ReconstructionPreviewPayload>("/api/reconstruction/preview", "重建预览失败", {
+        requestJson<ReconstructionPreviewPayload>("/api/reconstruction/preview", "Reconstruction preview failed", {
           method: "POST",
           headers: { "Content-Type": "application/json", ...buildHeaders() },
           body: JSON.stringify({
@@ -73,17 +73,17 @@ export function useApiClientStudio({
 
   const generateReconstruction = useCallback(async () => {
     const payload = await runAction<ReconstructionGeneratePayload>(
-      "重建生成失败",
+      "Reconstruction generation failed",
       (formatted) => {
         store.setReconstructionError(formatted)
         store.pushNotice("error", formatted)
       },
       async () => {
         const preview = store.reconstructionPreview
-        if (!preview) throw new Error("请先执行 Preview")
+        if (!preview) throw new Error("Run Preview first")
         return requestJson<ReconstructionGeneratePayload>(
           "/api/reconstruction/generate",
-          "重建生成失败",
+          "Reconstruction generation failed",
           {
             method: "POST",
             headers: { "Content-Type": "application/json", ...buildHeaders() },
@@ -105,7 +105,7 @@ export function useApiClientStudio({
 
   const orchestrateFromArtifacts = useCallback(async () => {
     try {
-      await requestJson<unknown>("/api/command-tower/orchestrate-from-artifacts", "编排执行失败", {
+      await requestJson<unknown>("/api/command-tower/orchestrate-from-artifacts", "Orchestration from artifacts failed", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...buildHeaders() },
         body: JSON.stringify({
@@ -118,10 +118,10 @@ export function useApiClientStudio({
           run_params: {},
         }),
       })
-      store.pushNotice("success", "已完成 artifacts 编排")
+      store.pushNotice("success", "Artifacts orchestration completed")
       await fetchStudioData()
     } catch (error) {
-      const message = error instanceof Error ? error.message : "编排执行失败"
+      const message = error instanceof Error ? error.message : "Orchestration from artifacts failed"
       const formatted = formatActionableError(message)
       store.setReconstructionError(formatted)
       store.pushNotice("error", formatted)
@@ -150,19 +150,19 @@ export function useApiClientStudio({
 
   const importLatestFlow = useCallback(async () => {
     const result = await runAction<unknown>(
-      "导入最新 Flow 失败",
+      "Import latest flow failed",
       (formatted) => {
         store.setStudioError(formatted)
         store.pushNotice("error", formatted)
       },
       async () =>
-        requestJson<unknown>("/api/flows/import-latest", "导入最新 Flow 失败", {
+        requestJson<unknown>("/api/flows/import-latest", "Import latest flow failed", {
           method: "POST",
           headers: buildHeaders(),
         })
     )
     if (result === null) return
-    store.pushNotice("success", "已导入最新 Flow")
+    store.pushNotice("success", "Imported the latest flow")
     await fetchStudioData()
   }, [buildHeaders, fetchStudioData, requestJson, runAction, store])
 
@@ -184,8 +184,8 @@ export function useApiClientStudio({
         branches: {},
       }
       const flowId = store.selectedStudioFlowId || store.flowDraft?.flow_id || ""
-      if (!flowId) throw new Error("请选择一个 Flow")
-      await requestJson<unknown>("/api/templates", "创建模板失败", {
+      if (!flowId) throw new Error("Select a flow first")
+      await requestJson<unknown>("/api/templates", "Template creation failed", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...buildHeaders() },
         body: JSON.stringify({
@@ -196,10 +196,10 @@ export function useApiClientStudio({
           policies,
         }),
       })
-      store.pushNotice("success", "模板创建成功")
+      store.pushNotice("success", "Template created successfully")
       await fetchStudioData()
     } catch (error) {
-      const message = error instanceof Error ? error.message : "创建模板失败"
+      const message = error instanceof Error ? error.message : "Template creation failed"
       const formatted = formatActionableError(message)
       store.setStudioError(formatted)
       store.pushNotice("error", formatted)
@@ -215,7 +215,7 @@ export function useApiClientStudio({
 
   const updateTemplate = useCallback(async () => {
     try {
-      if (!store.selectedStudioTemplateId) throw new Error("请选择一个模板")
+      if (!store.selectedStudioTemplateId) throw new Error("Select a template first")
       const schema = buildStudioSchemaPayload()
       const defaults = { ...store.studioDefaults }
       const policies = {
@@ -233,7 +233,7 @@ export function useApiClientStudio({
       }
       await requestJson<unknown>(
         `/api/templates/${store.selectedStudioTemplateId}`,
-        "更新模板失败",
+        "Template update failed",
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json", ...buildHeaders() },
@@ -245,10 +245,10 @@ export function useApiClientStudio({
           }),
         }
       )
-      store.pushNotice("success", "模板更新成功")
+      store.pushNotice("success", "Template updated successfully")
       await fetchStudioData()
     } catch (error) {
-      const message = error instanceof Error ? error.message : "更新模板失败"
+      const message = error instanceof Error ? error.message : "Template update failed"
       const formatted = formatActionableError(message)
       store.setStudioError(formatted)
       store.pushNotice("error", formatted)
@@ -264,8 +264,8 @@ export function useApiClientStudio({
 
   const createRun = useCallback(async () => {
     try {
-      if (!store.selectedStudioTemplateId) throw new Error("请选择一个模板")
-      const payload = await requestJson<unknown>("/api/runs", "创建运行任务失败", {
+      if (!store.selectedStudioTemplateId) throw new Error("Select a template first")
+      const payload = await requestJson<unknown>("/api/runs", "Run creation failed", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...buildHeaders() },
         body: JSON.stringify({
@@ -276,11 +276,11 @@ export function useApiClientStudio({
       })
       const run = unwrapRunPayload(payload)
       if (run?.run_id) store.setSelectedStudioRunId(run.run_id)
-      store.pushNotice("success", "运行任务创建成功")
+      store.pushNotice("success", "Run created successfully")
       await Promise.all([fetchStudioData(), fetchTasks()])
       return true
     } catch (error) {
-      const message = error instanceof Error ? error.message : "创建运行任务失败"
+      const message = error instanceof Error ? error.message : "Run creation failed"
       const formatted = formatActionableError(message)
       store.setStudioError(formatted)
       store.pushNotice("error", formatted)
@@ -308,17 +308,17 @@ export function useApiClientStudio({
           waitContext?.reason_code === "provider_protected_payment_step"
         const inputLabel =
           status === "waiting_otp"
-            ? "验证码"
+            ? "OTP"
             : isProviderProtectedWaitingUser
-              ? "继续执行"
-              : "补充输入"
+              ? "continue action"
+              : "additional input"
         const normalizedOtpCode = store.studioOtpCode.trim()
         if (!normalizedOtpCode && !isProviderProtectedWaitingUser) {
-          throw new Error(`请输入${inputLabel}`)
+          throw new Error(`Enter the required ${inputLabel}`)
         }
         const payload = await requestJson<unknown>(
           `/api/runs/${runId}/otp`,
-          `提交${inputLabel}失败`,
+          `Submitting ${inputLabel} failed`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json", ...buildHeaders() },
@@ -327,7 +327,7 @@ export function useApiClientStudio({
         )
         const run = unwrapRunPayload(payload)
         if (run?.run_id) store.setSelectedStudioRunId(run.run_id)
-        store.pushNotice("success", `${inputLabel}已提交，运行任务已继续`)
+        store.pushNotice("success", `${inputLabel} submitted and the run resumed`)
         await Promise.all([fetchStudioData(), fetchTasks()])
       } catch (error) {
         const isProviderProtectedWaitingUser =
@@ -335,11 +335,11 @@ export function useApiClientStudio({
           waitContext?.reason_code === "provider_protected_payment_step"
         const inputLabel =
           status === "waiting_otp"
-            ? "验证码"
+            ? "OTP"
             : isProviderProtectedWaitingUser
-              ? "继续执行"
-              : "补充输入"
-        const message = error instanceof Error ? error.message : `提交${inputLabel}失败`
+              ? "continue action"
+              : "additional input"
+        const message = error instanceof Error ? error.message : `Submitting ${inputLabel} failed`
         const formatted = formatActionableError(message)
         store.setStudioError(formatted)
         store.pushNotice("error", formatted)
@@ -358,7 +358,7 @@ export function useApiClientStudio({
 
   const refreshStudio = useCallback(() => {
     void fetchStudioData().catch((error: unknown) => {
-      const message = error instanceof Error ? error.message : "Universal Studio 刷新失败"
+      const message = error instanceof Error ? error.message : "Universal Studio refresh failed"
       store.setStudioError(formatActionableError(message))
     })
   }, [fetchStudioData, formatActionableError, store])

@@ -1,9 +1,12 @@
+import { resolve } from "node:path"
 import { writeManifest } from "../../../../../core/src/manifest/io.js"
 import type { Manifest } from "../../../../../core/src/manifest/types.js"
 import type { getDriverCapabilityContract } from "../../../../../drivers/capabilities.js"
 import { type GateThresholds, writeSummaryReportWithContext } from "../../report.js"
 import type { loadStateModel } from "../../state-model.js"
 import type { startTargetRuntime } from "../../target-runtime.js"
+import { buildStateModelSummary } from "../config.js"
+import { buildAndWriteProofBundle } from "../proof-bundle.js"
 import {
   buildLogIndex,
   buildEvidenceIndex,
@@ -470,6 +473,53 @@ export function finalizeReportingArtifacts(
     })
   )
 
+  const finishedAt = new Date().toISOString()
+  const timing = {
+    startedAt,
+    finishedAt,
+    durationMs: new Date(finishedAt).getTime() - new Date(startedAt).getTime(),
+  }
+  const stateModelSummary = buildStateModelSummary(target.type, profile.steps, stateModel, states, {
+    desktopReadinessResult,
+    desktopSmokeResult,
+    desktopE2EResult,
+    desktopSoakResult,
+  })
+  const runEnvironment = {
+    autostart: runtimeStart.autostart,
+    started: runtimeStart.started,
+    healthcheckPassed: runtimeStart.healthcheckPassed,
+    healthcheckUrl: runtimeStart.healthcheckUrl ?? "",
+    host: process.platform,
+    node: process.version,
+    ci: Boolean(process.env.CI),
+  }
+  const toolVersions = {
+    node: process.version,
+    a11y: effectiveA11yConfig?.engine ?? "axe",
+    perf: effectivePerfConfig?.engine ?? "lhci",
+    load: effectiveLoadConfig?.engines ?? ["builtin", "artillery", "k6"],
+    security: effectiveSecurityConfig?.engine ?? "builtin",
+  }
+  const proof = buildAndWriteProofBundle({
+    baseDir,
+    runId: resolvedRunId,
+    profile: profile.name,
+    target: { type: target.type, name: target.name },
+    timing,
+    stateModel: stateModelSummary,
+    states,
+    summary,
+    gateResults: { status, checks: checks.map(normalizeCheckReasonCode) },
+    blockedSteps: blockedStepReasons,
+    failureLocations,
+    criticalPath: executionCriticalPath,
+    reportPath,
+    diagnosticsIndexPath,
+    runEnvironment,
+    toolVersions,
+  })
+
   const reportEntries: Record<string, string> = {
     report: reportPath,
     ...generatedReports,
@@ -484,6 +534,10 @@ export function finalizeReportingArtifacts(
     ...(desktopBusinessPath ? { desktopBusiness: desktopBusinessPath } : {}),
     ...(desktopSoakPath ? { desktopSoak: desktopSoakPath } : {}),
     ...(loadReportPath ? { load: loadReportPath } : {}),
+    proofCoverage: proof.coveragePath,
+    proofStability: proof.stabilityPath,
+    proofGaps: proof.gapsPath,
+    proofRepro: proof.reproPath,
     diagnosticsIndex: diagnosticsIndexPath,
     logIndex: logIndexPath,
   }
@@ -499,7 +553,6 @@ export function finalizeReportingArtifacts(
     reportEntries,
     checks.map(normalizeCheckReasonCode)
   )
-  const finishedAt = new Date().toISOString()
   const manifest: Manifest = {
     schemaVersion: "1.1",
     runId: resolvedRunId,
@@ -521,32 +574,12 @@ export function finalizeReportingArtifacts(
     states,
     evidenceIndex,
     reports: reportEntries,
-    stateModel: {
-      configuredRoutes: stateModel.configuredRoutes.length,
-      configuredStories: stateModel.configuredStories.length,
-      configuredTotal: stateModel.configuredTotal,
-      capturedRoutes: states.filter((item) => item.source === "routes").length,
-      capturedDiscovery: states.filter((item) => item.source === "discovery").length,
-      capturedStories: states.filter((item) => item.source === "stories").length,
-    },
+    stateModel: stateModelSummary,
     summary,
     diagnostics,
-    runEnvironment: {
-      autostart: runtimeStart.autostart,
-      started: runtimeStart.started,
-      healthcheckPassed: runtimeStart.healthcheckPassed,
-      healthcheckUrl: runtimeStart.healthcheckUrl ?? "",
-      host: process.platform,
-      node: process.version,
-      ci: Boolean(process.env.CI),
-    },
-    toolVersions: {
-      node: process.version,
-      a11y: effectiveA11yConfig?.engine ?? "axe",
-      perf: effectivePerfConfig?.engine ?? "lhci",
-      load: effectiveLoadConfig?.engines ?? ["builtin", "artillery", "k6"],
-      security: effectiveSecurityConfig?.engine ?? "builtin",
-    },
+    runEnvironment,
+    toolVersions,
+    proof,
     gateResults: {
       status,
       checks: checks.map(normalizeCheckReasonCode),

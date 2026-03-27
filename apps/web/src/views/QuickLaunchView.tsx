@@ -82,41 +82,41 @@ function QuickLaunchView({
           <CardContent className="launch-hero-grid p-4">
             <div className="launch-hero-copy">
               <p className="launch-hero-kicker">{"Command Center"}</p>
-              <h2 className="launch-hero-title">{"先启动主任务，再按需展开更深的控制面板"}</h2>
+              <h2 className="launch-hero-title">{"Start the main run first, then open deeper controls only when you need them"}</h2>
               <p className="launch-hero-body">
                 {
-                  "这里优先聚焦最短完成路径：选一个命令、确认参数、提交运行。模板、首用引导和高级参数都保留，但不再和主流程抢注意力。"
+                  "This screen prioritizes the shortest completion path: choose a command, confirm the parameters, and submit the run. Templates, first-use guidance, and advanced settings stay available without competing with the primary flow."
                 }
               </p>
               <div className="launch-hero-badges">
-                <Badge variant="secondary">{`${commands.length} 个任务入口`}</Badge>
+                <Badge variant="secondary">{`${commands.length} command entrypoints`}</Badge>
                 <Badge variant={templates.length > 0 ? "success" : "default"}>
-                  {templates.length > 0 ? `${templates.length} 个模板增强器` : "模板可稍后补充"}
+                  {templates.length > 0 ? `${templates.length} template accelerators` : "Templates can be added later"}
                 </Badge>
-                <Badge>{sidebarCollapsed ? "参数面板已收起" : "参数面板已展开"}</Badge>
+                <Badge>{sidebarCollapsed ? "Parameter rail collapsed" : "Parameter rail expanded"}</Badge>
               </div>
             </div>
             <div className="launch-hero-panels">
               <div className="launch-hero-panel">
-                <span className="launch-hero-panel-label">{"当前主动作"}</span>
+                <span className="launch-hero-panel-label">{"Current primary action"}</span>
                 <strong className="launch-hero-panel-value">
-                  {isFirstUseActive ? "完成首跑引导" : "选择一个命令并立即执行"}
+                  {isFirstUseActive ? "Finish the first successful run" : "Choose one command and run it now"}
                 </strong>
                 <p className="launch-hero-panel-hint">
                   {isFirstUseActive
-                    ? "先按引导把配置、运行和结果确认走通。"
-                    : "从命令区发起任务，模板区作为可选加速器。"}
+                    ? "Follow the guide through configuration, execution, and result verification first."
+                    : "Start from the command grid and use templates only as optional accelerators."}
                 </p>
               </div>
               <div className="launch-hero-panel accent">
-                <span className="launch-hero-panel-label">{"当前模板焦点"}</span>
+                <span className="launch-hero-panel-label">{"Current template focus"}</span>
                 <strong className="launch-hero-panel-value">
-                  {selectedTemplate ? selectedTemplate.name : "未选中模板"}
+                  {selectedTemplate ? selectedTemplate.name : "No template selected"}
                 </strong>
                 <p className="launch-hero-panel-hint">
                   {selectedTemplate
-                    ? "模板参数会在主流程稳定后接管快速启动。"
-                    : "如果你已经有稳定流程，可以在下方切换到模板启动。"}
+                    ? "Template parameters take over only after the main flow is stable."
+                    : "Switch to template launch below only after you already have a stable flow."}
                 </p>
               </div>
             </div>
@@ -127,22 +127,22 @@ function QuickLaunchView({
           <Card className="launch-first-use-card mb-4">
             <div className="section-divider">
               <span className="section-divider-line" />
-              <span className="section-divider-label">{"首用引导"}</span>
+              <span className="section-divider-label">{"First-use guide"}</span>
               <span className="section-divider-line" />
             </div>
             <CardContent className="p-4">
               <p className="text-muted">
                 {firstUseStage === "welcome" &&
-                  "欢迎使用。先点击下面按钮开始第 1 步：配置运行参数。"}
+                  'Welcome. Start with step 1 by clicking the button below and configuring the run parameters.'}
                 {firstUseStage === "configure" &&
-                  "第 1 步：在右侧参数面板配置 baseUrl/startUrl/successSelector，满足有效性后才能进入运行。"}
+                  "Step 1: configure baseUrl, startUrl, and successSelector in the parameter rail. You can only continue once the configuration is valid."}
                 {firstUseStage === "run" &&
-                  "第 2 步：选择一个命令或模板并点击运行。检测到已触发运行后会进入第 3 步验证。"}
+                  "Step 2: choose a command or template and click Run. The guide advances to step 3 after a run is detected."}
                 {firstUseStage === "verify" &&
-                  "第 3 步：到任务中心确认成功/失败结果。看到结果后才能完成首跑。"}
+                  "Step 3: switch to Task Center and confirm the success or failure result. The guide only completes after a visible outcome exists."}
               </p>
               <p className="text-muted">
-                {`步骤状态：配置 ${firstUseProgress.configValid ? "✅" : "⬜"} / 触发运行 ${firstUseProgress.runTriggered ? "✅" : "⬜"} / 查看结果 ${firstUseProgress.resultSeen ? "✅" : "⬜"}`}
+                {`Progress: configure ${firstUseProgress.configValid ? "✅" : "⬜"} / trigger a run ${firstUseProgress.runTriggered ? "✅" : "⬜"} / review a result ${firstUseProgress.resultSeen ? "✅" : "⬜"}`}
               </p>
               <div className="form-actions">
                 {firstUseStage === "welcome" && (
@@ -151,7 +151,7 @@ function QuickLaunchView({
                     data-testid={QUICK_LAUNCH_FIRST_USE_START_TEST_ID}
                     onClick={() => onFirstUseStageChange("configure")}
                   >
-                    {"开始第 1 步"}
+                    {"Start step 1"}
                   </Button>
                 )}
                 {canGoConfigure && (
@@ -161,7 +161,7 @@ function QuickLaunchView({
                     data-testid={QUICK_LAUNCH_FIRST_USE_LOCATE_CONFIG_TEST_ID}
                     onClick={() => onFirstUseStageChange("configure")}
                   >
-                    {"定位到配置"}
+                    {"Go to configuration"}
                   </Button>
                 )}
                 {(isCurrentStage("configure") || isCurrentStage("run")) && (
@@ -171,7 +171,7 @@ function QuickLaunchView({
                     onClick={() => onFirstUseStageChange("run")}
                     disabled={!canGoRun}
                   >
-                    {"我已配置，进入运行"}
+                    {"Configuration done, continue to run"}
                   </Button>
                 )}
                 {canShowComplete && (
@@ -181,32 +181,32 @@ function QuickLaunchView({
                     disabled={!canCompleteFirstUse}
                     data-uiq-ignore-button-inventory="first-use-complete-secondary-action"
                   >
-                    {"完成首用引导"}
+                    {"Complete the first-use guide"}
                   </Button>
                 )}
               </div>
               {firstUseStage === "configure" && !firstUseProgress.configValid && (
                 <p className="text-muted">
-                  {"请先填写有效的 baseUrl / startUrl（可留空）并设置 successSelector。"}
+                  {"Enter a valid baseUrl, an optional startUrl, and a successSelector before continuing."}
                 </p>
               )}
               {firstUseStage === "verify" && !firstUseProgress.resultSeen && (
                 <p className="text-muted">
-                  {"尚未检测到成功/失败结果，请先在任务中心等待任务完成。"}
+                  {"No success or failure result is visible yet. Wait for the task to finish in Task Center first."}
                 </p>
               )}
             </CardContent>
           </Card>
         )}
 
-        <section className="launch-primary-zone" aria-label="主任务区">
+        <section className="launch-primary-zone" aria-label="Primary command zone">
           <div className="launch-section-head">
             <div>
               <p className="launch-section-kicker">{"Primary Actions"}</p>
-              <h3 className="launch-section-title">{"选择一个任务入口并立即发起运行"}</h3>
+              <h3 className="launch-section-title">{"Choose one entrypoint and start a run immediately"}</h3>
             </div>
             <p className="launch-section-desc">
-              {"默认先完成主任务；分类筛选和运行反馈都在这一层完成。"}
+              {"The main flow lives here: filter commands, launch the run, and get immediate feedback in one place."}
             </p>
           </div>
           <CommandGrid
@@ -222,19 +222,19 @@ function QuickLaunchView({
 
         {/* Templates section */}
         {templates.length > 0 && (
-          <section className="templates-section" aria-label="模板增强区">
+          <section className="templates-section" aria-label="Template accelerator zone">
             <div className="launch-section-head compact">
               <div>
                 <p className="launch-section-kicker">{"Optional Accelerator"}</p>
-                <h3 className="launch-section-title">{"模板快捷启动"}</h3>
+                <h3 className="launch-section-title">{"Template quick launch"}</h3>
               </div>
               <p className="launch-section-desc">
-                {"当你的主流程已经稳定时，再切换到模板加速；这里默认是增强器，不是首屏主角。"}
+                {"Use templates to accelerate a flow only after the underlying manual path is already stable."}
               </p>
             </div>
             <div className="section-divider">
               <span className="section-divider-line" />
-              <span className="section-divider-label">{"模板快捷启动"}</span>
+              <span className="section-divider-label">{"Template quick launch"}</span>
               <span className="section-divider-line" />
             </div>
             <div className="templates-grid">
@@ -248,12 +248,12 @@ function QuickLaunchView({
                   >
                     <div className="template-card-header">
                       <h4>{tpl.name}</h4>
-                      <Badge>{`${tpl.params_schema.length} 参数`}</Badge>
+                      <Badge>{`${tpl.params_schema.length} params`}</Badge>
                     </div>
                     <p className="template-meta">
-                      {`流程模板: ${tpl.flow_id.slice(0, 8)}`}
-                      {tpl.policies?.otp?.required && " / 验证码"}
-                      {` / 超时 ${tpl.policies?.timeout_seconds ?? 120}s`}
+                      {`Flow template: ${tpl.flow_id.slice(0, 8)}`}
+                      {tpl.policies?.otp?.required && " / OTP"}
+                      {` / Timeout ${tpl.policies?.timeout_seconds ?? 120}s`}
                     </p>
                     {isSelected && (
                       <div className="mt-3">
@@ -273,7 +273,7 @@ function QuickLaunchView({
                                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                                   onRunParamsChange({ ...runParams, [param.key]: e.target.value })
                                 }
-                                placeholder={param.required ? "必填" : "选填"}
+                                placeholder={param.required ? "Required" : "Optional"}
                               />
                             </div>
                           ))}
@@ -284,7 +284,7 @@ function QuickLaunchView({
                             onClick={onCreateRun}
                             data-uiq-ignore-button-inventory="template-run-secondary-cta"
                           >
-                            {"启动运行任务"}
+                            {"Start run"}
                           </Button>
                         </div>
                       </div>
@@ -300,7 +300,7 @@ function QuickLaunchView({
                             onRunParamsChange(tpl.defaults ?? {})
                           }}
                         >
-                          {"选择模板"}
+                          {"Select template"}
                         </Button>
                       </div>
                     )}
@@ -312,19 +312,19 @@ function QuickLaunchView({
         )}
 
         {templates.length === 0 && commandState === "success" && (
-          <section className="templates-section" aria-label="模板增强区">
+          <section className="templates-section" aria-label="Template accelerator zone">
             <div className="launch-section-head compact">
               <div>
                 <p className="launch-section-kicker">{"Optional Accelerator"}</p>
-                <h3 className="launch-section-title">{"模板快捷启动"}</h3>
+                <h3 className="launch-section-title">{"Template quick launch"}</h3>
               </div>
               <p className="launch-section-desc">
-                {"当前还没有模板；主流程依然可以直接运行，模板可以在流程工坊里稍后补齐。"}
+                {"No templates exist yet. You can still run the main flow directly and add templates later in Flow Workshop."}
               </p>
             </div>
             <div className="section-divider">
               <span className="section-divider-line" />
-              <span className="section-divider-label">{"模板快捷启动"}</span>
+              <span className="section-divider-label">{"Template quick launch"}</span>
               <span className="section-divider-line" />
             </div>
             <EmptyState
@@ -341,8 +341,8 @@ function QuickLaunchView({
                   <path d="M12 8v8M8 12h8" />
                 </svg>
               }
-              title="暂无模板"
-              description="模板会把一组步骤和参数固定下来，帮助你快速启动运行任务。在流程工坊录制并保存后，即可创建流程模板。"
+              title="No templates yet"
+              description="Templates freeze a set of steps and parameters so that you can launch repeatable runs faster. Record and save a flow in Flow Workshop to create one."
             />
           </section>
         )}
@@ -352,13 +352,13 @@ function QuickLaunchView({
           <div className="quick-launch-sidebar-head">
             <div>
               <p className="launch-section-kicker">{"Configuration Rail"}</p>
-              <h3 className="launch-section-title">{"运行参数"}</h3>
+              <h3 className="launch-section-title">{"Run parameters"}</h3>
             </div>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setSidebarCollapsed((v) => !v)}
-              aria-label={sidebarCollapsed ? "展开参数面板" : "收起参数面板"}
+              aria-label={sidebarCollapsed ? "Expand parameter rail" : "Collapse parameter rail"}
               aria-expanded={!sidebarCollapsed}
               aria-controls={paramsPanelId}
             >
@@ -366,7 +366,7 @@ function QuickLaunchView({
             </Button>
           </div>
           <p className="quick-launch-sidebar-desc">
-            {"把运行环境、凭证和成功标记收在这里。主流程先运行，配置细节随后精调。"}
+            {"Keep environment, credentials, and success markers here. Run the main path first, then fine-tune the details."}
           </p>
           <div id={paramsPanelId} className="quick-launch-sidebar-panel" hidden={sidebarCollapsed}>
             {!sidebarCollapsed && <ParamsPanel params={params} onChange={onParamsChange} />}

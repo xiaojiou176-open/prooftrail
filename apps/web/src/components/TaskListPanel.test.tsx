@@ -76,14 +76,14 @@ describe("TaskListPanel", () => {
     })
 
     const refreshButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "刷新"
+      (button) => button.textContent === "Refresh"
     )
     act(() => {
       refreshButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
     })
     expect(onRefresh).toHaveBeenCalledTimes(1)
 
-    const statusSelect = container.querySelector('select[aria-label="按状态过滤任务"]') as HTMLSelectElement
+    const statusSelect = container.querySelector('select[aria-label="Filter tasks by status"]') as HTMLSelectElement
     act(() => {
       statusSelect.value = "running"
       statusSelect.dispatchEvent(new Event("change", { bubbles: true }))
@@ -91,7 +91,7 @@ describe("TaskListPanel", () => {
     expect(onStatusFilterChange).toHaveBeenCalledWith("running")
 
     const commandInput = container.querySelector(
-      'input[aria-label="按命令编号筛选运行记录"]'
+      'input[aria-label="Filter run records by command ID"]'
     ) as HTMLInputElement
     act(() => {
       const setValue = Object.getOwnPropertyDescriptor(
@@ -104,7 +104,7 @@ describe("TaskListPanel", () => {
     })
     expect(onCommandFilterChange).toHaveBeenCalledWith("cmd-")
 
-    const limitSelect = container.querySelector('select[aria-label="任务显示数量"]') as HTMLSelectElement
+    const limitSelect = container.querySelector('select[aria-label="Run count limit"]') as HTMLSelectElement
     act(() => {
       limitSelect.value = "50"
       limitSelect.dispatchEvent(new Event("change", { bubbles: true }))
@@ -119,7 +119,7 @@ describe("TaskListPanel", () => {
     expect(onSelectTask).toHaveBeenCalledWith("task-queued-1")
 
     const cancelButtons = Array.from(container.querySelectorAll("button")).filter(
-      (button) => button.textContent === "取消"
+      (button) => button.textContent === "Cancel"
     )
     expect(cancelButtons.length).toBe(2)
     act(() => {
@@ -135,7 +135,7 @@ describe("TaskListPanel", () => {
           tasks={[]}
           taskState="empty"
           selectedTaskId=""
-          taskErrorMessage="任务加载失败"
+          taskErrorMessage="Task loading failed"
           onSelectTask={() => {}}
           onCancelTask={() => {}}
           onRefresh={() => {}}
@@ -145,17 +145,17 @@ describe("TaskListPanel", () => {
           onCommandFilterChange={() => {}}
           taskLimit={20}
           onTaskLimitChange={() => {}}
-          emptyTitle="暂无记录"
-          emptyDescription="请先执行任务"
+          emptyTitle="No records yet"
+          emptyDescription="Run a task first"
         />
       )
     })
 
     expect(container.textContent).toContain(
-      "Issue: 任务加载失败. Suggested action: 点击“刷新”后重试，必要时重新发起运行. Troubleshooting: 查看右侧详情与“运行日志”"
+      'Issue: Task loading failed. Suggested action: Click "Refresh" and try again, or start a new run if needed.. Troubleshooting: Check the details pane and the run log.'
     )
-    expect(container.textContent).toContain("暂无记录")
-    expect(container.textContent).toContain("请先执行任务")
+    expect(container.textContent).toContain("No records yet")
+    expect(container.textContent).toContain("Run a task first")
 
     act(() => {
       root.render(
@@ -177,6 +177,6 @@ describe("TaskListPanel", () => {
       )
     })
 
-    expect(container.textContent).toContain("Issue: 任务列表加载失败")
+    expect(container.textContent).toContain("Issue: Run list loading failed")
   })
 })

@@ -97,10 +97,12 @@ function renderFirstUseView(overrides?: Partial<ComponentProps<typeof QuickLaunc
 }
 
 describe("QuickLaunchView first-use guard rails", () => {
-  it('disables "进入运行" before config becomes valid', () => {
+  it('disables "Configuration done, continue to run" before config becomes valid', () => {
     const html = renderFirstUseView()
-    expect(html).toContain("请先填写有效的 baseUrl / startUrl（可留空）并设置 successSelector。")
-    expect(getButtonAttributes(html, "我已配置，进入运行")).toContain("disabled")
+    expect(html).toContain(
+      "Enter a valid baseUrl, an optional startUrl, and a successSelector before continuing."
+    )
+    expect(getButtonAttributes(html, "Configuration done, continue to run")).toContain("disabled")
   })
 
   it("disables completion when result is not visible yet", () => {
@@ -109,11 +111,13 @@ describe("QuickLaunchView first-use guard rails", () => {
       firstUseProgress: { configValid: true, runTriggered: true, resultSeen: false },
       canCompleteFirstUse: false,
     })
-    expect(html).toContain("尚未检测到成功/失败结果，请先在任务中心等待任务完成。")
-    expect(getButtonAttributes(html, "完成首用引导")).toContain("disabled")
+    expect(html).toContain(
+      "No success or failure result is visible yet. Wait for the task to finish in Task Center first."
+    )
+    expect(getButtonAttributes(html, "Complete the first-use guide")).toContain("disabled")
   })
 
-  it("renders localized template copy without raw engineering terms", () => {
+  it("renders public English-first template copy", () => {
     const html = renderFirstUseView({
       firstUseStage: "run",
       firstUseProgress: { configValid: true, runTriggered: false, resultSeen: false },
@@ -121,12 +125,9 @@ describe("QuickLaunchView first-use guard rails", () => {
       selectedTemplateId: baseTemplate.template_id,
       runParams: { email: "demo@example.com" },
     })
-    expect(html).toContain("流程模板:")
-    expect(html).toContain("验证码")
-    expect(html).toContain("启动运行任务")
-    expect(html).not.toContain("Flow:")
-    expect(html).not.toContain("/ OTP")
-    expect(html).not.toContain("启动 Run")
+    expect(html).toContain("Flow template:")
+    expect(html).toContain("OTP")
+    expect(html).toContain("Start run")
   })
 
   it("exposes sidebar toggle state with aria-expanded and aria-controls", () => {

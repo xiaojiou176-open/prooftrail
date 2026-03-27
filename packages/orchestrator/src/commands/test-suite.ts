@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { spawnSync } from "node:child_process"
-import { writeFileSync } from "node:fs"
-import { resolve } from "node:path"
+import { mkdirSync, writeFileSync } from "node:fs"
+import { dirname, resolve } from "node:path"
 import { ORCHESTRATOR_ENV } from "./env.js"
 
 export type TestSuiteId = "unit" | "ct" | "e2e" | "contract"
@@ -75,6 +75,7 @@ export function runTestSuite(
     stderrTail: tail(proc.stderr ?? ""),
   }
 
+  mkdirSync(dirname(resolve(baseDir, reportPath)), { recursive: true })
   writeFileSync(resolve(baseDir, reportPath), JSON.stringify(result, null, 2), "utf8")
   return result
 }

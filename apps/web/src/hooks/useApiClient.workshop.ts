@@ -38,9 +38,9 @@ export function useApiClientWorkshop({
       if (!response.ok) {
         store.setDiagnosticsError(
           formatActionableError(
-            formatApiError("诊断失败", await readErrorDetail(response)),
-            "检查服务状态后重试。",
-            "查看健康检查面板与后端诊断日志。"
+            formatApiError("Diagnostics failed", await readErrorDetail(response)),
+            "Check the service state and try again.",
+            "Review the health panel and backend diagnostics log."
           )
         )
         store.setDiagnostics(null)
@@ -49,12 +49,12 @@ export function useApiClientWorkshop({
       store.setDiagnosticsError("")
       store.setDiagnostics((await response.json()) as DiagnosticsPayload)
     } catch (error) {
-      const message = error instanceof Error ? error.message : "诊断失败"
+      const message = error instanceof Error ? error.message : "Diagnostics failed"
       store.setDiagnosticsError(
         formatActionableError(
-          formatApiError("诊断失败", { status: 0, detail: message, requestId: null }),
-          "检查服务状态后重试。",
-          "查看健康检查面板与后端诊断日志。"
+          formatApiError("Diagnostics failed", { status: 0, detail: message, requestId: null }),
+          "Check the service state and try again.",
+          "Review the health panel and backend diagnostics log."
         )
       )
       store.setDiagnostics(null)
@@ -67,9 +67,9 @@ export function useApiClientWorkshop({
       if (!response.ok) {
         store.setAlertError(
           formatActionableError(
-            formatApiError("告警失败", await readErrorDetail(response)),
-            "确认告警配置与服务连接后重试。",
-            "查看告警面板与后端日志。"
+            formatApiError("Alert refresh failed", await readErrorDetail(response)),
+            "Verify the alert configuration and service connectivity, then try again.",
+            "Review the alert panel and backend log."
           )
         )
         store.setAlerts(null)
@@ -78,12 +78,12 @@ export function useApiClientWorkshop({
       store.setAlertError("")
       store.setAlerts((await response.json()) as AlertsPayload)
     } catch (error) {
-      const message = error instanceof Error ? error.message : "告警失败"
+      const message = error instanceof Error ? error.message : "Alert refresh failed"
       store.setAlertError(
         formatActionableError(
-          formatApiError("告警失败", { status: 0, detail: message, requestId: null }),
-          "确认告警配置与服务连接后重试。",
-          "查看告警面板与后端日志。"
+          formatApiError("Alert refresh failed", { status: 0, detail: message, requestId: null }),
+          "Verify the alert configuration and service connectivity, then try again.",
+          "Review the alert panel and backend log."
         )
       )
       store.setAlerts(null)
@@ -95,9 +95,9 @@ export function useApiClientWorkshop({
     if (!response.ok) {
       store.setFlowError(
         formatActionableError(
-          formatApiError("流程预览失败", await readErrorDetail(response)),
-          "检查录制结果后重新加载。",
-          "查看流程工坊与后端编排日志。"
+          formatApiError("Flow preview failed", await readErrorDetail(response)),
+          "Review the recording result and reload the latest flow preview.",
+          "Check Flow Workshop and the backend orchestration log."
         )
       )
       store.setLatestFlow(null)
@@ -114,9 +114,9 @@ export function useApiClientWorkshop({
     if (!response.ok) {
       store.setFlowError(
         formatActionableError(
-          formatApiError("流程草稿加载失败", await readErrorDetail(response)),
-          "确认流程草稿可用后重试。",
-          "查看流程工坊草稿区与后端编排日志。"
+          formatApiError("Flow draft loading failed", await readErrorDetail(response)),
+          "Confirm that a flow draft exists, then try again.",
+          "Check the Flow Workshop draft area and backend orchestration log."
         )
       )
       store.setFlowDraft(null)
@@ -178,9 +178,9 @@ export function useApiClientWorkshop({
           }
           store.setStepEvidenceError(
             formatActionableError(
-              formatApiError("步骤证据获取失败", await readErrorDetail(response)),
-              "先执行对应步骤后再查看证据。",
-              "查看步骤详情与后端证据日志。"
+              formatApiError("Step evidence loading failed", await readErrorDetail(response)),
+              "Run the step first, then inspect its evidence.",
+              "Review the step detail view and backend evidence log."
             )
           )
           store.setStepEvidence(null)
@@ -192,13 +192,13 @@ export function useApiClientWorkshop({
         store.setStepEvidence(payload)
       } catch (error) {
         if (requestSeq !== fetchStepEvidenceRequestSeqRef.current) return
-        const message = error instanceof Error ? error.message : "步骤证据获取失败"
+        const message = error instanceof Error ? error.message : "Step evidence loading failed"
         store.setStepEvidence(null)
         store.setStepEvidenceError(
           formatActionableError(
             message,
-            "先执行对应步骤后再查看证据。",
-            "查看步骤详情与后端证据日志。"
+            "Run the step first, then inspect its evidence.",
+            "Review the step detail view and backend evidence log."
           )
         )
       }
@@ -213,9 +213,9 @@ export function useApiClientWorkshop({
     if (!response.ok) {
       store.setEvidenceTimelineError(
         formatActionableError(
-          formatApiError("证据时间轴加载失败", await readErrorDetail(response)),
-          "确认已执行回放后再次刷新时间轴。",
-          "查看流程工坊证据区与后端 evidence timeline 日志。"
+          formatApiError("Evidence timeline loading failed", await readErrorDetail(response)),
+          "Confirm that a replay has already run, then refresh the timeline again.",
+          "Review the Flow Workshop evidence rail and backend evidence timeline log."
         )
       )
       store.setEvidenceTimeline([])
@@ -232,9 +232,9 @@ export function useApiClientWorkshop({
       apiFetch("/api/templates?limit=100", { headers: buildHeaders() }),
       apiFetch("/api/runs?limit=100", { headers: buildHeaders() }),
     ])
-    await assertResponseOk(flowResp, "Universal Studio 数据加载失败")
-    await assertResponseOk(templateResp, "Universal Studio 数据加载失败")
-    await assertResponseOk(runResp, "Universal Studio 数据加载失败")
+    await assertResponseOk(flowResp, "Universal Studio data loading failed")
+    await assertResponseOk(templateResp, "Universal Studio data loading failed")
+    await assertResponseOk(runResp, "Universal Studio data loading failed")
     const flowPayload = (await flowResp.json()) as { flows: UniversalFlow[] }
     const templatePayload = (await templateResp.json()) as { templates: UniversalTemplate[] }
     const runPayload = (await runResp.json()) as { runs: UniversalRun[] }
@@ -251,18 +251,18 @@ export function useApiClientWorkshop({
 
   const saveFlowDraft = useCallback(async () => {
     try {
-      if (!store.flowDraft) throw new Error("流程草稿为空")
-      await requestJson<unknown>("/api/command-tower/latest-flow-draft", "流程草稿保存失败", {
+      if (!store.flowDraft) throw new Error("Flow draft is empty")
+      await requestJson<unknown>("/api/command-tower/latest-flow-draft", "Flow draft save failed", {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...buildHeaders() },
         body: JSON.stringify({ flow: store.flowDraft }),
       })
-      store.addLog("success", "流程草稿保存成功")
-      store.pushNotice("success", "流程草稿保存成功")
+      store.addLog("success", "Flow draft saved successfully")
+      store.pushNotice("success", "Flow draft saved successfully")
       await Promise.all([fetchLatestFlow(), fetchLatestFlowDraft(), fetchEvidenceTimeline()])
       if (store.selectedStepId) await fetchStepEvidence(store.selectedStepId)
     } catch (error) {
-      const message = error instanceof Error ? error.message : "流程草稿保存失败"
+      const message = error instanceof Error ? error.message : "Flow draft save failed"
       const formatted = formatActionableError(message)
       store.addLog("error", formatted)
       store.pushNotice("error", formatted)
@@ -282,19 +282,19 @@ export function useApiClientWorkshop({
     try {
       const payload = await requestJson<{ task: Task }>(
         "/api/command-tower/replay-latest",
-        "回放触发失败",
+        "Replay trigger failed",
         {
           method: "POST",
           headers: buildHeaders(),
         }
       )
       store.setSelectedTaskId(payload.task.task_id)
-      store.addLog("success", `触发回放任务 ${payload.task.task_id}`, payload.task.command_id)
-      store.pushNotice("success", "已触发流程回放")
+      store.addLog("success", `Triggered replay task ${payload.task.task_id}`, payload.task.command_id)
+      store.pushNotice("success", "Flow replay triggered")
       await Promise.all([fetchTasks(), fetchDiagnostics(), fetchAlerts(), fetchEvidenceTimeline()])
       if (store.selectedStepId) await fetchStepEvidence(store.selectedStepId)
     } catch (error) {
-      const message = error instanceof Error ? error.message : "回放触发失败"
+      const message = error instanceof Error ? error.message : "Replay trigger failed"
       const formatted = formatActionableError(message)
       store.addLog("error", formatted)
       store.pushNotice("error", formatted)
@@ -316,7 +316,7 @@ export function useApiClientWorkshop({
       try {
         const payload = await requestJson<{ task: Task }>(
           "/api/command-tower/replay-latest-step",
-          "单步试跑触发失败",
+          "Step replay trigger failed",
           {
             method: "POST",
             headers: { "Content-Type": "application/json", ...buildHeaders() },
@@ -327,10 +327,10 @@ export function useApiClientWorkshop({
         store.setSelectedStepId(stepId)
         store.addLog(
           "success",
-          `触发单步试跑 ${stepId} -> ${payload.task.task_id}`,
+          `Triggered step replay ${stepId} -> ${payload.task.task_id}`,
           payload.task.command_id
         )
-        store.pushNotice("success", `已触发单步试跑 ${stepId}`)
+        store.pushNotice("success", `Step replay triggered for ${stepId}`)
         await Promise.all([
           fetchTasks(),
           fetchDiagnostics(),
@@ -339,7 +339,7 @@ export function useApiClientWorkshop({
         ])
         await fetchStepEvidence(stepId)
       } catch (error) {
-        const message = error instanceof Error ? error.message : "单步试跑触发失败"
+        const message = error instanceof Error ? error.message : "Step replay trigger failed"
         const formatted = formatActionableError(message)
         store.addLog("error", formatted)
         store.pushNotice("error", formatted)
@@ -363,7 +363,7 @@ export function useApiClientWorkshop({
       try {
         const payload = await requestJson<{ task: Task }>(
           "/api/command-tower/replay-latest-from-step",
-          "从步骤恢复触发失败",
+          "Resume from step trigger failed",
           {
             method: "POST",
             headers: { "Content-Type": "application/json", ...buildHeaders() },
@@ -377,10 +377,10 @@ export function useApiClientWorkshop({
         store.setSelectedStepId(stepId)
         store.addLog(
           "success",
-          `触发从步骤继续 ${stepId} -> ${payload.task.task_id}`,
+          `Triggered replay resume from step ${stepId} -> ${payload.task.task_id}`,
           payload.task.command_id
         )
-        store.pushNotice("success", `已触发从步骤 ${stepId} 继续`)
+        store.pushNotice("success", `Resume from step ${stepId} triggered`)
         await Promise.all([
           fetchTasks(),
           fetchDiagnostics(),
@@ -388,7 +388,7 @@ export function useApiClientWorkshop({
           fetchEvidenceTimeline(),
         ])
       } catch (error) {
-        const message = error instanceof Error ? error.message : "从步骤恢复触发失败"
+        const message = error instanceof Error ? error.message : "Resume from step trigger failed"
         const formatted = formatActionableError(message)
         store.addLog("error", formatted)
         store.pushNotice("error", formatted)

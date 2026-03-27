@@ -25,8 +25,8 @@ interface ConsoleHeaderProps {
 const views: { key: AppView; label: string; desc: string; icon: React.ReactNode }[] = [
   {
     key: "launch",
-    label: "快速启动",
-    desc: "执行命令和模板",
+    label: "Quick Launch",
+    desc: "Run commands and templates",
     icon: (
       <svg
         width="16"
@@ -44,8 +44,8 @@ const views: { key: AppView; label: string; desc: string; icon: React.ReactNode 
   },
   {
     key: "tasks",
-    label: "任务中心",
-    desc: "查看执行状态",
+    label: "Task Center",
+    desc: "Review run status",
     icon: (
       <svg
         width="16"
@@ -64,8 +64,8 @@ const views: { key: AppView; label: string; desc: string; icon: React.ReactNode 
   },
   {
     key: "workshop",
-    label: "流程工坊",
-    desc: "编辑和调试流程",
+    label: "Flow Workshop",
+    desc: "Edit and debug flows",
     icon: (
       <svg
         width="16"
@@ -175,24 +175,24 @@ function ConsoleHeader({
           </div>
           <div className="header-text">
             <h1>ProofTrail</h1>
-            <p>{"浏览器自动化平台"}</p>
+            <p>{"Browser automation platform"}</p>
           </div>
         </div>
         <div className="header-right">
           <div className="header-stats">
             <Badge className={`stat-badge ${runningCount > 0 ? "running" : ""}`}>
               <span className="stat-dot" aria-hidden="true" />
-              {"运行 "}
+              {"Running "}
               {runningCount}
             </Badge>
             <Badge variant="success" className="stat-badge success">
               <span className="stat-dot" aria-hidden="true" />
-              {"成功 "}
+              {"Succeeded "}
               {successCount}
             </Badge>
             <Badge variant="destructive" className="stat-badge failed">
               <span className="stat-dot" aria-hidden="true" />
-              {"失败 "}
+              {"Failed "}
               {failedCount}
             </Badge>
           </div>
@@ -201,9 +201,9 @@ function ConsoleHeader({
             size="icon"
             variant="ghost"
             onClick={onRestartTour}
-            aria-label="重新开始引导"
+            aria-label="Restart onboarding"
             data-uiq-ignore-button-inventory="header-utility-action-not-core-flow"
-            title="重新开始引导"
+            title="Restart onboarding"
           >
             <svg
               width="16"
@@ -226,8 +226,8 @@ function ConsoleHeader({
             size="icon"
             variant="ghost"
             onClick={onOpenHelp}
-            aria-label="帮助"
-            title="帮助"
+            aria-label="Help"
+            title="Help"
             data-tour="help-btn"
           >
             <svg
@@ -247,7 +247,7 @@ function ConsoleHeader({
           </Button>
         </div>
       </div>
-      <nav role="tablist" aria-label="主导航">
+      <nav role="tablist" aria-label="Primary navigation">
         <TabsList className="console-nav-tabs">
           {views.map((v, index) => (
             <TabsTrigger

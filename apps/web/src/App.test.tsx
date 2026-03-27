@@ -341,8 +341,8 @@ describe("App", () => {
       tasks: [makeTask("success")],
       showHelp: true,
       confirmDialog: {
-        title: "确认",
-        message: "继续吗",
+        title: "Confirm",
+        message: "Continue?",
         onConfirm: vi.fn(),
       },
     })
@@ -361,9 +361,9 @@ describe("App", () => {
 
     expect((store.setCommandState as ReturnType<typeof vi.fn>).mock.calls[0][0]).toBe("loading")
     expect((store.setTaskState as ReturnType<typeof vi.fn>).mock.calls[0][0]).toBe("loading")
-    expect(store.setFeedbackText).toHaveBeenCalledWith("系统就绪")
-    expect(store.addLog).toHaveBeenCalledWith("success", "系统初始化完成")
-    expect(store.pushNotice).toHaveBeenCalledWith("success", "系统已就绪，欢迎使用")
+    expect(store.setFeedbackText).toHaveBeenCalledWith("System ready")
+    expect(store.addLog).toHaveBeenCalledWith("success", "System initialization completed")
+    expect(store.pushNotice).toHaveBeenCalledWith("success", "System ready. Welcome to ProofTrail.")
 
     expect(store.setStudioTemplateName).toHaveBeenCalledWith("Template 1")
     expect(store.setStudioDefaults).toHaveBeenCalledWith({ email: "demo@example.com" })
@@ -423,7 +423,7 @@ describe("App", () => {
       await flushMicrotasks()
     })
 
-    expect(store.setFeedbackText).toHaveBeenCalledWith("核心数据加载失败")
+    expect(store.setFeedbackText).toHaveBeenCalledWith("Core data loading failed")
     expect(store.setStudioTemplateName).not.toHaveBeenCalled()
     expect(store.setStudioSchemaRows).not.toHaveBeenCalled()
   })
@@ -505,14 +505,16 @@ describe("App", () => {
       await flushMicrotasks()
     })
 
-    expect(store.setFeedbackText).toHaveBeenCalledWith("系统核心已就绪，部分辅助数据加载失败：diag down")
+    expect(store.setFeedbackText).toHaveBeenCalledWith(
+      "Core data is ready, but some supporting data failed to load: diag down"
+    )
     expect(store.addLog).toHaveBeenCalledWith(
       "warn",
-      "系统核心已就绪，部分辅助数据加载失败：diag down"
+      "Core data is ready, but some supporting data failed to load: diag down"
     )
     expect(store.pushNotice).toHaveBeenCalledWith(
       "warn",
-      "系统核心已就绪，部分辅助数据加载失败：diag down"
+      "Core data is ready, but some supporting data failed to load: diag down"
     )
 
     expect(api.fetchStepEvidence).toHaveBeenCalledWith("step-1")
@@ -546,7 +548,9 @@ describe("App", () => {
       await flushMicrotasks()
     })
 
-    expect(store.setFeedbackText).toHaveBeenCalledWith("系统核心已就绪，部分辅助数据加载失败：未知错误")
+    expect(store.setFeedbackText).toHaveBeenCalledWith(
+      "Core data is ready, but some supporting data failed to load: Unknown error"
+    )
   })
 
   it("runs safe command for first-use users and navigates to tasks", async function () {
@@ -625,7 +629,7 @@ describe("App", () => {
       setShowHelp,
       showHelp: true,
       confirmDialog: {
-        title: "确认",
+        title: "Confirm",
         message: "危险操作",
         onConfirm: vi.fn(),
       },

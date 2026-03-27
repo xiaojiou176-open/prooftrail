@@ -211,24 +211,26 @@ pwTest(
     await page.reload()
     await expect(page.getByRole("heading", { level: 1, name: "ProofTrail" })).toBeVisible()
 
-    await page.getByRole("tab", { name: "任务中心" }).click()
-    await page.getByRole("tab", { name: /运行记录（模板）/ }).click()
+    await page.getByRole("tab", { name: "Task Center" }).click()
+    await page.getByRole("tab", { name: /Run Records \(Template\)/ }).click()
 
     const waitingRunOption = page.locator(`#task-center-template-option-${setup.runId}`)
     await expect(waitingRunOption).toBeVisible({ timeout: 15_000 })
     await waitingRunOption.click()
 
-    await expect(page.getByText("该运行记录正在等待验证码，请输入后提交：")).toBeVisible()
-    await page.getByPlaceholder("输入验证码").fill("123456")
+    await expect(
+      page.getByText("This run is waiting for an OTP. Enter it and submit to continue:")
+    ).toBeVisible()
+    await page.getByPlaceholder("Enter OTP").fill("123456")
     const submitOtpResponsePromise = page.waitForResponse(
       (response) =>
         response.request().method() === "POST" &&
         response.url().includes(`/api/runs/${setup.runId}/otp`)
     )
-    await page.getByRole("button", { name: "提交" }).click()
+    await page.getByRole("button", { name: "Submit" }).click()
     const submitOtpResponse = await submitOtpResponsePromise
     expect(submitOtpResponse.status()).toBe(200)
-    await expect(page.getByText("验证码已提交，运行任务已继续")).toBeVisible()
+    await expect(page.getByText("OTP submitted successfully. The run has continued.")).toBeVisible()
 
     let postOtpStatus: TaskStatus | "" = ""
     await expect
@@ -252,39 +254,41 @@ pwTest(
     expect(postOtpStatus).not.toBe("failed")
     expect(postOtpStatus).not.toBe("cancelled")
 
-    await page.getByRole("tab", { name: "流程工坊" }).click()
-    await expect(page.getByRole("heading", { name: "关键结果与下一步" })).toBeVisible()
+    await page.getByRole("tab", { name: "Flow Workshop" }).click()
+    await expect(page.getByRole("heading", { name: "Key outcomes and next steps" })).toBeVisible()
 
     const saveDraftResponsePromise = page.waitForResponse(
       (response) =>
         response.request().method() === "PATCH" &&
         response.url().includes("/api/command-tower/latest-flow-draft")
     )
-    await page.getByRole("button", { name: "保存草稿" }).click()
+    await page.getByRole("button", { name: "Save Draft" }).click()
     const saveDraftResponse = await saveDraftResponsePromise
     expect(saveDraftResponse.status()).toBe(200)
-    await expect(page.getByRole("button", { name: "关闭通知: 流程草稿保存成功" })).toBeVisible()
+    await expect(
+      page.getByRole("button", { name: "Dismiss notice: Flow draft saved successfully" })
+    ).toBeVisible()
 
-    await page.getByText("进阶工坊（可选）：系统诊断、流程编辑与调试证据").click()
+    await page.getByText("Advanced debugging evidence (optional)").click()
 
     const replayStepResponsePromise = page.waitForResponse(
       (response) =>
         response.request().method() === "POST" &&
         response.url().includes("/api/command-tower/replay-latest-step")
     )
-    await page.getByRole("button", { name: "试跑" }).first().click()
+    await page.getByRole("button", { name: "Replay Step" }).first().click()
     const replayStepResponse = await replayStepResponsePromise
     expect(replayStepResponse.status()).toBe(200)
-    await expect(page.getByText("已触发单步试跑 step-1")).toBeVisible()
+    await expect(page.getByText("Step replay triggered for step-1")).toBeVisible()
 
     const replayFromStepResponsePromise = page.waitForResponse(
       (response) =>
         response.request().method() === "POST" &&
         response.url().includes("/api/command-tower/replay-latest-from-step")
     )
-    await page.getByRole("button", { name: "续跑" }).first().click()
+    await page.getByRole("button", { name: "Resume" }).first().click()
     const replayFromStepResponse = await replayFromStepResponsePromise
     expect(replayFromStepResponse.status()).toBe(200)
-    await expect(page.getByText("已触发从步骤 step-1 继续")).toBeVisible()
+    await expect(page.getByText("Resume from step step-1 triggered")).toBeVisible()
   }
 )

@@ -1,6 +1,6 @@
 import { spawnSync } from "node:child_process"
 import { randomUUID } from "node:crypto"
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { expect, test } from "@playwright/test"
@@ -27,7 +27,13 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const AUTOMATION_ROOT = path.resolve(__dirname, "..")
 const REPO_RUNTIME_ROOT = path.resolve(AUTOMATION_ROOT, "..", "..", ".runtime-cache")
-const RUNTIME_ROOT = path.join(REPO_RUNTIME_ROOT, "automation")
+const TEST_OUTPUT_ROOT = path.join(
+  REPO_RUNTIME_ROOT,
+  "artifacts",
+  "ci",
+  "test-output",
+  "record-session-secure-defaults"
+)
 
 function uniqueId(prefix: string): string {
   return `${prefix}-${Date.now()}-${randomUUID().slice(0, 8)}`
@@ -37,164 +43,192 @@ function writeDriverFile(driverPath: string, code: string): void {
   writeFileSync(driverPath, code, "utf-8")
 }
 
-test("record-session uses secure capture defaults and marks protected payment steps", async () => {
-  const sessionId = uniqueId("secure-defaults")
-  const driverDir = path.join(REPO_RUNTIME_ROOT, "test-drivers")
+function createRuntimeHarness(prefix: string): {
+  runtimeCacheRoot: string
+  runtimeRoot: string
+  driverDir: string
+  cleanup: () => void
+} {
+  mkdirSync(TEST_OUTPUT_ROOT, { recursive: true })
+  const runtimeCacheRoot = mkdtempSync(path.join(TEST_OUTPUT_ROOT, `${prefix}-`))
+  const runtimeRoot = path.join(runtimeCacheRoot, "automation")
+  const driverDir = path.join(runtimeCacheRoot, "test-drivers")
+  mkdirSync(runtimeRoot, { recursive: true })
   mkdirSync(driverDir, { recursive: true })
-  const driverPath = path.join(driverDir, `${sessionId}.ts`)
-  const html = encodeURIComponent(
-    '<html><body><input name="otp_code"/><input name="password"/><input name="cardnumber"/></body></html>'
-  )
-  const startUrl = `data:text/html,${html}`
-  writeDriverFile(
-    driverPath,
-    `export async function runMidsceneTakeover(context) {
+  return {
+    runtimeCacheRoot,
+    runtimeRoot,
+    driverDir,
+    cleanup: () => {
+      rmSync(runtimeCacheRoot, { recursive: true, force: true })
+    },
+  }
+}
+
+test("record-session uses secure capture defaults and marks protected payment steps", async () => {
+  const harness = createRuntimeHarness("secure-defaults")
+  try {
+    const sessionId = uniqueId("secure-defaults")
+    const driverPath = path.join(harness.driverDir, `${sessionId}.ts`)
+    const html = encodeURIComponent(
+      '<html><body><input name="otp_code"/><input name="password"/><input name="cardnumber"/></body></html>'
+    )
+    const startUrl = `data:text/html,${html}`
+    writeDriverFile(
+      driverPath,
+      `export async function runMidsceneTakeover(context) {
   await context.page.goto(${JSON.stringify(startUrl)}, { waitUntil: 'networkidle' });
   await context.page.fill('input[name="otp_code"]', '123456');
   await context.page.fill('input[name="password"]', 'SuperSecret!');
   await context.page.fill('input[name="cardnumber"]', '4242424242424242');
 }`
-  )
+    )
+    const run = spawnSync(
+      "pnpm",
+      [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/record-session.ts",
+        "--mode=midscene",
+        `--driver=${driverPath}`,
+      ],
+      {
+        cwd: AUTOMATION_ROOT,
+        env: {
+          ...process.env,
+          UIQ_RUNTIME_CACHE_ROOT: harness.runtimeCacheRoot,
+          SESSION_ID: sessionId,
+          HEADLESS: "true",
+          FLOW_ALLOW_SENSITIVE_CAPTURE: "false",
+          FLOW_ALLOW_SENSITIVE_TRACE: "true",
+          FLOW_ALLOW_SENSITIVE_STORAGE: "true",
+          FLOW_ALLOW_SENSITIVE_INPUT_VALUES: "true",
+        },
+        encoding: "utf-8",
+        timeout: 120000,
+      }
+    )
 
-  const run = spawnSync(
-    "pnpm",
-    [
-      "node",
-      "--import",
-      "tsx",
-      "scripts/record-session.ts",
-      "--mode=midscene",
-      `--driver=${driverPath}`,
-    ],
-    {
-      cwd: AUTOMATION_ROOT,
-      env: {
-        ...process.env,
-        SESSION_ID: sessionId,
-        HEADLESS: "true",
-        FLOW_ALLOW_SENSITIVE_CAPTURE: "false",
-        FLOW_ALLOW_SENSITIVE_TRACE: "true",
-        FLOW_ALLOW_SENSITIVE_STORAGE: "true",
-        FLOW_ALLOW_SENSITIVE_INPUT_VALUES: "true",
-      },
-      encoding: "utf-8",
-      timeout: 120000,
-    }
-  )
+    expect(run.status).toBe(0)
+    const meta = JSON.parse(run.stdout) as SessionMeta
+    expect(meta.capturePolicy.allowSensitiveCapture).toBe(false)
+    expect(meta.capturePolicy.allowSensitiveTrace).toBe(false)
+    expect(meta.capturePolicy.allowSensitiveStorage).toBe(false)
+    expect(meta.capturePolicy.allowSensitiveInputValues).toBe(false)
+    expect(meta.capturePolicy.captureHar).toBe(false)
+    expect(meta.capturePolicy.captureVideo).toBe(false)
+    expect(meta.harPath).toBeNull()
+    expect(meta.tracePath).toBeNull()
+    expect(meta.storageStatePath).toBeNull()
+    expect(meta.videoDir).toBeNull()
 
-  expect(run.status).toBe(0)
-  const meta = JSON.parse(run.stdout) as SessionMeta
-  expect(meta.capturePolicy.allowSensitiveCapture).toBe(false)
-  expect(meta.capturePolicy.allowSensitiveTrace).toBe(false)
-  expect(meta.capturePolicy.allowSensitiveStorage).toBe(false)
-  expect(meta.capturePolicy.allowSensitiveInputValues).toBe(false)
-  expect(meta.capturePolicy.captureHar).toBe(false)
-  expect(meta.capturePolicy.captureVideo).toBe(false)
-  expect(meta.harPath).toBeNull()
-  expect(meta.tracePath).toBeNull()
-  expect(meta.storageStatePath).toBeNull()
-  expect(meta.videoDir).toBeNull()
-
-  const events = JSON.parse(readFileSync(meta.eventLogPath, "utf-8")) as Array<{
-    value?: string
-    target: { name?: string | null }
-  }>
-  const otpEvent = events.find((item) => (item.target.name ?? "").includes("otp"))
-  const passwordEvent = events.find((item) => (item.target.name ?? "").includes("password"))
-  expect(otpEvent?.value).toBe("__redacted__")
-  expect(passwordEvent?.value).toBe("__redacted__")
-
-  const flow = JSON.parse(readFileSync(meta.flowDraftPath, "utf-8")) as {
-    steps: Array<{
-      step_id: string
-      action: string
-      value_ref?: string
-      gate_policy?: string
-      gate_reason?: string
-      target?: { selectors: Array<{ kind: string; value: string }> }
+    const events = JSON.parse(readFileSync(meta.eventLogPath, "utf-8")) as Array<{
+      value?: string
+      target: { name?: string | null }
     }>
-  }
-  const otpStep = flow.steps.find(
-    (step) =>
-      step.action === "type" &&
-      (step.target?.selectors ?? []).some((selector) => selector.value.includes("otp_code"))
-  )
-  const passwordStep = flow.steps.find(
-    (step) =>
-      step.action === "type" &&
-      (step.target?.selectors ?? []).some((selector) => selector.value.includes("password"))
-  )
-  const cardStep = flow.steps.find(
-    (step) =>
-      step.action === "type" &&
-      (step.target?.selectors ?? []).some((selector) => selector.value.includes("cardnumber"))
-  )
-  expect(otpStep?.value_ref).toBe("${params.otp}")
-  expect(passwordStep?.value_ref).toBe("${secrets.input}")
-  expect(cardStep?.gate_policy).toBe("force_manual")
-  expect(cardStep?.gate_reason).toBe("provider_protected_payment_step")
+    const otpEvent = events.find((item) => (item.target.name ?? "").includes("otp"))
+    const passwordEvent = events.find((item) => (item.target.name ?? "").includes("password"))
+    expect(otpEvent?.value).toBe("__redacted__")
+    expect(passwordEvent?.value).toBe("__redacted__")
 
-  const sessionDir = path.join(RUNTIME_ROOT, sessionId)
-  expect(() => readFileSync(path.join(sessionDir, "trace.zip"), "utf-8")).toThrow()
-  expect(() => readFileSync(path.join(sessionDir, "storage-state.json"), "utf-8")).toThrow()
+    const flow = JSON.parse(readFileSync(meta.flowDraftPath, "utf-8")) as {
+      steps: Array<{
+        step_id: string
+        action: string
+        value_ref?: string
+        gate_policy?: string
+        gate_reason?: string
+        target?: { selectors: Array<{ kind: string; value: string }> }
+      }>
+    }
+    const otpStep = flow.steps.find(
+      (step) =>
+        step.action === "type" &&
+        (step.target?.selectors ?? []).some((selector) => selector.value.includes("otp_code"))
+    )
+    const passwordStep = flow.steps.find(
+      (step) =>
+        step.action === "type" &&
+        (step.target?.selectors ?? []).some((selector) => selector.value.includes("password"))
+    )
+    const cardStep = flow.steps.find(
+      (step) =>
+        step.action === "type" &&
+        (step.target?.selectors ?? []).some((selector) => selector.value.includes("cardnumber"))
+    )
+    expect(otpStep?.value_ref).toBe("${params.otp}")
+    expect(passwordStep?.value_ref).toBe("${secrets.input}")
+    expect(cardStep?.gate_policy).toBe("force_manual")
+    expect(cardStep?.gate_reason).toBe("provider_protected_payment_step")
+
+    const sessionDir = path.join(harness.runtimeRoot, sessionId)
+    expect(() => readFileSync(path.join(sessionDir, "trace.zip"), "utf-8")).toThrow()
+    expect(() => readFileSync(path.join(sessionDir, "storage-state.json"), "utf-8")).toThrow()
+  } finally {
+    harness.cleanup()
+  }
 })
 
 test("record-session respects FLOW_PROTECTED_PROVIDER_DOMAINS and FLOW_PROTECTED_PROVIDER_GATE_POLICY", async () => {
-  const sessionId = uniqueId("provider-domain-gate")
-  const driverDir = path.join(REPO_RUNTIME_ROOT, "test-drivers")
-  mkdirSync(driverDir, { recursive: true })
-  const driverPath = path.join(driverDir, `${sessionId}.ts`)
-  writeDriverFile(
-    driverPath,
-    `export async function runMidsceneTakeover(context) {
+  const harness = createRuntimeHarness("provider-domain-gate")
+  try {
+    const sessionId = uniqueId("provider-domain-gate")
+    const driverPath = path.join(harness.driverDir, `${sessionId}.ts`)
+    writeDriverFile(
+      driverPath,
+      `export async function runMidsceneTakeover(context) {
   await context.page.goto('https://example.com', { waitUntil: 'domcontentloaded' });
   await context.page.evaluate(() => {
     document.body.innerHTML = '<input name="account_name" />';
   });
   await context.page.fill('input[name="account_name"]', 'demo-account');
 }`
-  )
+    )
+    const run = spawnSync(
+      "pnpm",
+      [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/record-session.ts",
+        "--mode=midscene",
+        `--driver=${driverPath}`,
+      ],
+      {
+        cwd: AUTOMATION_ROOT,
+        env: {
+          ...process.env,
+          UIQ_RUNTIME_CACHE_ROOT: harness.runtimeCacheRoot,
+          SESSION_ID: sessionId,
+          HEADLESS: "true",
+          FLOW_PROTECTED_PROVIDER_DOMAINS: "example.com",
+          FLOW_PROTECTED_PROVIDER_GATE_POLICY: "forbid_manual",
+        },
+        encoding: "utf-8",
+        timeout: 120000,
+      }
+    )
 
-  const run = spawnSync(
-    "pnpm",
-    [
-      "node",
-      "--import",
-      "tsx",
-      "scripts/record-session.ts",
-      "--mode=midscene",
-      `--driver=${driverPath}`,
-    ],
-    {
-      cwd: AUTOMATION_ROOT,
-      env: {
-        ...process.env,
-        SESSION_ID: sessionId,
-        HEADLESS: "true",
-        FLOW_PROTECTED_PROVIDER_DOMAINS: "example.com",
-        FLOW_PROTECTED_PROVIDER_GATE_POLICY: "forbid_manual",
-      },
-      encoding: "utf-8",
-      timeout: 120000,
+    expect(run.status).toBe(0)
+    const meta = JSON.parse(run.stdout) as SessionMeta
+    const flow = JSON.parse(readFileSync(meta.flowDraftPath, "utf-8")) as {
+      steps: Array<{
+        step_id: string
+        action: string
+        gate_policy?: string
+        gate_reason?: string
+        target?: { selectors: Array<{ kind: string; value: string }> }
+      }>
     }
-  )
-
-  expect(run.status).toBe(0)
-  const meta = JSON.parse(run.stdout) as SessionMeta
-  const flow = JSON.parse(readFileSync(meta.flowDraftPath, "utf-8")) as {
-    steps: Array<{
-      step_id: string
-      action: string
-      gate_policy?: string
-      gate_reason?: string
-      target?: { selectors: Array<{ kind: string; value: string }> }
-    }>
+    const accountStep = flow.steps.find(
+      (step) =>
+        step.action === "type" &&
+        (step.target?.selectors ?? []).some((selector) => selector.value.includes("account_name"))
+    )
+    expect(accountStep?.gate_policy).toBe("forbid_manual")
+    expect(accountStep?.gate_reason).toBe("provider_protected_payment_step")
+  } finally {
+    harness.cleanup()
   }
-  const accountStep = flow.steps.find(
-    (step) =>
-      step.action === "type" &&
-      (step.target?.selectors ?? []).some((selector) => selector.value.includes("account_name"))
-  )
-  expect(accountStep?.gate_policy).toBe("forbid_manual")
-  expect(accountStep?.gate_reason).toBe("provider_protected_payment_step")
 })

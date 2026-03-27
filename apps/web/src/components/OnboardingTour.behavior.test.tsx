@@ -55,12 +55,12 @@ describe("OnboardingTour behavior", () => {
     expect(consoleRoot.hasAttribute("inert")).toBe(true)
     expect(dialog?.textContent).toContain("1 / 3")
 
-    const next = findButton(dialog!, "下一步")
+    const next = findButton(dialog!, "Next")
     act(() => {
       next.dispatchEvent(new MouseEvent("click", { bubbles: true }))
     })
     expect(dialog?.textContent).toContain("2 / 3")
-    expect(findButton(dialog!, "上一步")).toBeInstanceOf(HTMLButtonElement)
+    expect(findButton(dialog!, "Previous")).toBeInstanceOf(HTMLButtonElement)
 
     act(() => {
       dialog?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))

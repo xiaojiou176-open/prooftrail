@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process"
 import { existsSync, mkdirSync, statSync, writeFileSync } from "node:fs"
+import { homedir } from "node:os"
 import { basename, delimiter, relative, resolve } from "node:path"
 import { ORCHESTRATOR_ENV } from "./env.js"
 
@@ -31,7 +32,14 @@ const ALLOWED_START_EXECUTABLES = new Set([
   "uv",
 ])
 const DISALLOWED_START_ARGS = new Set(["-c", "-e", "--eval"])
-const DEFAULT_TRUSTED_BIN_DIRS = ["/usr/bin", "/bin", "/usr/local/bin", "/opt/homebrew/bin"]
+const DEFAULT_TRUSTED_BIN_DIRS = [
+  "/usr/bin",
+  "/bin",
+  "/usr/local/bin",
+  "/opt/homebrew/bin",
+  resolve(homedir(), ".local/bin"),
+  resolve(homedir(), "bin"),
+]
 const SENSITIVE_FLAG_KEYS = new Set([
   "--token",
   "--password",
@@ -51,6 +59,8 @@ export type RuntimeStartConfig = {
     web?: string
     api?: string
   }
+  apiEnvOverrides?: Record<string, string>
+  webEnvOverrides?: Record<string, string>
   healthcheckUrl?: string
 }
 
@@ -72,6 +82,13 @@ function writeRuntimeStartReport(
   const outputPath = resolve(baseDir, relativePath)
   mkdirSync(resolve(outputPath, ".."), { recursive: true })
   writeFileSync(outputPath, JSON.stringify(payload, null, 2), "utf8")
+}
+
+export function persistRuntimeStartResult(
+  baseDir: string,
+  payload: RuntimeStartResult
+): void {
+  writeRuntimeStartReport(baseDir, payload.reportPath, payload)
 }
 
 function sleep(ms: number): Promise<void> {
@@ -377,10 +394,15 @@ export async function startTargetRuntime(config: RuntimeStartConfig): Promise<Ru
     ? parsePortFromCommand(config.startCommands.api)
     : undefined
   if (config.startCommands.api) {
-    processes.push(spawnCommandWithEnv("api", config.startCommands.api))
+    processes.push(
+      spawnCommandWithEnv("api", config.startCommands.api, config.apiEnvOverrides)
+    )
   }
   if (config.startCommands.web) {
-    const webEnvOverrides = apiPort ? { BACKEND_PORT: apiPort } : undefined
+    const webEnvOverrides = {
+      ...(apiPort ? { BACKEND_PORT: apiPort } : {}),
+      ...(config.webEnvOverrides ?? {}),
+    }
     processes.push(spawnCommandWithEnv("web", config.startCommands.web, webEnvOverrides))
   }
 

@@ -450,8 +450,8 @@ test("post-fix regression loop reruns unit/contract/ct concurrently and keeps e2
 })
 
 test("runProfile completes minimal tauri profile without starting web runtime", async () => {
-  const profilePath = resolve(process.cwd(), "profiles", "tauri.smoke.yaml")
-  const targetPath = resolve(process.cwd(), "targets", "tauri.macos.yaml")
+  const profilePath = resolve(process.cwd(), "configs", "profiles", "tauri.smoke.yaml")
+  const targetPath = resolve(process.cwd(), "configs", "targets", "tauri.macos.yaml")
   const originalProfile = readFileSync(profilePath, "utf8")
   const originalTarget = readFileSync(targetPath, "utf8")
   try {
@@ -482,6 +482,8 @@ test("runProfile completes minimal tauri profile without starting web runtime", 
       profile: string
       target: { type: string; name: string }
       gateResults: { status: string }
+      proof?: { coveragePath: string; stabilityPath: string; gapsPath: string; reproPath: string }
+      reports?: { proofCoverage?: string; proofStability?: string; proofGaps?: string; proofRepro?: string }
     }
     assert.equal(result.runId, "run-pipeline-minimal-tauri")
     assert.equal(manifest.runId, "run-pipeline-minimal-tauri")
@@ -489,6 +491,10 @@ test("runProfile completes minimal tauri profile without starting web runtime", 
     assert.equal(manifest.target.type, "tauri")
     assert.equal(manifest.target.name, "tauri.macos")
     assert.equal(["passed", "failed", "blocked"].includes(manifest.gateResults.status), true)
+    assert.equal(manifest.proof?.coveragePath, "reports/proof.coverage.json")
+    assert.equal(manifest.proof?.stabilityPath, "reports/proof.stability.json")
+    assert.equal(manifest.reports?.proofCoverage, "reports/proof.coverage.json")
+    assert.equal(manifest.reports?.proofStability, "reports/proof.stability.json")
   } finally {
     writeFileSync(profilePath, originalProfile, "utf8")
     writeFileSync(targetPath, originalTarget, "utf8")

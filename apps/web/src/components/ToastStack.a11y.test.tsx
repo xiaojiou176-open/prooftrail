@@ -31,19 +31,19 @@ describe("ToastStack accessibility", () => {
     const html = renderToStaticMarkup(
       <ToastStack
         notices={[
-          { id: "n1", level: "success", message: "流程草稿保存成功" },
-          { id: "n2", level: "error", message: "任务执行失败" },
+          { id: "n1", level: "success", message: "Flow draft saved successfully" },
+          { id: "n2", level: "error", message: "Task execution failed" },
         ]}
         onDismiss={noop}
       />
     )
 
     expect(html).toContain('role="region"')
-    expect(html).toContain('aria-label="系统通知"')
+    expect(html).toContain('aria-label="System notices"')
     expect(html).toContain('aria-live="polite"')
     expect(html).toContain('type="button"')
-    expect(html).toContain('aria-label="关闭通知: 流程草稿保存成功"')
-    expect(html).toContain('aria-label="关闭通知: 任务执行失败"')
+    expect(html).toContain('aria-label="Dismiss notice: Flow draft saved successfully"')
+    expect(html).toContain('aria-label="Dismiss notice: Task execution failed"')
   })
 
   it("returns null for empty notices and wires dismiss callback per toast", function () {
@@ -55,8 +55,8 @@ describe("ToastStack accessibility", () => {
       root.render(
         <ToastStack
           notices={[
-            { id: "info-1", level: "info", message: "等待开始" },
-            { id: "warn-1", level: "warn", message: "重试中" },
+            { id: "info-1", level: "info", message: "Waiting to start" },
+            { id: "warn-1", level: "warn", message: "Retry in progress" },
           ]}
           onDismiss={dismiss}
         />

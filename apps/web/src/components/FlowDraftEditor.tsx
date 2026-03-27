@@ -24,7 +24,7 @@ function FlowDraftEditor({
   if (!draft) {
     return (
       <div className="empty-state p-4">
-        <p className="empty-state-desc">{"暂无 flow-draft，请先执行一次录制命令。"}</p>
+        <p className="empty-state-desc">{"No flow draft yet. Start one recording command first."}</p>
       </div>
     )
   }
@@ -72,11 +72,11 @@ function FlowDraftEditor({
   return (
     <div>
       <p className="hint-text mb-3">
-        {"默认先看核心流程。步骤参数和调试字段都放在折叠区，不会打断首跑。"}
+        {"Start with the core flow. Step parameters and debugging fields stay inside collapsible sections so they do not interrupt the first run."}
       </p>
       <div className="field mb-3">
         <label className="field-label" htmlFor="flow-start-url">
-          {"Flow 起始 URL"}
+          {"Flow start URL"}
         </label>
         <Input
           id="flow-start-url"
@@ -92,10 +92,10 @@ function FlowDraftEditor({
           onClick={addStep}
           data-uiq-ignore-button-inventory="flow-editor-add-step-secondary-action"
         >
-          {"新增步骤"}
+          {"Add Step"}
         </Button>
         <Button size="sm" onClick={onSave}>
-          {"保存草稿"}
+          {"Save Draft"}
         </Button>
       </div>
 
@@ -123,16 +123,16 @@ function FlowDraftEditor({
                 </Button>
                 <div className="step-primary-actions">
                   <Button variant="outline" size="sm" onClick={() => onRunStep(step.step_id)}>
-                    {"试跑"}
+                    {"Replay Step"}
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => onResumeFromStep(step.step_id)}>
-                    {"续跑"}
+                    {"Resume"}
                   </Button>
                 </div>
               </div>
 
               <details className="debug-disclosure mt-2">
-                <summary>{"步骤参数（动作 / URL / 输入变量）"}</summary>
+                <summary>{"Step parameters (action / URL / input reference)"}</summary>
                 <div className="debug-disclosure-body">
                   <div className="form-row">
                     <Select
@@ -176,7 +176,7 @@ function FlowDraftEditor({
               </details>
 
               <details className="debug-disclosure mt-2">
-                <summary>{"高级设置（step_id / selector / 排序）"}</summary>
+                <summary>{"Advanced settings (step_id / selector / order)"}</summary>
                 <div className="debug-disclosure-body">
                   <div className="form-row">
                     <Input
@@ -191,7 +191,7 @@ function FlowDraftEditor({
                       variant="ghost"
                       size="sm"
                       onClick={() => moveStep(index, -1)}
-                      aria-label="上移"
+                      aria-label="Move up"
                       data-uiq-ignore-button-inventory="flow-editor-order-control"
                     >
                       {"\u2191"}
@@ -200,7 +200,7 @@ function FlowDraftEditor({
                       variant="ghost"
                       size="sm"
                       onClick={() => moveStep(index, 1)}
-                      aria-label="下移"
+                      aria-label="Move down"
                       data-uiq-ignore-button-inventory="flow-editor-order-control"
                     >
                       {"\u2193"}
@@ -223,7 +223,7 @@ function FlowDraftEditor({
                     aria-label={`step-${index}-selector-index`}
                   >
                     {selectors.length === 0 ? (
-                      <option value="0">{"无 selector"}</option>
+                      <option value="0">{"No selector"}</option>
                     ) : (
                       selectors.map((selector, selectorIndex) => (
                         <option key={`${selector.kind}-${selectorIndex}`} value={selectorIndex}>

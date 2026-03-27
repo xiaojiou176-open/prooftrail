@@ -111,11 +111,11 @@ describe("TaskCenterView empty and keyboard branches", () => {
     const onGoToLaunch = vi.fn()
     renderView(root, { runs: [], selectedRunId: "", onGoToLaunch })
 
-    expect(container.textContent).toContain("暂无运行记录")
-    expect(container.textContent).toContain("去快速启动")
+    expect(container.textContent).toContain("No run records yet")
+    expect(container.textContent).toContain("Go to Quick Launch")
 
     const launchButton = Array.from(container.querySelectorAll("button")).find((button) =>
-      button.textContent?.includes("去快速启动")
+      button.textContent?.includes("Go to Quick Launch")
     )
     expect(launchButton).not.toBeNull()
 
@@ -162,10 +162,10 @@ describe("TaskCenterView empty and keyboard branches", () => {
 
     expect(onSelectedRunIdChange).toHaveBeenCalledWith("run-b")
     expect(onSelectedRunIdChange).toHaveBeenCalledWith("run-a")
-    expect(container.textContent).toContain("等待补充输入")
+    expect(container.textContent).toContain("Waiting for User Input")
 
     const submitButton = Array.from(container.querySelectorAll("button")).find((button) =>
-      button.textContent?.includes("提交")
+      button.textContent?.includes("Submit")
     )
     expect(submitButton).not.toBeNull()
 

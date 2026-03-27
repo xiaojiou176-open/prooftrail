@@ -654,7 +654,7 @@ describe("useApiClient baseUrl routing", () => {
     expect(store.setDiagnostics).toHaveBeenCalledWith(null)
     expect(store.setDiagnosticsError).toHaveBeenCalledTimes(1)
     const [message] = store.setDiagnosticsError.mock.calls[0] as [string]
-    expect(message).toContain("诊断失败")
+    expect(message).toContain("Diagnostics failed")
     expect(message).toContain("Suggested action:")
   })
 
@@ -679,7 +679,7 @@ describe("useApiClient baseUrl routing", () => {
     expect(store.setAlerts).toHaveBeenCalledWith(null)
     expect(store.setAlertError).toHaveBeenCalledTimes(1)
     const [message] = store.setAlertError.mock.calls[0] as [string]
-    expect(message).toContain("告警失败")
+    expect(message).toContain("Alert refresh failed")
     expect(message).toContain("Troubleshooting:")
   })
 
@@ -946,7 +946,7 @@ describe("useApiClient baseUrl routing", () => {
 
     expect(ok).toBe(true)
     expect(store.setActionState).toHaveBeenCalledWith("success")
-    expect(store.pushNotice).toHaveBeenCalledWith("success", "已提交 运行 UI")
+    expect(store.pushNotice).toHaveBeenCalledWith("success", "Submitted 运行 UI")
     expect(paramsState.registerPassword).toBe("")
   })
 
@@ -964,7 +964,7 @@ describe("useApiClient baseUrl routing", () => {
       root.render(<Harness />)
     })
 
-    await expect(api?.fetchTasks()).rejects.toThrow("任务列表加载失败")
+    await expect(api?.fetchTasks()).rejects.toThrow("Run list loading failed")
     expect(store.setTaskState).toHaveBeenCalledWith("loading")
     expect(store.setTaskState).toHaveBeenCalledWith("error")
   })
@@ -1019,7 +1019,7 @@ describe("useApiClient baseUrl routing", () => {
     expect(store.setLatestFlow).toHaveBeenCalledWith(null)
     expect(store.setFlowError).toHaveBeenCalledTimes(1)
     const [message] = store.setFlowError.mock.calls[0] as [string]
-    expect(message).toContain("流程预览失败")
+    expect(message).toContain("Flow preview failed")
   })
 
   caseIt("sets step evidence actionable error when non-404 response returns", async () => {
@@ -1044,7 +1044,7 @@ describe("useApiClient baseUrl routing", () => {
     expect(store.setStepEvidence).toHaveBeenCalledWith(null)
     expect(store.setStepEvidenceError).toHaveBeenCalledTimes(1)
     const [message] = store.setStepEvidenceError.mock.calls[0] as [string]
-    expect(message).toContain("步骤证据获取失败")
+    expect(message).toContain("Step evidence loading failed")
   })
 
   caseIt("handles step evidence transport failure with actionable message", async () => {

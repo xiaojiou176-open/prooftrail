@@ -14,42 +14,69 @@ const viewHelp: Record<
   { title: string; desc: string; steps: { title: string; desc: string }[] }
 > = {
   launch: {
-    title: "快速启动",
-    desc: "从这里选择你要做的事，填好必要信息后即可一键开始自动化操作。",
+    title: "Quick Launch",
+    desc: "Choose the task you want to complete here, fill the required inputs, and start an automated run with one click.",
     steps: [
-      { title: "选一个要完成的操作", desc: "浏览命令卡片并按顶部分类筛选，找到当前要跑的任务。" },
       {
-        title: "填入必要信息",
-        desc: "在右侧参数区填写网站地址、访问凭证（API Token）等信息；不确定时先用默认值。",
+        title: "Choose the job you want to complete",
+        desc: "Browse the command cards and use the category tabs to find the task you want to run.",
       },
-      { title: "点击“开始运行”", desc: "点击命令卡片上的按钮后，运行任务会立即进入后台排队。" },
-      { title: "去任务中心看进度", desc: "切换到「任务中心」查看实时状态、日志和结果。" },
+      {
+        title: "Fill the required inputs",
+        desc: "Use the parameter panel to enter the target URL, credentials, and other required values. Keep the defaults if you are unsure.",
+      },
+      {
+        title: 'Click "Run"',
+        desc: "The task is queued immediately after you click the command button.",
+      },
+      {
+        title: "Review progress in Task Center",
+        desc: "Switch to Task Center to inspect status, logs, and results in real time.",
+      },
     ],
   },
   tasks: {
-    title: "任务中心",
-    desc: "这里会集中显示所有任务，方便你追踪进度、定位问题并确认是否成功。",
+    title: "Task Center",
+    desc: "This view centralizes all tasks so you can track progress, locate failures, and confirm outcomes.",
     steps: [
       {
-        title: "先筛选再定位",
-        desc: "用顶部状态筛选和命令编号（命令 ID）输入框，快速找到目标任务。",
+        title: "Filter first, then locate the target task",
+        desc: "Use the status filter and command ID filter to narrow the list before opening a record.",
       },
-      { title: "点开任务看详情", desc: "点击任意任务后，右侧会展示输入参数、状态和结果摘要。" },
-      { title: "打开日志排查", desc: "底部日志面板会实时刷新，支持按级别过滤错误信息。" },
-      { title: "必要时停止运行", desc: "运行中的任务可以点击「取消」立即停止。" },
+      {
+        title: "Open a record for details",
+        desc: "Selecting a task reveals its parameters, status, and summary on the detail side.",
+      },
+      {
+        title: "Open the logs when something looks wrong",
+        desc: "The log panel updates in real time and lets you filter by severity.",
+      },
+      {
+        title: "Stop a task when needed",
+        desc: 'Running tasks expose a "Cancel" action for immediate stop.',
+      },
     ],
   },
   workshop: {
-    title: "流程工坊",
-    desc: "在这里查看和调整自动化步骤，并用截图证据确认每一步是否按预期执行。",
+    title: "Flow Workshop",
+    desc: "Inspect and edit automation steps here, then verify each step with screenshot evidence.",
     steps: [
-      { title: "先看系统状态", desc: "顶部会显示服务是否在线以及关键运行指标。" },
       {
-        title: "编辑流程步骤",
-        desc: "可修改步骤顺序、操作类型和页面定位方式（页面元素定位规则）。",
+        title: "Start with system health",
+        desc: "The top section shows whether services are online and highlights key run metrics.",
       },
-      { title: "单步试跑并验证", desc: "先试跑单个步骤，再根据结果和截图确认是否正确。" },
-      { title: "对照证据时间轴", desc: "右侧可查看每一步执行前后的截图对比。" },
+      {
+        title: "Edit the flow steps",
+        desc: "You can adjust step order, action type, and the selectors used to locate page elements.",
+      },
+      {
+        title: "Replay one step and verify it",
+        desc: "Replay a single step first, then confirm the result with the latest output and screenshots.",
+      },
+      {
+        title: "Compare the evidence timeline",
+        desc: "Use the right-side timeline to review before/after screenshots for each step.",
+      },
     ],
   },
 }
@@ -126,7 +153,7 @@ function HelpPanel({ activeView, onClose, onRestartTour }: HelpPanelProps) {
         size="sm"
         className="help-panel-overlay"
         onClick={onClose}
-        aria-label="关闭帮助面板"
+        aria-label="Close help panel"
         data-uiq-ignore-button-inventory="overlay-dismiss-surface"
       />
       <aside
@@ -139,14 +166,14 @@ function HelpPanel({ activeView, onClose, onRestartTour }: HelpPanelProps) {
         tabIndex={-1}
       >
         <div className="help-panel-header">
-          <h2 id={titleId}>{"帮助"}</h2>
+          <h2 id={titleId}>{"Help"}</h2>
           <Button
             ref={closeButtonRef}
             type="button"
             variant="ghost"
             size="icon"
             onClick={onClose}
-            aria-label="关闭帮助面板"
+            aria-label="Close help panel"
             data-uiq-ignore-button-inventory="panel-close-control-not-business-action"
           >
             {"\u2715"}
@@ -160,7 +187,7 @@ function HelpPanel({ activeView, onClose, onRestartTour }: HelpPanelProps) {
           </div>
 
           <div className="help-section">
-            <h3>{"操作步骤"}</h3>
+            <h3>{"Steps"}</h3>
             <ol className="help-step-list">
               {info.steps.map((s, i) => (
                 <li key={i} className="help-step-item">
@@ -175,37 +202,35 @@ function HelpPanel({ activeView, onClose, onRestartTour }: HelpPanelProps) {
           </div>
 
           <div className="help-section">
-            <h3>{"常见问题"}</h3>
+            <h3>{"Common Questions"}</h3>
             <details className="help-faq-item">
-              <summary>{"命令执行后看不到结果？"}</summary>
+              <summary>{"I ran a command but cannot see the result"}</summary>
               <p>
                 {
-                  "结论：运行记录未成功写入任务中心列表。动作：先切换到「任务中心」点击“刷新”后重试。排查入口：若仍为空，查看任务中心运行日志与后端服务状态。"
+                  'Conclusion: the run record did not land in Task Center. Action: switch to "Task Center", click "Refresh", and try again. Troubleshooting: if the list is still empty, inspect the run log and backend service status.'
                 }
               </p>
             </details>
             <details className="help-faq-item">
-              <summary>{"如何配置目标站点地址？"}</summary>
+              <summary>{"How do I configure the target site URL?"}</summary>
               <p>
                 {
-                  "在「快速启动」右侧参数区填写“你要操作的网站地址（UIQ_BASE_URL）”即可。默认值是本地开发地址。"
+                  'Use the "Target site URL (UIQ_BASE_URL)" field in the Quick Launch parameter panel. The default value points to local development.'
                 }
               </p>
             </details>
             <details className="help-faq-item">
-              <summary>{"什么是流程草稿？"}</summary>
-              <p>
-                {"开始录制后，系统会自动保存一份“可编辑步骤清单”。你可以在流程工坊里修改并回放。"}
-              </p>
+              <summary>{"What is a flow draft?"}</summary>
+              <p>{"After a recording run starts, the system keeps an editable step list that you can revise and replay in Flow Workshop."}</p>
             </details>
             <details className="help-faq-item">
-              <summary>{"API Token 是什么？"}</summary>
-              <p>{"这是访问后端的访问凭证。只有在后端开启鉴权时才需要填写。"}</p>
+              <summary>{"What is the API token?"}</summary>
+              <p>{"It is the credential used to access the backend API. You only need it when backend auth is enabled."}</p>
             </details>
           </div>
 
           <div className="help-section">
-            <h3>{"其他"}</h3>
+            <h3>{"Other Actions"}</h3>
             <Button
               type="button"
               variant="outline"
@@ -213,7 +238,7 @@ function HelpPanel({ activeView, onClose, onRestartTour }: HelpPanelProps) {
               data-testid={HELP_PANEL_RESTART_ONBOARDING_TEST_ID}
               onClick={onRestartTour}
             >
-              {"重新走一遍首用引导"}
+              {"Restart the first-use guide"}
             </Button>
           </div>
         </div>

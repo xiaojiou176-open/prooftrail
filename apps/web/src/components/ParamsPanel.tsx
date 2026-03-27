@@ -32,11 +32,11 @@ function ParamsPanel({ params, onChange }: ParamsPanelProps) {
 
   return (
     <div className="form-section">
-      <h3 className="form-section-title">{"运行参数"}</h3>
+      <h3 className="form-section-title">{"Run Parameters"}</h3>
       <div className="field-group">
         <div className="field">
           <label className="field-label" htmlFor="base-url">
-            {"你要操作的网站地址（UIQ_BASE_URL）"}
+            {"Target site URL (UIQ_BASE_URL)"}
           </label>
           <Input
             id="base-url"
@@ -48,19 +48,19 @@ function ParamsPanel({ params, onChange }: ParamsPanelProps) {
         </div>
         <div className="field">
           <label className="field-label" htmlFor="start-url">
-            {"从哪个页面开始（START_URL）"}
+            {"Start URL (START_URL)"}
           </label>
           <Input
             id="start-url"
             type="url"
             value={params.startUrl}
             onChange={(e: ChangeEvent<HTMLInputElement>) => onChange({ startUrl: e.target.value })}
-            placeholder={`可留空；将自动使用网站地址 + ${defaultStartUrlRoutePath}`}
+            placeholder={`Optional; defaults to base URL + ${defaultStartUrlRoutePath}`}
           />
         </div>
         <div className="field">
           <label className="field-label" htmlFor="success-selector">
-            {"成功标记（选择器）"}
+            {"Success selector"}
           </label>
           <Input
             id="success-selector"
@@ -69,12 +69,12 @@ function ParamsPanel({ params, onChange }: ParamsPanelProps) {
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               onChange({ successSelector: e.target.value })
             }
-            placeholder="例如：.success-message 或 #welcome"
+            placeholder="e.g. .success-message or #welcome"
           />
         </div>
         <div className="field">
           <label className="field-label" htmlFor="model-name">
-            {"Gemini 模型名称"}
+            {"Gemini model"}
           </label>
           <Input
             id="model-name"
@@ -85,7 +85,7 @@ function ParamsPanel({ params, onChange }: ParamsPanelProps) {
         </div>
         <div className="field">
           <label className="field-label" htmlFor="api-key">
-            {"Gemini API Key（可选）"}
+            {"Gemini API key (optional)"}
           </label>
           <div className="field-row">
             <Input
@@ -96,7 +96,7 @@ function ParamsPanel({ params, onChange }: ParamsPanelProps) {
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 onChange({ geminiApiKey: e.target.value })
               }
-              placeholder="仅在本地/CI 注入 GEMINI_API_KEY 时填写"
+              placeholder="Only fill this when GEMINI_API_KEY is injected locally or in CI"
             />
             <Button
               type="button"
@@ -107,13 +107,13 @@ function ParamsPanel({ params, onChange }: ParamsPanelProps) {
               aria-pressed={showGeminiApiKey}
               onClick={() => setShowGeminiApiKey((v) => !v)}
             >
-              {showGeminiApiKey ? "隐藏" : "显示"}
+              {showGeminiApiKey ? "Hide" : "Show"}
             </Button>
           </div>
         </div>
         <div className="field">
           <label className="field-label" htmlFor="register-password">
-            {"注册密码（可选）"}
+            {"Registration password (optional)"}
           </label>
           <div className="field-row">
             <Input
@@ -126,7 +126,7 @@ function ParamsPanel({ params, onChange }: ParamsPanelProps) {
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 onChange({ registerPassword: e.target.value })
               }
-              placeholder="仅在目标站点需要固定注册密码时填写"
+              placeholder="Only fill this when the target site requires a fixed registration password"
             />
             <Button
               type="button"
@@ -137,13 +137,13 @@ function ParamsPanel({ params, onChange }: ParamsPanelProps) {
               aria-pressed={showRegisterPassword}
               onClick={() => setShowRegisterPassword((v) => !v)}
             >
-              {showRegisterPassword ? "隐藏" : "显示"}
+              {showRegisterPassword ? "Hide" : "Show"}
             </Button>
           </div>
         </div>
         <div className="field">
           <label className="field-label" htmlFor="automation-token">
-            {"访问令牌（API Token）"}
+            {"API token"}
           </label>
           <div className="field-row">
             <Input
@@ -154,7 +154,7 @@ function ParamsPanel({ params, onChange }: ParamsPanelProps) {
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 onChange({ automationToken: e.target.value })
               }
-              placeholder="仅在后端开启鉴权时填写"
+              placeholder="Only fill this when backend auth is enabled"
             />
             <Button
               type="button"
@@ -165,13 +165,13 @@ function ParamsPanel({ params, onChange }: ParamsPanelProps) {
               aria-pressed={showToken}
               onClick={() => setShowToken((v) => !v)}
             >
-              {showToken ? "隐藏" : "显示"}
+              {showToken ? "Hide" : "Show"}
             </Button>
           </div>
         </div>
         <div className="field">
           <label className="field-label" htmlFor="automation-client-id">
-            {"客户端标识（Client ID）"}
+            {"Client ID"}
           </label>
           <Input
             id="automation-client-id"
@@ -181,7 +181,7 @@ function ParamsPanel({ params, onChange }: ParamsPanelProps) {
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               onChange({ automationClientId: e.target.value })
             }
-            placeholder="首次自动生成，可手动修改"
+            placeholder="Generated on first run; you can override it manually"
           />
         </div>
         <div className="switch-group">
@@ -191,7 +191,7 @@ function ParamsPanel({ params, onChange }: ParamsPanelProps) {
               checked={params.headless}
               onCheckedChange={(value: boolean) => onChange({ headless: value })}
             />
-            {"后台运行浏览器（Headless）"}
+            {"Run browser in the background (headless)"}
           </label>
           <label className="switch-label" htmlFor="params-midscene-strict">
             <Switch
@@ -199,7 +199,7 @@ function ParamsPanel({ params, onChange }: ParamsPanelProps) {
               checked={params.midsceneStrict}
               onCheckedChange={(value: boolean) => onChange({ midsceneStrict: value })}
             />
-            {"严格识别页面元素（Midscene Strict）"}
+            {"Use strict element recognition (Midscene strict)"}
           </label>
         </div>
       </div>

@@ -69,7 +69,7 @@ export default function App() {
     )
     if (coreError) {
       const message =
-        coreError.reason instanceof Error ? coreError.reason.message : "核心数据加载失败"
+        coreError.reason instanceof Error ? coreError.reason.message : "Core data loading failed"
       setCommandState("error")
       setTaskState("error")
       setFeedbackText(message)
@@ -92,17 +92,17 @@ export default function App() {
 
     if (auxiliaryFailures.length > 0) {
       const firstFailure = auxiliaryFailures[0].reason
-      const detail = firstFailure instanceof Error ? firstFailure.message : "未知错误"
-      const warning = `系统核心已就绪，部分辅助数据加载失败：${detail}`
+      const detail = firstFailure instanceof Error ? firstFailure.message : "Unknown error"
+      const warning = `Core data is ready, but some supporting data failed to load: ${detail}`
       setFeedbackText(warning)
       addLog("warn", warning)
       pushNotice("warn", warning)
       return
     }
 
-    setFeedbackText("系统就绪")
-    addLog("success", "系统初始化完成")
-    pushNotice("success", "系统已就绪，欢迎使用")
+    setFeedbackText("System ready")
+    addLog("success", "System initialization completed")
+    pushNotice("success", "System ready. Welcome to ProofTrail.")
   }, [
     addLog,
     fetchAlerts,
@@ -181,8 +181,8 @@ export default function App() {
     async (command: Command) => {
       if (isDangerous(command)) {
         setConfirmDialog({
-          title: "确认执行危险命令",
-          message: `命令「${command.title}」可能修改或删除文件，确认执行吗？`,
+          title: "Confirm dangerous command",
+          message: `The command "${command.title}" may modify or delete files. Do you want to continue?`,
           onConfirm: () => {
             setConfirmDialog(null)
             void (async () => {
@@ -226,7 +226,7 @@ export default function App() {
   return (
     <div className="console-root">
       <a href="#main-content" className="skip-nav">
-        {"跳转到主内容"}
+        {"Skip to main content"}
       </a>
 
       <ToastStack notices={store.notices} onDismiss={store.dismissNotice} />
@@ -359,7 +359,7 @@ export default function App() {
           title={store.confirmDialog.title}
           message={store.confirmDialog.message}
           variant="danger"
-          confirmLabel="确认执行"
+          confirmLabel="Confirm run"
           onConfirm={store.confirmDialog.onConfirm}
           onCancel={() => store.setConfirmDialog(null)}
         />
