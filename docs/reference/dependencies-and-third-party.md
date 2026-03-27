@@ -27,3 +27,9 @@ The repository uses these tools during public-surface and security review:
 - ScanCode Toolkit
 
 These tools support repository review. They do not replace human review.
+
+## Generated Governance References
+
+- Dependency baselines: `docs/reference/generated/governance/dependency-baselines.md`
+- Upstream registry source: `configs/governance/upstream-registry.json`
+- Upstream compatibility matrix: `docs/reference/generated/governance/upstream-compat-matrix.md`

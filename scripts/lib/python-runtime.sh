@@ -8,6 +8,10 @@ resolve_project_python_env() {
   printf '%s\n' "$configured"
 }
 
+project_python_env_root() {
+  resolve_project_python_env
+}
+
 project_python_bin() {
   printf '%s/bin/python\n' "$(resolve_project_python_env)"
 }
