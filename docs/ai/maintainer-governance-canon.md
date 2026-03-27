@@ -16,6 +16,8 @@ collaboration decisions.
 - `docs/index.md` is the public docs map.
 - Helper paths may exist, but they must be explicitly downgraded when mentioned.
 - Release and supply-chain wording must not overclaim proof strength.
+- GitHub-only closure checks should be recorded through `just github-closure-report`.
+- Manual GitHub evidence steps live in `scripts/github/GITHUB_CLOSURE_EVIDENCE_SOP.md`.
 
 ## Not public canon
 

@@ -27,3 +27,13 @@ Open a GitHub issue with:
 
 Do not use public issues for vulnerabilities or leaked credentials.
 Use the private path described in `SECURITY.md`.
+
+## Code of Conduct reports
+
+Do not post conduct reports in public issues, pull requests, or discussions.
+
+- First use GitHub content reports if that option is available in the
+  repository UI.
+- If content reports are unavailable, open a support request that only asks for
+  a private contact channel and wait for a maintainer response before sharing
+  incident details.

@@ -15,6 +15,8 @@ bash scripts/docs-gate.sh
 - [ ] I did not add secrets, runtime artifacts, or local-only files.
 - [ ] I updated docs for public-facing behavior or configuration changes.
 - [ ] I included the smallest relevant verification commands.
+- [ ] I have the right to submit this contribution under the repository license.
+- [ ] Every commit in this PR includes a DCO-style `Signed-off-by:` line.
 
 ## Rollback
 - Revert the merge commit or the individual commit(s).

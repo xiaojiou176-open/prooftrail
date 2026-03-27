@@ -22,9 +22,21 @@ next layer of proof, operating detail, and governance boundaries.
 
 - [docs/architecture.md](architecture.md)
 - [docs/reference/public-surface-policy.md](reference/public-surface-policy.md)
+- [docs/reference/configuration.md](reference/configuration.md)
 - [docs/reference/public-surface-sanitization-policy.md](reference/public-surface-sanitization-policy.md)
 - [docs/reference/release-supply-chain-policy.md](reference/release-supply-chain-policy.md)
 - [docs/reference/dependencies-and-third-party.md](reference/dependencies-and-third-party.md)
+
+## Generated Governance Views
+
+- [docs/reference/generated/governance/dependency-baselines.md](reference/generated/governance/dependency-baselines.md)
+- [docs/reference/generated/governance/repo-map.md](reference/generated/governance/repo-map.md)
+- [docs/reference/generated/governance/root-allowlist.md](reference/generated/governance/root-allowlist.md)
+- [docs/reference/generated/governance/runtime-live-policy.md](reference/generated/governance/runtime-live-policy.md)
+- [docs/reference/generated/governance/upstream-registry.md](reference/generated/governance/upstream-registry.md)
+- [docs/reference/generated/governance/upstream-customizations.md](reference/generated/governance/upstream-customizations.md)
+- [docs/reference/generated/mcp-tool-contract.md](reference/generated/mcp-tool-contract.md)
+- [docs/reference/generated/profile-thresholds.md](reference/generated/profile-thresholds.md)
 
 ## Maintainer Canon
 

@@ -54,6 +54,24 @@ time visitor:
 - Keep docs and implementation in sync.
 - Include the commands you used for validation.
 
+## Contribution boundary
+
+ProofTrail is still operating under a **public-preview boundary** for
+reviewable contributions.
+
+- Prefer changes that keep the canonical public mainline, proof contract, and
+  governance surface aligned.
+- If your change touches the repo-truth surface, run `pnpm repo:truth:check`
+  before asking for review.
+- If your change affects history cleanup, release truth, or GitHub settings,
+  call that out explicitly instead of implying the whole repo is already fully
+  closed.
+
+## Sign-off requirement
+
+Every reviewable contribution must include a DCO-style `Signed-off-by:` line in
+each commit message.
+
 ## Contribution license
 
 By contributing, you confirm that you have the right to submit your work under
