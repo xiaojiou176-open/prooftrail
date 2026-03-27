@@ -54,9 +54,14 @@ Instances of abusive, harassing, or otherwise unacceptable behavior should not
 be reported through the security advisory channel.
 
 Instead, report conduct issues privately to the repository administrators
-through a conduct-specific maintainer contact path. If GitHub content reports
-are available in the repository UI, use that channel for Code of Conduct
-matters before using any security workflow.
+through the conduct-specific contact path below:
+
+- First choice: use GitHub content reports when that option is available in the
+  repository UI.
+- Fallback: open a private maintainer contact request through the support path
+  documented in `SUPPORT.md` without including incident details in public.
+- Do not use the security advisory channel for conduct reports unless a
+  maintainer has explicitly redirected you there for privacy reasons.
 
 All complaints will be reviewed and investigated promptly and fairly.
 

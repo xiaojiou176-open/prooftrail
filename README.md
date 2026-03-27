@@ -6,7 +6,7 @@ break.
 
 [Docs](docs/index.md) | [Quickstart](docs/getting-started/human-first-10-min.md) | [Minimal Success Case](docs/showcase/minimal-success-case.md) | [Release Guide](docs/release/README.md)
 
-![ProofTrail hero showing the canonical run flow from setup to evidence review](assets/storefront/prooftrail-hero.svg)
+![ProofTrail command center showing the canonical run path, evidence-focused navigation, and operator parameter rail](assets/storefront/prooftrail-hero.png)
 
 > ProofTrail is for people who want browser automation to feel like an
 > inspectable product workflow, not a pile of one-off scripts that become
@@ -33,8 +33,9 @@ but it is not the canonical public mainline.
 
 ## Why Teams Use It
 
-- **Fewer mystery failures**: every canonical run writes a manifest-first
-  evidence bundle instead of leaving you with scattered logs and screenshots.
+- **Fewer mystery failures**: every canonical run writes a manifest-anchored
+  evidence bundle with summary, index, and proof reports instead of leaving
+  you with scattered logs and screenshots.
 - **Easier recovery**: the web command center, run records, and flow workshop
   are built to help you inspect, replay, and repair workflows after something
   breaks.
@@ -73,7 +74,12 @@ ls .runtime-cache/artifacts/runs
 What good looks like:
 
 - a new run directory appears under `.runtime-cache/artifacts/runs/<runId>/`
-- the run contains `manifest.json` and report files you can review
+- the run contains `manifest.json`, `reports/summary.json`,
+  `reports/diagnostics.index.json`, `reports/log-index.json`,
+  `reports/proof.coverage.json`, `reports/proof.stability.json`,
+  `reports/proof.gaps.json`, and `reports/proof.repro.json`
+- `manifest.json` points back to those proof artifacts through both
+  `manifest.proof` and `manifest.reports`
 - the same orchestrator-first chain is reachable through `pnpm uiq run --profile pr --target web.local`
 - even when the PR gate fails, `reports/summary.json` still tells you why
   instead of leaving you with a silent shell failure
@@ -108,6 +114,30 @@ governance checks.
 - [Changelog](CHANGELOG.md)
 - [Release guide](docs/release/README.md)
 - [Release supply-chain policy](docs/reference/release-supply-chain-policy.md)
+- Maintainer GitHub closure evidence: `just github-closure-report`
+
+## Maintainer Space Hygiene
+
+ProofTrail treats disk cleanup as a governed maintenance path, not an ad-hoc
+"delete the biggest folder" exercise.
+
+- `just space-report` emits a repo-exclusive JSON report for runtime buckets,
+  cleanup classes, safe-clean candidates, and the dedicated external pnpm layer
+- `just space-clean-safe` runs a default **dry-run** for the low-risk cleanup
+  wave; use `./scripts/space-clean-safe.py --apply` only when you want to
+  execute the same safe-clean list
+- `just runtime-gc -- --dry-run` previews retention-based cleanup for the
+  review-class runtime buckets before you let the same policy delete old files
+- canonical run evidence under `.runtime-cache/artifacts/runs/`, runtime
+  backups under `.runtime-cache/backups/`, managed toolchains under
+  `.runtime-cache/toolchains/`, and the root `.venv` are intentionally outside
+  the first cleanup wave
+- empty run stub directories under `.runtime-cache/artifacts/runs/` are the
+  one explicit exception: they may enter the first safe-clean wave only when
+  they are still empty and have no evidence files yet
+- the canonical Python runtime target is `.runtime-cache/toolchains/python/.venv`;
+  the root `.venv` remains a migration/review surface until every active
+  launcher stops depending on it
 
 ## FAQ
 
@@ -119,8 +149,9 @@ behavior directly.
 
 ### Where should I look after a run finishes?
 
-Start with `.runtime-cache/artifacts/runs/<runId>/manifest.json`, then open the
-paired report files described in
+Start with `.runtime-cache/artifacts/runs/<runId>/manifest.json`, then open
+`reports/summary.json`, the four `reports/proof.*.json` files, and the index
+files described in
 [docs/reference/run-evidence-example.md](docs/reference/run-evidence-example.md).
 
 ### Is this repository already a full docs site?

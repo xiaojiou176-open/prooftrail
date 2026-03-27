@@ -65,3 +65,8 @@ Public-surface verification should include:
 - public docs gate
 - storefront routing checks
 - remote GitHub platform review
+
+## Generated Runtime Governance References
+
+- Log event schema: `docs/reference/generated/governance/log-event-schema.md`
+- Runtime output registry: `docs/reference/generated/governance/runtime-output-registry.md`

@@ -9,6 +9,7 @@
 - Migrated repository workflows to self-hosted runners and refreshed automation lock metadata for deterministic dependency resolution.
 - Simplified CI/PR/pre-commit workflow routing to pure self-hosted execution and removed redundant hosted-capacity probe indirection.
 - Upgraded `@modelcontextprotocol/sdk` to `^1.27.1` to pull patched `hono` / `@hono/node-server` and clear dependency security advisories.
+- Pinned transitive `picomatch` to `4.0.4` via root `pnpm.overrides` so the default-branch lockfile no longer carries the two open GitHub Dependabot advisories.
 - Hardened automation security and task isolation.
 - Added docs governance baseline and docs CI gate.
 - Standardized the public product identity around `ProofTrail` and moved older naming drift into legacy/internal mapping docs.

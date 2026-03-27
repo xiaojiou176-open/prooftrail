@@ -5,6 +5,12 @@ ProofTrail does not treat the GitHub Releases tab as decorative metadata.
 Use releases to answer one public question clearly: what changed, what broke,
 what should an evaluator subscribe to, and what proof can they inspect.
 
+For the current active mainline, "proof" means the canonical run artifacts
+written by `just run`: `manifest.json`, `reports/summary.json`,
+`reports/diagnostics.index.json`, `reports/log-index.json`, and the four
+`reports/proof.*.json` files. Do not claim richer release proof than that
+contract unless the active pipeline is already writing it.
+
 ## Generate release notes
 
 Use:
@@ -51,7 +57,7 @@ Every public release should include:
 1. user-facing highlights
 2. breaking changes or an explicit `None`
 3. migration notes when behavior changed
-4. links back to the canonical docs surfaces:
+4. links back to the canonical docs surfaces that describe the active proof contract:
    - `docs/showcase/minimal-success-case.md`
    - `docs/reference/run-evidence-example.md`
    - `docs/reference/release-supply-chain-policy.md`

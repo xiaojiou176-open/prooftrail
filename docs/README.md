@@ -1,10 +1,11 @@
 # Documentation
 
-This directory is the public documentation surface that supports the README
-storefront.
+This directory is the one public doc surface that supports the README storefront.
 
 Use [docs/index.md](index.md) as the public docs hub.
 Use [docs/architecture.md](architecture.md) as the architecture contract.
+Use [docs/reference/generated/ci-governance-topology.md](reference/generated/ci-governance-topology.md)
+when you need the rendered CI and governance topology instead of the storefront narrative.
 Use [docs/archive/README.md](archive/README.md) to understand what stays
 outside the live public route.
 Use [docs/assets/README.md](assets/README.md) when you need the reviewable
