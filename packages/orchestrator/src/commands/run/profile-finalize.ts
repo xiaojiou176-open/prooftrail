@@ -1,11 +1,9 @@
 import { execSync } from "node:child_process"
-import { writeFileSync } from "node:fs"
 import { resolve } from "node:path"
 import { writeManifest } from "../../../../core/src/index.js"
 import type {
   Manifest,
   ManifestEvidenceItem,
-  ManifestProof,
 } from "../../../../core/src/index.js"
 import { ORCHESTRATOR_ENV } from "../env.js"
 import { buildGateChecks, type GateThresholds, writeSummaryReportWithContext } from "../report.js"
@@ -17,7 +15,7 @@ import {
   buildVisualBaselineReadyCheck,
   gateReasonCode,
 } from "./gate-checks.js"
-import { buildProofArtifacts } from "./proof.js"
+import { buildAndWriteProofBundle } from "./proof-bundle.js"
 import {
   buildLogIndex,
   collectFailureLocations,
@@ -675,13 +673,8 @@ export function finalizeProfileRunArtifacts(input: any): { runId: string; manife
     load: effectiveLoadConfig?.engines ?? ["builtin", "artillery", "k6"],
     security: effectiveSecurityConfig?.engine ?? "builtin",
   }
-  const proofReports = {
-    coveragePath: "reports/proof.coverage.json",
-    stabilityPath: "reports/proof.stability.json",
-    gapsPath: "reports/proof.gaps.json",
-    reproPath: "reports/proof.repro.json",
-  } satisfies Omit<ManifestProof, "summary">
-  const proofArtifacts = buildProofArtifacts({
+  const proof = buildAndWriteProofBundle({
+    baseDir,
     runId: resolvedRunId,
     profile: profile.name,
     target: { type: target.type, name: target.name },
@@ -698,35 +691,6 @@ export function finalizeProfileRunArtifacts(input: any): { runId: string; manife
     runEnvironment,
     toolVersions,
   })
-  writeFileSync(
-    resolve(baseDir, proofReports.coveragePath),
-    JSON.stringify(proofArtifacts.coverage, null, 2),
-    "utf8"
-  )
-  writeFileSync(
-    resolve(baseDir, proofReports.stabilityPath),
-    JSON.stringify(proofArtifacts.stability, null, 2),
-    "utf8"
-  )
-  writeFileSync(
-    resolve(baseDir, proofReports.gapsPath),
-    JSON.stringify(proofArtifacts.gaps, null, 2),
-    "utf8"
-  )
-  writeFileSync(
-    resolve(baseDir, proofReports.reproPath),
-    JSON.stringify(proofArtifacts.repro, null, 2),
-    "utf8"
-  )
-  const proofSummary: ManifestProof["summary"] = {
-    configuredCoverageRatio: proofArtifacts.summary.configuredCoverageRatio,
-    gatePassRatio: proofArtifacts.summary.gatePassRatio,
-    stabilityStatus: proofArtifacts.summary.stabilityStatus,
-  }
-  const proof: ManifestProof = {
-    ...proofReports,
-    summary: proofSummary,
-  }
   const manifestReports = {
     report: reportPath,
     ...generatedReports,

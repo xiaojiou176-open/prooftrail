@@ -5,10 +5,10 @@ buttonBehaviorCase(
   { case_id: 'commandgrid-filter-pipeline', assertion_type: 'text-visible' },
   async ({ page }) => {
     await bootstrapButtonBehaviorApp(page)
-    await page.getByRole('tab', { name: /流水线/ }).click()
+    await page.getByRole('tab', { name: /Pipeline/ }).click()
 
-    await expect(page.getByRole('heading', { name: '运行流水线任务' })).toBeVisible()
-    await expect(page.getByRole('heading', { name: '初始化环境' })).toHaveCount(0)
+    await expect(page.getByRole('heading', { name: 'Run pipeline task' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Initialize environment' })).toHaveCount(0)
   },
 )
 
@@ -19,22 +19,22 @@ buttonBehaviorCase(
       commands: [
         {
           command_id: 'frontend-lint',
-          title: '前端检查',
-          description: '验证前端分类筛选',
+          title: 'Frontend checks',
+          description: 'Verify frontend category filtering',
           tags: ['frontend'],
         },
         {
           command_id: 'clean-cache',
-          title: '清理缓存',
-          description: '验证维护分类筛选',
+          title: 'Clear cache',
+          description: 'Verify maintenance category filtering',
           tags: ['maintenance'],
         },
       ],
     })
     await page.getByTestId('command-category-frontend').click()
 
-    await expect(page.getByRole('heading', { name: '前端检查' })).toBeVisible()
-    await expect(page.getByRole('heading', { name: '清理缓存' })).toHaveCount(0)
+    await expect(page.getByRole('heading', { name: 'Frontend checks' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Clear cache' })).toHaveCount(0)
   },
 )
 
@@ -45,22 +45,22 @@ buttonBehaviorCase(
       commands: [
         {
           command_id: 'frontend-lint',
-          title: '前端检查',
-          description: '验证前端分类筛选',
+          title: 'Frontend checks',
+          description: 'Verify frontend category filtering',
           tags: ['frontend'],
         },
         {
           command_id: 'clean-cache',
-          title: '清理缓存',
-          description: '验证维护分类筛选',
+          title: 'Clear cache',
+          description: 'Verify maintenance category filtering',
           tags: ['maintenance'],
         },
       ],
     })
     await page.getByTestId('command-category-maintenance').click()
 
-    await expect(page.getByRole('heading', { name: '清理缓存' })).toBeVisible()
-    await expect(page.getByRole('heading', { name: '前端检查' })).toHaveCount(0)
+    await expect(page.getByRole('heading', { name: 'Clear cache' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Frontend checks' })).toHaveCount(0)
   },
 )
 
@@ -71,13 +71,13 @@ buttonBehaviorCase(
     const commandCard = page
       .locator('.command-grid')
       .locator(':scope > *')
-      .filter({ hasText: '运行流水线任务' })
+      .filter({ hasText: 'Run pipeline task' })
       .first()
 
     await expect(commandCard).toBeVisible()
-    await commandCard.getByRole('button', { name: '执行' }).click()
+    await commandCard.getByRole('button', { name: 'Run' }).click()
 
     await expect.poll(() => harness.calls.runCommand).toBe(1)
-    await expect(page.getByText('已提交 运行流水线任务')).toBeVisible()
+    await expect(page.getByText('Submitted Run pipeline task')).toBeVisible()
   },
 )

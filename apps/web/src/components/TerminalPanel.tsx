@@ -46,7 +46,7 @@ function TerminalPanel({
   }, [filteredLogs, autoScroll])
 
   return (
-    <section className="terminal-card" aria-label="实时终端">
+    <section className="terminal-card" aria-label="Live terminal">
       <div className="terminal-head">
         <div className="terminal-head-left">
           <div className="terminal-dots" aria-hidden="true">
@@ -54,11 +54,11 @@ function TerminalPanel({
             <span />
             <span />
           </div>
-          <h2>{"终端"}</h2>
+          <h2>{"Terminal"}</h2>
         </div>
         <div className="terminal-actions">
           <label htmlFor="terminal-size" className="terminal-size-control">
-            {"高度"}
+            {"Height"}
             <Input
               id="terminal-size"
               type="range"
@@ -68,10 +68,10 @@ function TerminalPanel({
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 onTerminalRowsChange(Number(e.target.value))
               }
-              aria-valuetext={`${terminalRows} 行`}
+              aria-valuetext={`${terminalRows} rows`}
             />
             <span className="terminal-size-value" aria-live="polite" data-testid="terminal-size-value">
-              {`${terminalRows} 行`}
+              {`${terminalRows} rows`}
             </span>
           </label>
           <Select
@@ -80,10 +80,10 @@ function TerminalPanel({
             onChange={(e: ChangeEvent<HTMLSelectElement>) =>
               onTerminalFilterChange(e.target.value as "all" | LogLevel)
             }
-            aria-label="日志级别过滤"
+            aria-label="Filter log level"
             data-uiq-ignore-button-inventory="terminal-filter-control"
           >
-            <option value="all">{"全部"}</option>
+            <option value="all">{"All"}</option>
             <option value="info">{"INFO"}</option>
             <option value="success">{"OK"}</option>
             <option value="warn">{"WARN"}</option>
@@ -94,7 +94,7 @@ function TerminalPanel({
               checked={autoScroll}
               onChange={(e: ChangeEvent<HTMLInputElement>) => onAutoScrollChange(e.target.checked)}
             />
-            {"自动滚动"}
+            {"Auto-scroll"}
           </label>
           <Button
             type="button"
@@ -103,7 +103,7 @@ function TerminalPanel({
             onClick={onClear}
             data-uiq-ignore-button-inventory="terminal-clear-secondary-action"
           >
-            {"清空"}
+            {"Clear"}
           </Button>
         </div>
       </div>
@@ -115,7 +115,7 @@ function TerminalPanel({
         style={{ minHeight: `${terminalRows * 1.5}rem` }}
       >
         {filteredLogs.length === 0 ? (
-          <span className="log-empty">{"终端日志为空"}</span>
+          <span className="log-empty">{"The terminal log is empty"}</span>
         ) : (
           filteredLogs.map((log) => (
             <span key={log.id} className="log-line">
@@ -127,8 +127,8 @@ function TerminalPanel({
         )}
       </div>
       {selectedTask && (
-        <div className="terminal-sub" tabIndex={0} aria-label="当前任务输出">
-          {selectedTask.output_tail || `当前任务 ${selectedTask.task_id} 暂无输出`}
+        <div className="terminal-sub" tabIndex={0} aria-label="Current task output">
+          {selectedTask.output_tail || `Task ${selectedTask.task_id} has no output yet`}
         </div>
       )}
     </section>

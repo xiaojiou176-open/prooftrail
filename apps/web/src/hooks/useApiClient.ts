@@ -18,7 +18,7 @@ export function useApiClient(store: AppStore) {
   const fetchCommands = useCallback(async () => {
     const data = await requestJson<{ commands: Command[] }>(
       "/api/automation/commands",
-      "命令列表加载失败",
+      "Command list loading failed",
       {
         headers: buildHeaders(),
       }
@@ -38,7 +38,7 @@ export function useApiClient(store: AppStore) {
         urlParams.set("limit", String(store.taskLimit))
         const data = await requestJson<{ tasks: Task[] }>(
           `/api/automation/tasks?${urlParams.toString()}`,
-          "任务列表加载失败",
+          "Run list loading failed",
           {
             headers: buildHeaders(),
           }
@@ -80,7 +80,7 @@ export function useApiClient(store: AppStore) {
       const requestSeq = ++submittingRequestSeqRef.current
       store.setSubmittingId(command.command_id)
       store.setActionState("idle")
-      store.addLog("info", `准备执行命令 ${command.command_id}`, command.command_id)
+      store.addLog("info", `Preparing command ${command.command_id}`, command.command_id)
       try {
         const params: Record<string, string> = {
           UIQ_BASE_URL: store.params.baseUrl,
@@ -100,16 +100,16 @@ export function useApiClient(store: AppStore) {
         ).trim()
         if (maybeGeminiApiKey) params.GEMINI_API_KEY = maybeGeminiApiKey
 
-        const payload = await requestJson<{ task: Task }>("/api/automation/run", "命令执行失败", {
+        const payload = await requestJson<{ task: Task }>("/api/automation/run", "Command execution failed", {
           method: "POST",
           headers: { "Content-Type": "application/json", ...buildHeaders() },
           body: JSON.stringify({ command: command.command_id, params }),
         })
         store.setSelectedTaskId(payload.task.task_id)
         store.setActionState("success")
-        store.setFeedbackText(`已提交：${command.title}（任务 ID: ${payload.task.task_id}）`)
-        store.addLog("success", `命令提交成功，任务 ${payload.task.task_id}`, command.command_id)
-        store.pushNotice("success", `已提交 ${command.title}`)
+        store.setFeedbackText(`Submitted: ${command.title} (task ID: ${payload.task.task_id})`)
+        store.addLog("success", `Command submitted successfully, task ${payload.task.task_id}`, command.command_id)
+        store.pushNotice("success", `Submitted ${command.title}`)
         store.setParams((paramsState) => ({ ...paramsState, registerPassword: "" }))
         await Promise.all([
           fetchTasks(),
@@ -120,7 +120,7 @@ export function useApiClient(store: AppStore) {
         ])
         return true
       } catch (error) {
-        const message = error instanceof Error ? error.message : "命令执行失败"
+        const message = error instanceof Error ? error.message : "Command execution failed"
         const formatted = formatActionableError(message)
         store.setActionState("error")
         store.setFeedbackText(formatted)
@@ -139,13 +139,13 @@ export function useApiClient(store: AppStore) {
   const cancelTask = useCallback(
     async (task: Task) => {
       try {
-        await requestJson<unknown>(`/api/automation/tasks/${task.task_id}/cancel`, "取消失败", {
+        await requestJson<unknown>(`/api/automation/tasks/${task.task_id}/cancel`, "Task cancel failed", {
           method: "POST",
           headers: buildHeaders(),
         })
-        store.setFeedbackText(`已取消任务 ${task.task_id}`)
-        store.addLog("warn", `任务已取消 ${task.task_id}`, task.command_id)
-        store.pushNotice("warn", `已取消任务 ${task.task_id.slice(0, 8)}`)
+        store.setFeedbackText(`Cancelled task ${task.task_id}`)
+        store.addLog("warn", `Task cancelled ${task.task_id}`, task.command_id)
+        store.pushNotice("warn", `Cancelled task ${task.task_id.slice(0, 8)}`)
         await Promise.all([
           fetchTasks(),
           workshop.fetchDiagnostics(),
@@ -154,7 +154,7 @@ export function useApiClient(store: AppStore) {
           workshop.fetchLatestFlowDraft(),
         ])
       } catch (error) {
-        const message = error instanceof Error ? error.message : "取消任务失败"
+        const message = error instanceof Error ? error.message : "Task cancel failed"
         const formatted = formatActionableError(message)
         store.setFeedbackText(formatted)
         store.setActionState("error")

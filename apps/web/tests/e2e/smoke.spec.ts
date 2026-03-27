@@ -20,8 +20,8 @@ pwTest.beforeEach(async ({ page }) => {
           commands: [
             {
               command_id: "cmd-smoke-001",
-              title: "Smoke 命令",
-              description: "用于前端冒烟测试",
+              title: "Smoke command",
+              description: "Used for frontend smoke coverage",
               tags: ["smoke"],
             },
           ],
@@ -135,10 +135,10 @@ pwTest("@smoke frontend shell and primary navigation", async ({ page }) => {
   await page.goto("/")
 
   await expect(page.getByRole("heading", { level: 1, name: "ProofTrail" })).toBeVisible()
-  await expect(page.getByRole("tablist", { name: "主导航" })).toBeVisible()
-  await expect(page.getByRole("tab", { name: "快速启动" })).toHaveAttribute("aria-selected", "true")
-  await expect(page.getByRole("tablist", { name: "命令分类" })).toBeVisible()
-  const sidebarToggle = page.getByLabel("收起参数面板")
+  await expect(page.getByRole("tablist", { name: "Primary navigation" })).toBeVisible()
+  await expect(page.getByRole("tab", { name: "Quick Launch" })).toHaveAttribute("aria-selected", "true")
+  await expect(page.getByRole("tablist", { name: "Command categories" })).toBeVisible()
+  const sidebarToggle = page.getByLabel("Collapse parameter rail")
   await expect(sidebarToggle).toHaveAttribute("aria-expanded", "true")
   await expect(sidebarToggle).toHaveAttribute("aria-controls", "quick-launch-params-panel")
 
@@ -171,6 +171,8 @@ pwTest("@smoke frontend shell and primary navigation", async ({ page }) => {
 
   await flowDraftTab.click()
   await expect(flowDraftTab).toHaveAttribute("aria-selected", "true")
-  await expect(page.getByRole("heading", { name: "关键结果与下一步" })).toBeVisible()
-  await expect(page.getByText("进阶工坊（可选）：系统诊断、流程编辑与调试证据")).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Key outcome and next action" })).toBeVisible()
+  await expect(
+    page.getByText("Advanced workshop (optional): system diagnostics, flow editing, and debugging evidence")
+  ).toBeVisible()
 })

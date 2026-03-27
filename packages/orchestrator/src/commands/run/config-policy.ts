@@ -9,8 +9,8 @@ import type {
 
 export const LOCALHOST_HOSTS = new Set(["localhost", "127.0.0.1", "::1"])
 export const SAFE_SLUG_PATTERN = /^[A-Za-z0-9._-]+$/
-export const PROFILE_CONFIG_ROOT = resolve("profiles")
-export const TARGET_CONFIG_ROOT = resolve("targets")
+export const PROFILE_CONFIG_ROOT = resolve("configs", "profiles")
+export const TARGET_CONFIG_ROOT = resolve("configs", "targets")
 
 function assertSafeSlug(value: string, fieldName: "profileName" | "targetName"): void {
   if (!SAFE_SLUG_PATTERN.test(value)) {

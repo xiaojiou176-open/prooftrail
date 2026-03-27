@@ -11,6 +11,6 @@ describe("HelpPanel accessibility contract", () => {
     expect(html).toContain('aria-modal="true"')
     expect(html).toMatch(/aria-labelledby="[^"]+"/)
     expect(html).toMatch(/aria-describedby="[^"]+"/)
-    expect(html).toContain('aria-label="关闭帮助面板"')
+    expect(html).toContain('aria-label="Close help panel"')
   })
 })

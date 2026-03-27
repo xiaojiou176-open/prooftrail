@@ -267,7 +267,7 @@ describe("useApiClient studio and diagnostics flows", () => {
     await act(async () => {
       await api?.cancelTask(sampleTask)
     })
-    expect(store.setFeedbackText).toHaveBeenCalledWith("已取消任务 task-cancel-1")
+    expect(store.setFeedbackText).toHaveBeenCalledWith("Cancelled task task-cancel-1")
 
     fetchMock.mockReset().mockResolvedValueOnce(responseOf({ detail: "cancel failed" }, false, 500))
     await act(async () => {
@@ -286,14 +286,14 @@ describe("useApiClient studio and diagnostics flows", () => {
     await act(async () => {
       await api?.saveFlowDraft()
     })
-    expect(store.addLog).toHaveBeenCalledWith("success", "流程草稿保存成功")
+    expect(store.addLog).toHaveBeenCalledWith("success", "Flow draft saved successfully")
 
     store.flowDraft = null
     fetchMock.mockReset()
     await act(async () => {
       await api?.saveFlowDraft()
     })
-    expect(store.pushNotice).toHaveBeenCalledWith("error", expect.stringContaining("流程草稿为空"))
+    expect(store.pushNotice).toHaveBeenCalledWith("error", expect.stringContaining("Flow draft is empty"))
     store.flowDraft = {
       flow_id: "flow-1",
       session_id: "session-1",
@@ -321,7 +321,7 @@ describe("useApiClient studio and diagnostics flows", () => {
     await act(async () => {
       await api?.replayLatestFlow()
     })
-    expect(store.pushNotice).toHaveBeenCalledWith("error", expect.stringContaining("回放触发失败"))
+    expect(store.pushNotice).toHaveBeenCalledWith("error", expect.stringContaining("Replay trigger failed"))
 
     fetchMock
       .mockReset()
@@ -350,7 +350,7 @@ describe("useApiClient studio and diagnostics flows", () => {
     })
     expect(store.addLog).toHaveBeenCalledWith(
       "success",
-      expect.stringContaining("触发从步骤继续 s1"),
+      expect.stringContaining("Triggered replay resume from step s1"),
       "resume-step"
     )
 
@@ -427,23 +427,23 @@ describe("useApiClient studio and diagnostics flows", () => {
     await act(async () => {
       await api?.createTemplate()
     })
-    expect(store.setStudioError).toHaveBeenCalledWith(expect.stringContaining("请选择一个 Flow"))
+    expect(store.setStudioError).toHaveBeenCalledWith(expect.stringContaining("Select a flow first"))
 
     store.selectedStudioTemplateId = ""
     await act(async () => {
       await api?.updateTemplate()
     })
-    expect(store.setStudioError).toHaveBeenCalledWith(expect.stringContaining("请选择一个模板"))
+    expect(store.setStudioError).toHaveBeenCalledWith(expect.stringContaining("Select a template first"))
 
     const created = await api?.createRun()
     expect(created).toBe(false)
-    expect(store.setStudioError).toHaveBeenCalledWith(expect.stringContaining("请选择一个模板"))
+    expect(store.setStudioError).toHaveBeenCalledWith(expect.stringContaining("Select a template first"))
 
     fetchMock.mockReset().mockResolvedValueOnce(responseOf({ detail: "step failed" }, false, 500))
     await act(async () => {
       await api?.replayStep("s1")
     })
-    expect(store.pushNotice).toHaveBeenCalledWith("error", expect.stringContaining("单步试跑触发失败"))
+    expect(store.pushNotice).toHaveBeenCalledWith("error", expect.stringContaining("Step replay trigger failed"))
 
     fetchMock.mockReset().mockResolvedValueOnce(responseOf({ detail: "resume failed" }, false, 500))
     await act(async () => {
@@ -451,7 +451,7 @@ describe("useApiClient studio and diagnostics flows", () => {
     })
     expect(store.pushNotice).toHaveBeenCalledWith(
       "error",
-      expect.stringContaining("从步骤恢复触发失败")
+      expect.stringContaining("Resume from step trigger failed")
     )
   })
 
@@ -480,7 +480,7 @@ describe("useApiClient studio and diagnostics flows", () => {
 
     const created = await api?.createRun()
     expect(created).toBe(true)
-    expect(store.pushNotice).toHaveBeenCalledWith("success", "运行任务创建成功")
+    expect(store.pushNotice).toHaveBeenCalledWith("success", "Run created successfully")
 
     fetchMock
       .mockReset()
@@ -493,6 +493,6 @@ describe("useApiClient studio and diagnostics flows", () => {
     await act(async () => {
       await api?.submitRunOtp("run-input-1", "waiting_user", { reason_code: "manual_input_required" })
     })
-    expect(store.pushNotice).toHaveBeenCalledWith("success", expect.stringContaining("补充输入已提交"))
+    expect(store.pushNotice).toHaveBeenCalledWith("success", expect.stringContaining("additional input submitted"))
   })
 })

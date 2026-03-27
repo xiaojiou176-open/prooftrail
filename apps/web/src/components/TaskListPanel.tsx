@@ -6,11 +6,11 @@ import EmptyState from "./EmptyState"
 import { Button, Input, Select } from "@uiq/ui"
 
 const statusLabelMap: Record<Task["status"], string> = {
-  queued: "排队中",
-  running: "运行中",
-  success: "成功",
-  failed: "失败",
-  cancelled: "已取消",
+  queued: "Queued",
+  running: "Running",
+  success: "Succeeded",
+  failed: "Failed",
+  cancelled: "Cancelled",
 }
 
 interface TaskListPanelProps {
@@ -48,16 +48,16 @@ function TaskListPanel({
   onCommandFilterChange,
   taskLimit,
   onTaskLimitChange,
-  listTitle = "运行记录",
-  sourceLabel = "命令执行",
-  emptyTitle = "暂无运行记录",
-  emptyDescription = "执行命令后，运行记录会出现在这里。",
+  listTitle = "Run Records",
+  sourceLabel = "Command Run",
+  emptyTitle = "No run records yet",
+  emptyDescription = "Run a command to see records here.",
   refreshTestId,
 }: TaskListPanelProps) {
   const formatTaskErrorMessage = (message: string) =>
     formatActionableErrorMessage(message, {
-      action: "点击“刷新”后重试，必要时重新发起运行",
-      troubleshootingEntry: "查看右侧详情与“运行日志”",
+      action: 'Click "Refresh" and try again, or start a new run if needed.',
+      troubleshootingEntry: "Check the details pane and the run log.",
     })
 
   return (
@@ -71,7 +71,7 @@ function TaskListPanel({
           onClick={onRefresh}
           data-uiq-ignore-button-inventory="task-list-refresh-secondary-action"
         >
-          {"刷新"}
+          {"Refresh"}
         </Button>
       </div>
       <div className="task-filters">
@@ -79,36 +79,36 @@ function TaskListPanel({
           className="task-filter-control"
           value={statusFilter}
           onChange={(e: ChangeEvent<HTMLSelectElement>) => onStatusFilterChange(e.target.value)}
-          aria-label="按状态过滤任务"
+          aria-label="Filter tasks by status"
           data-uiq-ignore-button-inventory="task-list-filter-control"
         >
-          <option value="all">{"全部状态"}</option>
-          <option value="queued">{"排队中"}</option>
-          <option value="running">{"运行中"}</option>
-          <option value="success">{"成功"}</option>
-          <option value="failed">{"失败"}</option>
-          <option value="cancelled">{"已取消"}</option>
+          <option value="all">{"All statuses"}</option>
+          <option value="queued">{"Queued"}</option>
+          <option value="running">{"Running"}</option>
+          <option value="success">{"Succeeded"}</option>
+          <option value="failed">{"Failed"}</option>
+          <option value="cancelled">{"Cancelled"}</option>
         </Select>
         <Input
           className="task-filter-control"
           type="text"
-          placeholder="按命令编号筛选（命令 ID）"
+          placeholder="Filter by command ID"
           value={commandFilter}
           onChange={(e: ChangeEvent<HTMLInputElement>) => onCommandFilterChange(e.target.value)}
-          aria-label="按命令编号筛选运行记录"
+          aria-label="Filter run records by command ID"
           data-uiq-ignore-button-inventory="task-list-filter-control"
         />
         <Select
           className="task-filter-control w-select-limit"
           value={String(taskLimit)}
           onChange={(e: ChangeEvent<HTMLSelectElement>) => onTaskLimitChange(Number(e.target.value))}
-          aria-label="任务显示数量"
+          aria-label="Run count limit"
           data-uiq-ignore-button-inventory="task-list-filter-control"
         >
-          <option value="20">{"20 条"}</option>
-          <option value="50">{"50 条"}</option>
-          <option value="100">{"100 条"}</option>
-          <option value="200">{"200 条"}</option>
+          <option value="20">{"20 records"}</option>
+          <option value="50">{"50 records"}</option>
+          <option value="100">{"100 records"}</option>
+          <option value="200">{"200 records"}</option>
         </Select>
       </div>
       {taskErrorMessage && <p className="error-text">{formatTaskErrorMessage(taskErrorMessage)}</p>}
@@ -117,7 +117,7 @@ function TaskListPanel({
           <div className="spinner" />
         </div>
       )}
-      <ul className="task-list" aria-label="运行记录列表（命令）">
+      <ul className="task-list" aria-label="Run records list (command)">
         {tasks.map((task) => (
           <li
             key={task.task_id}
@@ -128,7 +128,7 @@ function TaskListPanel({
               variant="ghost"
               size="sm"
               className="task-item-info text-left"
-              aria-label="查看运行记录详情"
+              aria-label="Open run record details"
               data-uiq-ignore-button-inventory="repeated-run-row-selection"
               aria-current={selectedTaskId === task.task_id ? "true" : undefined}
               onClick={() => onSelectTask(task.task_id)}
@@ -136,7 +136,7 @@ function TaskListPanel({
               <strong>{`${sourceLabel} \u00B7 ${task.command_id}`}</strong>
               <p>
                 {statusLabelMap[task.status]}
-                {" \u00B7 记录 #"}
+                {" \u00B7 Record #"}
                 {task.task_id.slice(0, 8)}
               </p>
             </Button>
@@ -147,7 +147,7 @@ function TaskListPanel({
                 onClick={() => onCancelTask(task)}
                 data-uiq-ignore-button-inventory="task-list-cancel-secondary-action"
               >
-                {"取消"}
+                {"Cancel"}
               </Button>
             )}
           </li>
@@ -175,7 +175,7 @@ function TaskListPanel({
         )}
         {taskState === "error" && (
           <li className="task-empty error-text">
-            {formatTaskErrorMessage(taskErrorMessage || "任务列表加载失败")}
+            {formatTaskErrorMessage(taskErrorMessage || "Run list loading failed")}
           </li>
         )}
       </ul>

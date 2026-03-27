@@ -33,8 +33,13 @@ export function loadTargetConfig(targetName: string): TargetConfig {
   return validateTargetConfig(loaded, safeTargetName)
 }
 
+function isLocalhostHost(hostname: string): boolean {
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1" || hostname === "[::1]"
+}
+
 export function assertBaseUrlAllowed(target: TargetConfig, baseUrl: string): BaseUrlPolicyResult {
   const requestedOrigin = new URL(baseUrl).origin
+  const requestedUrl = new URL(baseUrl)
   if (target.type !== "web") {
     return {
       enabled: false,
@@ -43,6 +48,29 @@ export function assertBaseUrlAllowed(target: TargetConfig, baseUrl: string): Bas
       allowedOrigins: [],
       matched: true,
       reason: "non_web_target",
+    }
+  }
+
+  if (target.scope?.allowLocalhostAnyPort === true) {
+    if (!isLocalhostHost(requestedUrl.hostname)) {
+      throw new Error(
+        `Blocked --base-url for target '${target.name}' | requestedUrl=${baseUrl} | requestedOrigin=${requestedOrigin} | reason=localhost_any_port_requires_localhost`
+      )
+    }
+    return {
+      enabled: true,
+      requestedUrl: baseUrl,
+      requestedOrigin,
+      allowedOrigins: [
+        "http://localhost:*",
+        "http://127.0.0.1:*",
+        "http://[::1]:*",
+        "https://localhost:*",
+        "https://127.0.0.1:*",
+        "https://[::1]:*",
+      ],
+      matched: true,
+      reason: "localhost_origin_allowed",
     }
   }
 

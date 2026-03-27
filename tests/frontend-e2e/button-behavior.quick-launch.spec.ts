@@ -29,8 +29,8 @@ buttonBehaviorCase(
       runs: [],
     })
 
-    await page.getByRole('button', { name: '开始第 1 步' }).click()
-    await expect(page.getByText(/第 1 步：在右侧参数面板配置 baseUrl\/startUrl\/successSelector/)).toBeVisible()
+    await page.getByRole('button', { name: 'Start step 1' }).click()
+    await expect(page.getByText(/Step 1: configure baseUrl, startUrl, and successSelector in the parameter rail/)).toBeVisible()
   },
 )
 
@@ -52,8 +52,8 @@ buttonBehaviorCase(
       runs: [],
     })
 
-    await page.getByRole('button', { name: '我已配置，进入运行' }).click()
-    await expect(page.getByText(/第 2 步：选择一个命令或模板并点击运行。/)).toBeVisible()
+    await page.getByRole('button', { name: 'Configuration done, continue to run' }).click()
+    await expect(page.getByText(/Step 2: choose a command or template and click Run/)).toBeVisible()
   },
 )
 
@@ -71,7 +71,7 @@ buttonBehaviorCase(
 
     await page.getByTestId('quick-launch-first-use-locate-config').click()
     await expect(
-      page.getByText(/第 1 步：在右侧参数面板配置 baseUrl\/startUrl\/successSelector/)
+      page.getByText(/Step 1: configure baseUrl, startUrl, and successSelector in the parameter rail/)
     ).toBeVisible()
   },
 )
@@ -80,11 +80,11 @@ buttonBehaviorCase(
   { case_id: 'quicklaunch-sidebar-toggle-panel', assertion_type: 'visibility-toggle' },
   async ({ page }) => {
     await bootstrapButtonBehaviorApp(page)
-    const collapseButton = page.getByRole('button', { name: '收起参数面板' })
+    const collapseButton = page.getByRole('button', { name: 'Collapse parameter rail' })
     const paramsPanel = page.locator('#quick-launch-params-panel')
 
     await collapseButton.click()
     await expect(paramsPanel).toBeHidden()
-    await expect(page.getByRole('button', { name: '展开参数面板' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Expand parameter rail' })).toBeVisible()
   },
 )

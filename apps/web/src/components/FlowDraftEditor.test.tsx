@@ -62,7 +62,7 @@ describe("FlowDraftEditor resume controls", () => {
     })
 
     const resumeButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "续跑"
+      (button) => button.textContent === "Resume"
     )
     expect(resumeButton).toBeInstanceOf(HTMLButtonElement)
 

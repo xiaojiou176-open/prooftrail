@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import { once } from "node:events"
-import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { createServer } from "node:http"
 import { tmpdir } from "node:os"
 import { join, resolve } from "node:path"
@@ -235,6 +235,54 @@ test("startTargetRuntime fails healthcheck when spawned process exits during sta
         resolveClose()
       })
     })
+    rmSync(tempRoot, { recursive: true, force: true })
+  }
+})
+
+test("startTargetRuntime forwards api and web env overrides to spawned processes", async () => {
+  const tempRoot = mkdtempSync(resolve(tmpdir(), "uiq-target-runtime-env-"))
+  mkdirSync(resolve(tempRoot, "reports"), { recursive: true })
+  const captureScriptPath = resolve(tempRoot, "capture-env.js")
+  const apiOutputPath = resolve(tempRoot, "api-env.json")
+  const webOutputPath = resolve(tempRoot, "web-env.json")
+  writeFileSync(
+    captureScriptPath,
+    [
+      'const [, , outputPath, expectedKey] = process.argv;',
+      'const { writeFileSync } = require("node:fs");',
+      'writeFileSync(outputPath, JSON.stringify({ value: process.env[expectedKey] ?? null }), "utf8");',
+      'setTimeout(() => process.exit(0), 5000);',
+    ].join("\n"),
+    "utf8"
+  )
+
+  const result = await startTargetRuntime({
+    enabled: true,
+    baseDir: tempRoot,
+    startCommands: {
+      api: `node ${captureScriptPath} ${apiOutputPath} AUTOMATION_ALLOW_LOCAL_NO_TOKEN`,
+      web: `node ${captureScriptPath} ${webOutputPath} BACKEND_PORT`,
+    },
+    apiEnvOverrides: {
+      AUTOMATION_ALLOW_LOCAL_NO_TOKEN: "true",
+    },
+    webEnvOverrides: {
+      BACKEND_PORT: "17380",
+    },
+  })
+
+  try {
+    assert.equal(result.started, true)
+    assert.deepEqual(
+      JSON.parse(readFileSync(apiOutputPath, "utf8")),
+      { value: "true" }
+    )
+    assert.deepEqual(
+      JSON.parse(readFileSync(webOutputPath, "utf8")),
+      { value: "17380" }
+    )
+  } finally {
+    result.teardown()
     rmSync(tempRoot, { recursive: true, force: true })
   }
 })

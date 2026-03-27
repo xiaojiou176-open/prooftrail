@@ -65,7 +65,7 @@ describe("ParamsPanel start-url contract alignment", () => {
     })
 
     const input = container.querySelector<HTMLInputElement>("#start-url")
-    expect(input?.placeholder).toBe(`可留空；将自动使用网站地址 + ${registerRoutePath}`)
+    expect(input?.placeholder).toBe(`Optional; defaults to base URL + ${registerRoutePath}`)
   })
 
   caseIt("toggles masked fields and keeps optional api key as empty string by default", () => {
@@ -102,9 +102,9 @@ describe("ParamsPanel start-url contract alignment", () => {
     expect(apiKeyInput?.type).toBe("text")
     expect(registerPasswordInput?.type).toBe("text")
     expect(tokenInput?.type).toBe("text")
-    expect(apiKeyToggle?.textContent).toContain("隐藏")
-    expect(registerPasswordToggle?.textContent).toContain("隐藏")
-    expect(tokenToggle?.textContent).toContain("隐藏")
+    expect(apiKeyToggle?.textContent).toContain("Hide")
+    expect(registerPasswordToggle?.textContent).toContain("Hide")
+    expect(tokenToggle?.textContent).toContain("Hide")
   })
 
   caseIt("emits field and checkbox patches through onChange", () => {

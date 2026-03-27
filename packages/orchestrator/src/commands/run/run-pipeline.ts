@@ -12,7 +12,7 @@ import {
   runComputerUse,
 } from "../computer-use.js"
 import { loadStateModel } from "../state-model.js"
-import { startTargetRuntime } from "../target-runtime.js"
+import { persistRuntimeStartResult, startTargetRuntime } from "../target-runtime.js"
 import type { TestSuiteResult } from "../test-suite.js"
 import { finalizePipelineReporting } from "./pipeline/reporting.js"
 import {
@@ -545,6 +545,9 @@ export async function runProfile(
     enabled: isWebTarget && autostartEnabled,
     baseDir,
     startCommands: target.start,
+    apiEnvOverrides: isWebTarget
+      ? { AUTOMATION_ALLOW_LOCAL_NO_TOKEN: "true", APP_ENV: "test" }
+      : undefined,
     healthcheckUrl: target.healthcheck?.url ?? effectiveBaseUrl,
   }
   const healthcheckUrl = startConfig.healthcheckUrl ?? effectiveBaseUrl
@@ -616,7 +619,13 @@ export async function runProfile(
 
   const ensureRuntimeReady = async (stepId: string): Promise<void> => {
     if (!isWebTarget) return
-    if (await waitForRuntimeReady(8_000)) return
+    if (await waitForRuntimeReady(8_000)) {
+      if (!runtimeStart.healthcheckPassed) {
+        runtimeStart.healthcheckPassed = true
+        persistRuntimeStartResult(baseDir, runtimeStart)
+      }
+      return
+    }
     if (
       !startConfig.enabled ||
       (!startConfig.startCommands?.web && !startConfig.startCommands?.api)

@@ -370,8 +370,9 @@ def test_video_safe_paths_and_helper_branches(
         == "https://ok.example"
     )
     assert service._calculate_quality([]) == 0
-    assert service._default_generator_outputs("prv-x")["flow_draft"].endswith(
-        "/prv-x/flow-draft.json"
+    preview_id = "prv_" + ("a" * 32)
+    assert service._default_generator_outputs(preview_id)["flow_draft"].endswith(
+        f"/{preview_id}/flow-draft.json"
     )
 
     action_endpoint = service._pick_action_endpoint(
@@ -492,14 +493,15 @@ def test_video_ensemble_codegen_and_materialization(
         },
         "bootstrap_sequence": [],
     }
-    outputs = service._materialize_generated_outputs("prv-materialize", flow_draft)
+    preview_id = "prv_" + ("b" * 32)
+    outputs = service._materialize_generated_outputs(preview_id, flow_draft)
     assert Path(outputs["flow_draft"]).exists()
     assert Path(outputs["playwright_spec"]).exists()
     assert Path(outputs["api_spec"]).exists()
     assert Path(outputs["readiness_report"]).exists()
 
     preview = ReconstructionPreviewResponse(
-        preview_id="prv-materialize",
+        preview_id=preview_id,
         flow_draft=flow_draft,
         reconstructed_flow_quality=80,
         step_confidence=[0.8],
@@ -517,7 +519,7 @@ def test_generate_reconstruction_loads_preview_id_and_creates_run(
     now = datetime.now(UTC)
 
     preview = ReconstructionPreviewResponse(
-        preview_id="prv-001",
+        preview_id="prv_" + ("1" * 32),
         flow_draft={
             "session_id": "ss-imported",
             "start_url": "https://example.com/signup",
@@ -573,7 +575,7 @@ def test_generate_reconstruction_loads_preview_id_and_creates_run(
 
     generated = service.generate_reconstruction(
         ReconstructionGenerateRequest(
-            preview_id="prv-001",
+            preview_id="prv_" + ("1" * 32),
             template_name="generated-template",
             create_run=True,
             run_params={"email": "user@example.com"},
@@ -582,7 +584,7 @@ def test_generate_reconstruction_loads_preview_id_and_creates_run(
     )
 
     created_flow = service.get_flow(generated.flow_id, requester="owner-a")
-    assert loaded_ids == ["prv-001"]
+    assert loaded_ids == ["prv_" + ("1" * 32)]
     assert generated.run_id == "rn-created"
     assert create_run_calls and create_run_calls[0][1] == {"email": "user@example.com"}
     assert create_run_calls[0][2] == "owner-a"
@@ -595,7 +597,7 @@ def test_generate_reconstruction_rejects_invalid_flow_draft(
     service = _new_universal_service(monkeypatch, tmp_path)
 
     invalid_preview = ReconstructionPreviewResponse(
-        preview_id="prv-bad",
+        preview_id="prv_" + ("c" * 32),
         flow_draft={"session_id": "ss-bad", "start_url": "", "steps": "not-a-list"},
         reconstructed_flow_quality=20,
     )

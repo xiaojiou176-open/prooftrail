@@ -65,7 +65,7 @@ describe("FlowDraftEditor behavior", () => {
         />
       )
     })
-    expect(container.textContent).toContain("暂无 flow-draft")
+    expect(container.textContent).toContain("No flow draft yet")
   })
 
   it("supports editing, moving, removing and action-specific fields", function () {
@@ -103,7 +103,7 @@ describe("FlowDraftEditor behavior", () => {
     })
 
     const addStepButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "新增步骤"
+      (button) => button.textContent === "Add Step"
     )
     act(() => {
       addStepButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
@@ -114,13 +114,13 @@ describe("FlowDraftEditor behavior", () => {
       button.textContent?.includes("s1")
     )
     const runButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "试跑"
+      (button) => button.textContent === "Replay Step"
     )
     const resumeButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "续跑"
+      (button) => button.textContent === "Resume"
     )
     const saveButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "保存草稿"
+      (button) => button.textContent === "Save Draft"
     )
 
     act(() => {
@@ -179,13 +179,13 @@ describe("FlowDraftEditor behavior", () => {
     const emptySelectorIndex = container.querySelector(
       '[aria-label="step-1-selector-index"]'
     ) as HTMLSelectElement
-    expect(emptySelectorIndex.textContent).toContain("无 selector")
+    expect(emptySelectorIndex.textContent).toContain("No selector")
 
     const upButtons = Array.from(
-      container.querySelectorAll('button[aria-label="上移"]')
+      container.querySelectorAll('button[aria-label="Move up"]')
     ) as HTMLButtonElement[]
     const downButtons = Array.from(
-      container.querySelectorAll('button[aria-label="下移"]')
+      container.querySelectorAll('button[aria-label="Move down"]')
     ) as HTMLButtonElement[]
 
     const beforeNoop = latestDraft.steps.map((step) => step.step_id)

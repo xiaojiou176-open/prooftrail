@@ -143,13 +143,13 @@ async function clickCategoryTab(page: Page, testId: string, roleName: string) {
 async function getBaseUrlInput(page: Page) {
   const byTestId = page.getByTestId('param-base-url-input')
   if ((await byTestId.count()) > 0) return byTestId
-  return page.getByRole('textbox', { name: '你要操作的网站地址（BASE_URL）' })
+  return page.getByRole('textbox', { name: 'Target site URL (UIQ_BASE_URL)' })
 }
 
 async function getRegisterPasswordInput(page: Page) {
   const byTestId = page.getByTestId('param-register-password-input')
   if ((await byTestId.count()) > 0) return byTestId
-  return page.getByRole('textbox', { name: '注册密码（可选）' })
+  return page.getByRole('textbox', { name: 'Registration password (optional)' })
 }
 
 async function clickRegisterPasswordVisibilityToggle(page: Page, input: ReturnType<Page['locator']>) {
@@ -159,7 +159,7 @@ async function clickRegisterPasswordVisibilityToggle(page: Page, input: ReturnTy
     return
   }
   const field = page.locator('.field').filter({ has: input })
-  await field.getByRole('button', { name: /显示|隐藏/ }).click()
+  await field.getByRole('button', { name: /Show|Hide/ }).click()
 }
 
 async function clickTabByTestIdOrRole(page: Page, testId: string, roleName: string) {
@@ -183,7 +183,7 @@ function createTask(taskId: string, commandId: string, status: Task['status']): 
     started_at: '2026-02-20T00:00:01.000Z',
     finished_at: null,
     exit_code: null,
-    message: status === 'running' ? '任务运行中' : null,
+    message: status === 'running' ? 'Task is running' : null,
     output_tail: `output-${taskId}`,
   }
 }
@@ -193,13 +193,13 @@ function createState(): StubState {
     commands: [
       {
         command_id: 'cmd-e2e-001',
-        title: '打开首页',
-        description: 'E2E 关键按钮测试命令',
+        title: 'Open homepage',
+        description: 'Critical-button E2E verification command',
         tags: ['e2e'],
       },
       {
         command_id: 'clean',
-        title: '清理缓存',
+        title: 'Clear cache',
         description: 'delete temp cache before rerun',
         tags: ['maintenance'],
       },
@@ -227,8 +227,8 @@ function createState(): StubState {
       {
         template_id: 'tpl-e2e-001',
         flow_id: 'flow-e2e-001',
-        name: '示例模板',
-        params_schema: [{ key: 'email', type: 'email', required: true, description: '账号邮箱' }],
+        name: 'Example template',
+        params_schema: [{ key: 'email', type: 'email', required: true, description: 'Account email' }],
         defaults: { email: 'demo@example.com' },
         policies: {
           retries: 0,
@@ -370,7 +370,7 @@ async function installBackendStubs(page: Page, state: StubState) {
       const taskId = pathname.split('/')[4] ?? ''
       state.tasks = state.tasks.map((task) =>
         task.task_id === taskId
-          ? { ...task, status: 'cancelled', finished_at: '2026-02-20T00:03:00.000Z', exit_code: 130, message: '已取消' }
+          ? { ...task, status: 'cancelled', finished_at: '2026-02-20T00:03:00.000Z', exit_code: 130, message: 'Cancelled' }
           : task,
       )
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) })
@@ -543,9 +543,9 @@ async function assertApiKeyBranch(page: Page) {
   const apiKeyField = page.locator('.field').filter({ has: page.locator('#api-key') })
   await apiKeyInput.fill('sk-demo-123')
   await expect(apiKeyInput).toHaveAttribute('type', 'password')
-  await apiKeyField.getByRole('button', { name: '显示' }).click()
+  await apiKeyField.getByRole('button', { name: 'Show' }).click()
   await expect(apiKeyInput).toHaveAttribute('type', 'text')
-  await apiKeyField.getByRole('button', { name: '隐藏' }).click()
+  await apiKeyField.getByRole('button', { name: 'Hide' }).click()
   await expect(apiKeyInput).toHaveAttribute('type', 'password')
 }
 
@@ -571,55 +571,55 @@ pwTest.describe('@frontend-critical-buttons', () => {
 
     await expect(page.getByRole('heading', { level: 1, name: 'ProofTrail' })).toBeVisible()
 
-    await page.getByRole('button', { name: '执行' }).first().click()
-    await expect(page.getByText('已提交 打开首页')).toBeVisible()
+    await page.getByRole('button', { name: 'Run' }).first().click()
+    await expect(page.getByText('Submitted Open homepage')).toBeVisible()
     await expect.poll(() => state.calls.runCommand).toBeGreaterThan(0)
 
-    await page.getByRole('button', { name: '启动运行任务', exact: true }).first().click()
-    await expect(page.getByText('运行任务创建成功')).toBeVisible()
+    await page.getByRole('button', { name: 'Start run', exact: true }).first().click()
+    await expect(page.getByText('Run created successfully')).toBeVisible()
     await expect.poll(() => state.calls.createRun).toBeGreaterThan(0)
 
-    await page.getByRole('tab', { name: '任务中心' }).click()
-    await expect(page.getByRole('tab', { name: '任务中心' })).toHaveAttribute('aria-selected', 'true')
+    await page.getByRole('tab', { name: 'Task Center' }).click()
+    await expect(page.getByRole('tab', { name: 'Task Center' })).toHaveAttribute('aria-selected', 'true')
 
-    await page.getByRole('tab', { name: /运行记录（模板）/ }).click()
-    await expect(page.getByRole('listbox', { name: '运行记录列表（模板）' })).toBeVisible()
-    await page.getByRole('tab', { name: /运行记录（命令）/ }).click()
-    await expect(page.getByRole('list', { name: '运行记录列表（命令）' })).toBeVisible()
+    await page.getByRole('tab', { name: /Run Records \(Template\)/ }).click()
+    await expect(page.getByRole('listbox', { name: 'Run records list (template)' })).toBeVisible()
+    await page.getByRole('tab', { name: /Run Records \(Command\)/ }).click()
+    await expect(page.getByRole('list', { name: 'Run records list (command)' })).toBeVisible()
 
     const taskListColumn = page.locator('.task-list-column')
     const refreshBefore = state.calls.fetchTasks
-    await taskListColumn.getByRole('button', { name: '刷新' }).first().click()
+    await taskListColumn.getByRole('button', { name: 'Refresh' }).first().click()
     await expect.poll(() => state.calls.fetchTasks).toBeGreaterThan(refreshBefore)
 
-    await page.getByRole('button', { name: '取消' }).first().click()
-    await expect(page.getByText(/已取消任务/)).toBeVisible()
+    await page.getByRole('button', { name: 'Cancel' }).first().click()
+    await expect(page.getByText(/Cancelled task/)).toBeVisible()
     await expect.poll(() => state.calls.cancelTask).toBeGreaterThan(0)
 
-    await page.getByRole('tab', { name: /运行记录（模板）/ }).click()
+    await page.getByRole('tab', { name: /Run Records \(Template\)/ }).click()
     const waitingOtpOptionById = page.locator('#task-center-template-option-run-waiting-otp-001')
     await expect(waitingOtpOptionById).toHaveCount(1)
     await waitingOtpOptionById.click()
-    await expect(page.getByText(/运行记录 #run-wait/)).toBeVisible()
-    await expect(page.getByText('该运行记录正在等待验证码，请输入后提交：')).toBeVisible()
-    await page.getByPlaceholder('输入验证码').fill('654321')
-    await page.locator('.task-detail-column').getByRole('button', { name: '提交', exact: true }).click()
-    await expect(page.getByText('验证码已提交，运行任务已继续')).toBeVisible()
+    await expect(page.getByText(/Run Record #run-wait/)).toBeVisible()
+    await expect(page.getByText('This run is waiting for an OTP. Enter it and submit to continue:')).toBeVisible()
+    await page.getByPlaceholder('Enter OTP').fill('654321')
+    await page.locator('.task-detail-column').getByRole('button', { name: 'Submit', exact: true }).click()
+    await expect(page.getByText('OTP submitted and the run resumed')).toBeVisible()
     await expect.poll(() => state.calls.submitRunOtp).toBeGreaterThan(0)
 
     const pageHeader = page.locator('header').first()
-    await pageHeader.getByRole('button', { name: '帮助' }).click()
-    const helpDialog = page.getByRole('dialog', { name: '帮助' })
+    await pageHeader.getByRole('button', { name: 'Help' }).click()
+    const helpDialog = page.getByRole('dialog', { name: 'Help' })
     await expect(helpDialog).toBeVisible()
-    await helpDialog.getByLabel('关闭帮助面板').click()
+    await helpDialog.getByLabel('Close help panel').click()
 
-    await pageHeader.getByRole('button', { name: '重新开始引导' }).click()
-    await expect(page.getByText('第 1 步：明确目标并检查参数区')).toBeVisible()
-    await page.getByRole('button', { name: '稍后再看' }).click()
+    await pageHeader.getByRole('button', { name: 'Restart onboarding' }).click()
+    await expect(page.getByText('Step 1: decide the goal and inspect the parameter rail')).toBeVisible()
+    await page.getByRole('button', { name: 'Maybe later' }).click()
 
-    const terminal = page.getByRole('region', { name: '实时终端' })
-    await terminal.getByRole('button', { name: '清空' }).click()
-    await expect(terminal.getByText('终端日志为空')).toBeVisible()
+    const terminal = page.getByRole('region', { name: 'Live terminal' })
+    await terminal.getByRole('button', { name: 'Clear' }).click()
+    await expect(terminal.getByText('The terminal log is empty')).toBeVisible()
   })
 
   pwTest('Major mapping anchors (31/32/40/41/42/43/46/47/48/58) stay stable', async ({ page }) => {
@@ -639,9 +639,9 @@ pwTest.describe('@frontend-critical-buttons', () => {
     if (await locateConfigButton.count()) {
       await expect(locateConfigButton).toBeVisible()
     }
-    await clickCategoryTab(page, 'command-category-maintenance', '维护')
-    await clickCategoryTab(page, 'command-category-frontend', '前端')
-    await clickCategoryTab(page, 'command-category-all', '全部')
+    await clickCategoryTab(page, 'command-category-maintenance', 'Maintenance')
+    await clickCategoryTab(page, 'command-category-frontend', 'Frontend')
+    await clickCategoryTab(page, 'command-category-all', 'All')
 
     const baseUrlInput = await getBaseUrlInput(page)
     await baseUrlInput.fill('http://127.0.0.1:17380/register')
@@ -657,20 +657,20 @@ pwTest.describe('@frontend-critical-buttons', () => {
     await clickRegisterPasswordVisibilityToggle(page, registerPassword)
     await expect(registerPassword).toHaveAttribute('type', 'password')
 
-    await clickTabByTestIdOrRole(page, 'console-tab-task-center', '任务中心')
+    await clickTabByTestIdOrRole(page, 'console-tab-task-center', 'Task Center')
     const taskCenterTab = page.getByTestId('console-tab-task-center')
     if ((await taskCenterTab.count()) > 0) {
       await expect(taskCenterTab).toHaveAttribute('aria-selected', 'true')
     } else {
-      await expect(page.getByRole('tab', { name: /^任务中心(\s|$)/ })).toHaveAttribute('aria-selected', 'true')
+      await expect(page.getByRole('tab', { name: /^Task Center(\s|$)/ })).toHaveAttribute('aria-selected', 'true')
     }
-    await clickTabByTestIdOrRole(page, 'task-center-tab-command-runs', '运行记录（命令）')
-    await clickTabByTestIdOrRole(page, 'task-center-tab-template-runs', '运行记录（模板）')
+    await clickTabByTestIdOrRole(page, 'task-center-tab-command-runs', 'Run Records (Command)')
+    await clickTabByTestIdOrRole(page, 'task-center-tab-template-runs', 'Run Records (Template)')
     const refreshByTestId = page.getByTestId('task-center-template-runs-refresh')
     if ((await refreshByTestId.count()) > 0) {
       await refreshByTestId.click()
     } else {
-      await page.locator('.task-list-column').getByRole('button', { name: '刷新' }).first().click()
+      await page.locator('.task-list-column').getByRole('button', { name: 'Refresh' }).first().click()
     }
   })
 
@@ -697,13 +697,13 @@ pwTest.describe('@frontend-critical-buttons', () => {
     const tokenInput = page.locator('#automation-token')
     await tokenInput.fill('token-demo-123')
     await expect(tokenInput).toHaveAttribute('type', 'password')
-    await tokenField.getByRole('button', { name: '显示' }).click()
+    await tokenField.getByRole('button', { name: 'Show' }).click()
     await expect(tokenInput).toHaveAttribute('type', 'text')
-    await tokenField.getByRole('button', { name: '隐藏' }).click()
+    await tokenField.getByRole('button', { name: 'Hide' }).click()
     await expect(tokenInput).toHaveAttribute('type', 'password')
 
-    const headlessCheckbox = page.getByLabel('后台运行浏览器（Headless）')
-    const strictCheckbox = page.getByLabel('严格识别页面元素（Midscene Strict）')
+    const headlessCheckbox = page.getByLabel('Run browser in the background (headless)')
+    const strictCheckbox = page.getByLabel('Use strict element recognition (Midscene strict)')
     await headlessCheckbox.check()
     await strictCheckbox.check()
     await expect(headlessCheckbox).toBeChecked()
@@ -711,24 +711,24 @@ pwTest.describe('@frontend-critical-buttons', () => {
 
     let cleanCommandCard = page
       .locator('article')
-      .filter({ has: page.getByRole('heading', { name: '清理缓存' }) })
+      .filter({ has: page.getByRole('heading', { name: 'Clear cache' }) })
       .first()
     if ((await cleanCommandCard.count()) === 0) {
       cleanCommandCard = page
         .locator('article')
-        .filter({ has: page.getByRole('button', { name: '执行' }) })
+        .filter({ has: page.getByRole('button', { name: 'Run' }) })
         .first()
     }
-    const executeButton = cleanCommandCard.getByRole('button', { name: '执行' })
+    const executeButton = cleanCommandCard.getByRole('button', { name: 'Run' })
     await expect(executeButton).toBeVisible()
     await executeButton.click()
-    const dangerDialog = page.getByRole('alertdialog').filter({ hasText: '确认执行危险命令' })
+    const dangerDialog = page.getByRole('alertdialog').filter({ hasText: 'Dangerous run' })
     const dialogOverlay = page.locator('.ui-dialog-overlay, .dialog-overlay')
     if ((await dangerDialog.count()) > 0 || (await dialogOverlay.count()) > 0) {
       if ((await dangerDialog.count()) > 0) {
         await expect(dangerDialog).toBeVisible()
       }
-      const cancelButton = page.getByRole('button', { name: '取消', exact: true }).last()
+      const cancelButton = page.getByRole('button', { name: 'Cancel', exact: true }).last()
       if ((await cancelButton.count()) > 0) {
         await cancelButton.click()
       } else {
@@ -738,35 +738,35 @@ pwTest.describe('@frontend-critical-buttons', () => {
       await expect(dangerDialog).toHaveCount(0)
     }
 
-    await clickTabByTestIdOrRole(page, 'console-tab-task-center', '任务中心')
+    await clickTabByTestIdOrRole(page, 'console-tab-task-center', 'Task Center')
     const taskCenterPanel = page.locator('section#app-view-tasks-panel')
     await expect(taskCenterPanel).toBeVisible()
     const taskListColumn = taskCenterPanel.locator('.task-list-column')
-    await taskListColumn.getByLabel('按状态过滤任务').selectOption('running')
-    await taskListColumn.getByLabel('按命令编号筛选运行记录').fill('clean-e2e-001')
-    await taskListColumn.getByLabel('任务显示数量').selectOption('20')
-    await taskListColumn.getByRole('button', { name: '刷新' }).first().click()
+    await taskListColumn.getByLabel('Filter tasks by status').selectOption('running')
+    await taskListColumn.getByLabel('Filter run records by command ID').fill('clean-e2e-001')
+    await taskListColumn.getByLabel('Run count limit').selectOption('20')
+    await taskListColumn.getByRole('button', { name: 'Refresh' }).first().click()
     await expect.poll(() => state.calls.taskQuery).toEqual({
       status: 'running',
       command_id: 'clean-e2e-001',
       limit: '20',
     })
 
-    const terminal = page.getByRole('region', { name: '实时终端' })
+    const terminal = page.getByRole('region', { name: 'Live terminal' })
     const terminalHeight = terminal.locator('#terminal-size')
     const beforeRows = await terminalHeight.inputValue()
     await terminalHeight.focus()
     await page.keyboard.press('ArrowRight')
     await expect(terminalHeight).not.toHaveValue(beforeRows)
 
-    const autoScrollCheckbox = terminal.getByLabel('自动滚动')
+    const autoScrollCheckbox = terminal.getByLabel('Auto-scroll')
     await autoScrollCheckbox.uncheck()
     await expect(autoScrollCheckbox).not.toBeChecked()
-    await terminal.getByLabel('日志级别过滤').selectOption('error')
-    await expect(terminal.getByText('终端日志为空')).toBeVisible()
-    await terminal.getByLabel('日志级别过滤').selectOption('all')
-    await terminal.getByRole('button', { name: '清空' }).click()
-    await expect(terminal.getByText('终端日志为空')).toBeVisible()
+    await terminal.getByLabel('Filter log level').selectOption('error')
+    await expect(terminal.getByText('The terminal log is empty')).toBeVisible()
+    await terminal.getByLabel('Filter log level').selectOption('all')
+    await terminal.getByRole('button', { name: 'Clear' }).click()
+    await expect(terminal.getByText('The terminal log is empty')).toBeVisible()
   })
 
   pwTest('FlowWorkshop critical buttons', async ({ page }) => {
@@ -774,44 +774,42 @@ pwTest.describe('@frontend-critical-buttons', () => {
     await installBackendStubs(page, state)
     await page.goto('/')
 
-    await page.getByRole('tab', { name: '流程工坊' }).click()
-    await expect(page.getByRole('heading', { name: '关键结果与下一步' })).toBeVisible()
-    await page.getByText('进阶工坊（可选）：系统诊断、流程编辑与调试证据').click()
+    await page.getByRole('tab', { name: 'Flow Workshop' }).click()
+    await expect(page.getByRole('heading', { name: 'Key outcome and next action' })).toBeVisible()
+    await page.getByText('Advanced workshop (optional): system diagnostics, flow editing, and debugging evidence').click()
 
-    await page.getByRole('button', { name: '保存草稿' }).first().click()
-    await expect(
-      page.getByRole('button', { name: '关闭通知: 流程草稿保存成功' })
-    ).toBeVisible()
+    await page.getByRole('button', { name: 'Save Draft' }).first().click()
+    await expect(page.locator('.toast-message').filter({ hasText: 'Flow draft saved successfully' })).toBeVisible()
     await expect.poll(() => state.calls.saveFlowDraft).toBeGreaterThan(0)
 
-    await page.getByRole('button', { name: '回放最新流程' }).click()
-    await expect(page.getByText('已触发流程回放')).toBeVisible()
+    await page.getByRole('button', { name: 'Replay Latest Flow' }).click()
+    await expect(page.locator('.toast-message').filter({ hasText: 'Flow replay triggered' })).toBeVisible()
     await expect.poll(() => state.calls.replayLatestFlow).toBeGreaterThan(0)
 
-    await page.getByRole('button', { name: '新增步骤' }).click()
+    await page.getByRole('button', { name: 'Add Step' }).click()
     await expect(page.getByRole('list', { name: 'flow-editor-steps' }).getByRole('listitem')).toHaveCount(3)
 
-    await page.getByRole('button', { name: '试跑' }).first().click()
-    await expect(page.getByText('已触发单步试跑 s1')).toBeVisible()
+    await page.getByRole('button', { name: 'Replay Step' }).first().click()
+    await expect(page.locator('.toast-message').filter({ hasText: 'Step replay triggered for s1' })).toBeVisible()
     await expect.poll(() => state.calls.replayStep).toBeGreaterThan(0)
 
-    await page.getByText('步骤参数（动作 / URL / 输入变量）').first().click()
+    await page.getByText('Step parameters (action / URL / input reference)').first().click()
     await page.getByLabel('step-0-action').selectOption('type')
     await page.getByLabel('step-0-value-ref').fill('${params.otp_code}')
     await expect(page.getByLabel('step-0-value-ref')).toHaveValue('${params.otp_code}')
 
-    await page.getByText('高级设置（step_id / selector / 排序）').first().click()
+    await page.getByText('Advanced settings (step_id / selector / order)').first().click()
     const firstAdvancedPanel = page.locator('.debug-disclosure').nth(1)
-    await firstAdvancedPanel.getByRole('button', { name: '上移' }).click()
-    await firstAdvancedPanel.getByRole('button', { name: '下移' }).click()
+    await firstAdvancedPanel.getByRole('button', { name: 'Move up' }).click()
+    await firstAdvancedPanel.getByRole('button', { name: 'Move down' }).click()
     await expect(page.getByRole('list', { name: 'flow-editor-steps' }).getByRole('listitem')).toHaveCount(3)
 
-    await page.getByRole('button', { name: /续跑/ }).first().click()
-    await expect(page.getByText('已触发从步骤 s2 继续')).toBeVisible()
+    await page.getByRole('button', { name: /Resume/ }).first().click()
+    await expect(page.locator('.toast-message').filter({ hasText: 'Resume from step s2 triggered' })).toBeVisible()
     await expect.poll(() => state.calls.replayFromStep).toBeGreaterThan(0)
 
     const diagnosticsBefore = state.calls.fetchDiagnostics
-    await page.locator('.flow-editor-column').getByRole('button', { name: '刷新' }).click()
+    await page.locator('.flow-editor-column').getByRole('button', { name: 'Refresh' }).click()
     await expect.poll(() => state.calls.fetchDiagnostics).toBeGreaterThan(diagnosticsBefore)
   })
 
@@ -824,14 +822,14 @@ pwTest.describe('@frontend-critical-buttons', () => {
     })
     await page.goto('/')
 
-    await expect(page.getByRole('dialog', { name: '第 1 步：明确目标并检查参数区' })).toBeVisible()
-    await page.getByRole('button', { name: '下一步' }).click()
-    await expect(page.getByRole('dialog', { name: '第 2 步：在「快速启动」提交任务' })).toBeVisible()
-    await page.getByRole('button', { name: '下一步' }).click()
-    await expect(page.getByRole('dialog', { name: '第 3 步：到「任务中心」确认结果' })).toBeVisible()
-    await page.getByRole('button', { name: '开始使用' }).click()
+    await expect(page.getByRole('dialog', { name: 'Step 1: decide the goal and inspect the parameter rail' })).toBeVisible()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await expect(page.getByRole('dialog', { name: 'Step 2: submit the task from "Quick Launch"' })).toBeVisible()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await expect(page.getByRole('dialog', { name: 'Step 3: confirm the result in "Task Center"' })).toBeVisible()
+    await page.getByRole('button', { name: 'Start using ProofTrail' }).click()
 
-    await expect(page.getByRole('dialog', { name: '第 1 步：明确目标并检查参数区' })).toHaveCount(0)
+    await expect(page.getByRole('dialog', { name: 'Step 1: decide the goal and inspect the parameter rail' })).toHaveCount(0)
     await expect.poll(() => page.evaluate(() => window.localStorage.getItem('ab_onboarding_done'))).toBe('1')
   })
 })

@@ -136,7 +136,7 @@ describe("TaskCenterView behavior", () => {
     })
 
     expect(container.textContent).toContain("任务执行失败")
-    expect(container.textContent).toContain("退出码")
+    expect(container.textContent).toContain("Exit Code")
     expect(container.textContent).toContain("1")
   }, 20000)
 
@@ -206,9 +206,9 @@ describe("TaskCenterView behavior", () => {
 
     expect(onSelectedRunIdChange).toHaveBeenCalledWith(runTwo.run_id)
     expect(onSelectedRunIdChange).toHaveBeenCalledWith(runOne.run_id)
-    expect(container.textContent).toContain("最后错误")
+    expect(container.textContent).toContain("Last Error")
     expect(container.textContent).toContain("Suggested action:")
-    expect(container.textContent).toContain("运行日志")
+    expect(container.textContent).toContain("Run Log")
   })
 
   it("covers waiting-input actions and additional keyboard branches", function () {
@@ -278,11 +278,13 @@ describe("TaskCenterView behavior", () => {
 
     expect(onSelectedRunIdChange).toHaveBeenCalledWith(waitingOtpRun.run_id)
     expect(onSelectedRunIdChange).toHaveBeenCalledWith(providerProtectedRun.run_id)
-    expect(container.textContent).toContain("该运行记录正在等待验证码，请输入后提交：")
+    expect(container.textContent).toContain(
+      "This run is waiting for an OTP. Enter it and submit to continue:"
+    )
 
     const otpInput = container.querySelector("#task-center-run-input") as HTMLInputElement
     const submitButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "提交"
+      (button) => button.textContent === "Submit"
     )
     act(() => {
       otpInput.value = "123456"
@@ -337,9 +339,11 @@ describe("TaskCenterView behavior", () => {
     act(() => {
       templateTab.dispatchEvent(new MouseEvent("click", { bubbles: true }))
     })
-    expect(container.textContent).toContain("已打开支付页，请手动完成后点击继续")
+    expect(container.textContent).toContain(
+      "The payment page is already open. Complete the provider step manually, then continue here."
+    )
     const continueButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "继续执行"
+      (button) => button.textContent === "Continue"
     )
     act(() => {
       continueButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
@@ -390,7 +394,9 @@ describe("TaskCenterView behavior", () => {
       )
     })
 
-    expect(container.textContent).toContain("从左侧运行记录列表（命令）中选择一条记录查看详细信息和输出日志。")
+    expect(container.textContent).toContain(
+      "Choose a record from the command run list on the left to inspect its details and output log."
+    )
 
     const templateTab = container.querySelector(
       '[data-testid="task-center-tab-template-runs"]'
@@ -398,10 +404,12 @@ describe("TaskCenterView behavior", () => {
     act(() => {
       templateTab.dispatchEvent(new MouseEvent("click", { bubbles: true }))
     })
-    expect(container.textContent).toContain("在快速启动页面选择模板并启动后，运行记录会出现在这里。")
+    expect(container.textContent).toContain(
+      "Template run records appear here after you select a template and start a run from Quick Launch."
+    )
 
     const launchButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "去快速启动"
+      (button) => button.textContent === "Go to Quick Launch"
     )
     act(() => {
       launchButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
@@ -446,6 +454,8 @@ describe("TaskCenterView behavior", () => {
     act(() => {
       templateTab.dispatchEvent(new MouseEvent("click", { bubbles: true }))
     })
-    expect(container.textContent).toContain("从左侧运行记录列表（模板）中选择一条记录查看其状态、参数和日志。")
+    expect(container.textContent).toContain(
+      "Choose a record from the template run list on the left to inspect its status, parameters, and logs."
+    )
   })
 })

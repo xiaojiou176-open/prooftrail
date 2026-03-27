@@ -82,12 +82,12 @@ buttonBehaviorCase(
     await page.getByTestId(TASK_CENTER_TAB_TEMPLATE_RUNS_TEST_ID).click()
 
     await page.locator('#task-center-template-option-run-waiting-otp-001').click()
-    await page.getByPlaceholder('输入验证码').fill('123456')
-    await expect(page.getByText('该运行记录正在等待验证码，请输入后提交：')).toBeVisible()
-    await page.getByRole('button', { name: '提交' }).click()
+    await page.getByPlaceholder('Enter OTP').fill('123456')
+    await expect(page.getByText('This run is waiting for an OTP. Enter it and submit to continue:')).toBeVisible()
+    await page.getByRole('button', { name: 'Submit' }).click()
 
     await expect.poll(() => harness.calls.submitRunOtp).toBe(1)
-    await expect(page.getByText('验证码已提交，运行任务已继续')).toBeVisible()
+    await expect(page.getByText('OTP submitted and the run resumed')).toBeVisible()
   },
 )
 

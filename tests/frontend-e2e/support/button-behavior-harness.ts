@@ -57,14 +57,14 @@ type Harness = {
 const DEFAULT_COMMANDS: Command[] = [
   {
     command_id: 'pipeline-run-demo',
-    title: '运行流水线任务',
-    description: '验证流水线命令执行入口',
+    title: 'Run pipeline task',
+    description: 'Covers the pipeline command execution entrypoint',
     tags: ['pipeline'],
   },
   {
     command_id: 'init-setup-demo',
-    title: '初始化环境',
-    description: '验证分类筛选',
+    title: 'Initialize environment',
+    description: 'Covers category filtering',
     tags: ['setup'],
   },
 ]
@@ -109,7 +109,7 @@ const DEFAULT_TEMPLATES: UniversalTemplate[] = [
     flow_id: 'flow-demo-001',
     name: 'Demo Template',
     params_schema: [
-      { key: 'email', type: 'email', required: true, description: '邮箱' },
+      { key: 'email', type: 'email', required: true, description: 'Email address' },
     ],
     defaults: { email: 'demo@example.com' },
     policies: {
@@ -186,7 +186,7 @@ export function buttonBehaviorCase(meta: ButtonBehaviorMeta, body: Parameters<ty
 export function selectorForCase(caseId: string): string {
   const entry = BUTTON_BEHAVIOR_MANIFEST.find((item) => item.case_id === caseId)
   if (!entry) {
-    throw new Error(`button behavior manifest 中不存在 case_id=${caseId}`)
+    throw new Error(`button behavior manifest does not contain case_id=${caseId}`)
   }
   return entry.selector
 }

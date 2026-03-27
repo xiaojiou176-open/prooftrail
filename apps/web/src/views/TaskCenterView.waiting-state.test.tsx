@@ -125,10 +125,12 @@ describe("TaskCenterView waiting state branches", () => {
     })
     const onSubmitOtp = renderRunView(run)
 
-    expect(container.textContent).toContain("已打开支付页，请手动完成后点击继续")
+    expect(container.textContent).toContain(
+      "The payment page is already open. Complete the provider step manually, then continue here."
+    )
     expect(container.querySelector('[data-testid="task-center-waiting-card"] input')).toBeNull()
     const continueButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "继续执行"
+      (button) => button.textContent === "Continue"
     )
     expect(continueButton).not.toBeUndefined()
 
@@ -146,13 +148,15 @@ describe("TaskCenterView waiting state branches", () => {
     })
     renderRunView(run)
 
-    expect(container.textContent).toContain("该运行记录正在等待补充输入，请填写后提交：")
+    expect(container.textContent).toContain(
+      "This run is waiting for additional input. Provide it and submit to continue:"
+    )
     const input = container.querySelector(
       '[data-testid="task-center-waiting-card"] input'
     ) as HTMLInputElement | null
-    expect(input?.placeholder).toBe("输入补充信息")
+    expect(input?.placeholder).toBe("Enter additional input")
     const submitButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "提交"
+      (button) => button.textContent === "Submit"
     )
     expect(submitButton).not.toBeUndefined()
   })
@@ -164,13 +168,15 @@ describe("TaskCenterView waiting state branches", () => {
     })
     renderRunView(run)
 
-    expect(container.textContent).toContain("该运行记录正在等待验证码，请输入后提交：")
+    expect(container.textContent).toContain(
+      "This run is waiting for an OTP. Enter it and submit to continue:"
+    )
     const input = container.querySelector(
       '[data-testid="task-center-waiting-card"] input'
     ) as HTMLInputElement | null
-    expect(input?.placeholder).toBe("输入验证码")
+    expect(input?.placeholder).toBe("Enter OTP")
     const submitButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "提交"
+      (button) => button.textContent === "Submit"
     )
     expect(submitButton).not.toBeUndefined()
   })

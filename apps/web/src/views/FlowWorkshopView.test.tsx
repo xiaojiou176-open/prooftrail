@@ -146,19 +146,19 @@ describe("FlowWorkshopView", () => {
       root.render(<FlowWorkshopView {...createProps()} />)
     })
 
-    expect(container.textContent).toContain("流程工坊是进阶区")
-    expect(container.textContent).toContain("草稿")
-    expect(container.textContent).toContain("未创建")
-    expect(container.textContent).toContain("最近回放")
-    expect(container.textContent).toContain("未执行")
-    expect(container.textContent).toContain("执行一次录制")
-    expect(container.textContent).toContain("流程草稿")
+    expect(container.textContent).toContain("Flow Workshop is the advanced zone")
+    expect(container.textContent).toContain("Draft")
+    expect(container.textContent).toContain("Missing")
+    expect(container.textContent).toContain("Latest replay")
+    expect(container.textContent).toContain("Not run yet")
+    expect(container.textContent).toContain("Start one recording run")
+    expect(container.textContent).toContain("No flow draft yet")
 
     const saveButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "保存草稿"
+      (button) => button.textContent === "Save Draft"
     ) as HTMLButtonElement | undefined
     const replayButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "回放最新流程"
+      (button) => button.textContent === "Replay Latest Flow"
     ) as HTMLButtonElement | undefined
     expect(saveButton?.disabled).toBe(true)
     expect(replayButton?.disabled).toBe(true)
@@ -197,19 +197,19 @@ describe("FlowWorkshopView", () => {
       )
     })
 
-    expect(container.textContent).toContain("从 s2 续跑并修正该步骤")
-    expect(container.textContent).toContain("失败于 s2")
-    expect(container.textContent).toContain("步骤")
-    expect(container.textContent).toContain("回退轨迹")
+    expect(container.textContent).toContain("Resume from s2 and correct that step.")
+    expect(container.textContent).toContain("Failed at s2")
+    expect(container.textContent).toContain("Step")
+    expect(container.textContent).toContain("fallback trail")
 
     const saveButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "保存草稿"
+      (button) => button.textContent === "Save Draft"
     ) as HTMLButtonElement | undefined
     const replayButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "回放最新流程"
+      (button) => button.textContent === "Replay Latest Flow"
     ) as HTMLButtonElement | undefined
     const resumeButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "从 s2 续跑"
+      (button) => button.textContent === "Resume from s2"
     ) as HTMLButtonElement | undefined
 
     expect(saveButton?.disabled).toBe(false)
@@ -234,7 +234,7 @@ describe("FlowWorkshopView", () => {
     expect(onSelectStep).toHaveBeenCalledWith("s2")
 
     const resumeLabel = Array.from(container.querySelectorAll("label")).find((label) =>
-      label.textContent?.includes("断点恢复时重放前置等待条件")
+      label.textContent?.includes("Replay prerequisite waiting conditions during breakpoint resume")
     ) as HTMLLabelElement | undefined
     const resumeWithPreconditions = resumeLabel?.querySelector("input") as
       | HTMLInputElement
@@ -245,7 +245,7 @@ describe("FlowWorkshopView", () => {
     expect(onResumeWithPreconditionsChange).toHaveBeenCalledWith(false)
 
     const refreshButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "刷新"
+      (button) => button.textContent === "Refresh"
     ) as HTMLButtonElement | undefined
     act(() => {
       refreshButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
@@ -290,11 +290,11 @@ describe("FlowWorkshopView", () => {
       )
     })
 
-    expect(container.textContent).toContain("已通过")
-    expect(container.textContent).toContain("回看关键截图后即可复用该流程。")
-    expect(container.textContent).toContain("正常")
-    expect(container.textContent).toContain("该步骤未触发回退。")
-    expect(container.textContent).not.toContain("从 s-pass 续跑")
+    expect(container.textContent).toContain("Passed")
+    expect(container.textContent).toContain("Review the key screenshots, then reuse the flow with confidence.")
+    expect(container.textContent).toContain("Healthy")
+    expect(container.textContent).toContain("No fallback was triggered for this step.")
+    expect(container.textContent).not.toContain("Resume from s-pass")
   })
 
   it("shows missing evidence hint when a step is selected without evidence payload", function () {
@@ -307,14 +307,14 @@ describe("FlowWorkshopView", () => {
             selectedStepId: "s-pending",
             stepEvidence: null,
             evidenceTimeline: [{ ...evidenceTimeline[0], step_id: "s-pending", ok: true }],
-            stepEvidenceError: "证据拉取中断",
+            stepEvidenceError: "Evidence loading interrupted",
           })}
         />
       )
     })
 
-    expect(container.textContent).toContain("证据拉取中断")
-    expect(container.textContent).toContain("步骤 s-pending 暂无证据数据，请先试跑或回放。")
+    expect(container.textContent).toContain("Evidence loading interrupted")
+    expect(container.textContent).toContain("Step s-pending has no evidence yet. Replay or rerun it first.")
   })
 
   it("covers no-session guidance, error banners and fallback detail variants", function () {
@@ -323,9 +323,9 @@ describe("FlowWorkshopView", () => {
         <FlowWorkshopView
           {...createProps({
             diagnostics,
-            diagnosticsError: "诊断失败",
-            alertError: "告警失败",
-            flowError: "流程失败",
+            diagnosticsError: "Diagnostics failed",
+            alertError: "Alert refresh failed",
+            flowError: "Flow preview failed",
             latestFlow: { ...latestFlow, session_id: "", steps: [{ step_id: "s-x", action: "type", value_ref: null, selector: null, url: null }] },
             flowDraft,
             selectedStepId: "s-x",
@@ -357,19 +357,19 @@ describe("FlowWorkshopView", () => {
               ],
             },
             evidenceTimeline: [{ ...evidenceTimeline[0], step_id: "s-x", ok: true, detail: null }],
-            evidenceTimelineError: "时间轴失败",
+            evidenceTimelineError: "Timeline loading failed",
           })}
         />
       )
     })
 
-    expect(container.textContent).toContain("先保存草稿，再点击“回放最新流程”完成首跑。")
-    expect(container.textContent).toContain("诊断失败")
-    expect(container.textContent).toContain("告警失败")
-    expect(container.textContent).toContain("流程失败")
-    expect(container.textContent).toContain("时间轴失败")
-    expect(container.textContent).toContain("无详细信息")
-    expect(container.textContent).toContain("失败: 未知错误")
-    expect(container.textContent).toContain("匹配成功")
+    expect(container.textContent).toContain('Save the draft first, then click "Replay Latest Flow" to complete the first run.')
+    expect(container.textContent).toContain("Diagnostics failed")
+    expect(container.textContent).toContain("Alert refresh failed")
+    expect(container.textContent).toContain("Flow preview failed")
+    expect(container.textContent).toContain("Timeline loading failed")
+    expect(container.textContent).toContain("No additional detail")
+    expect(container.textContent).toContain("Failed: Unknown error")
+    expect(container.textContent).toContain("Matched successfully")
   })
 })

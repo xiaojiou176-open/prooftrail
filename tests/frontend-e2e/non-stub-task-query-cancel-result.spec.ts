@@ -123,22 +123,22 @@ pwTest(
 
     const commandCard = page.locator(".command-card").filter({ hasText: command.command_id }).first()
     await expect(commandCard).toBeVisible()
-    await commandCard.getByRole("button", { name: /执行|危险执行/ }).click()
+    await commandCard.getByRole("button", { name: /Run|Dangerous run/ }).click()
 
-    const confirmButton = page.getByRole("button", { name: "确认执行" })
+    const confirmButton = page.getByRole("button", { name: "Confirm dangerous command" })
     if ((await confirmButton.count()) > 0) {
       await confirmButton.click()
     }
 
-    await expect(page.locator("body")).toContainText("已提交", { timeout: 20_000 })
+    await expect(page.locator("body")).toContainText("Submitted", { timeout: 20_000 })
 
     const taskCenterTab = page.getByTestId(CONSOLE_TAB_TASK_CENTER_TEST_ID)
     await taskCenterTab.click()
     await expect(taskCenterTab).toHaveAttribute("aria-selected", "true")
 
-    await page.getByLabel("按状态过滤任务").selectOption("all")
-    await page.getByLabel("按命令编号筛选运行记录").fill(command.command_id)
-    await page.getByLabel("任务显示数量").selectOption("20")
+    await page.getByLabel("Filter tasks by status").selectOption("all")
+    await page.getByLabel("Filter run records by command ID").fill(command.command_id)
+    await page.getByLabel("Run count limit").selectOption("20")
     await page.getByTestId(TASK_CENTER_COMMAND_RUNS_REFRESH_TEST_ID).click()
 
     await expect.poll(() => observedTaskRequests.length, { timeout: 20_000 }).toBeGreaterThan(0)
@@ -167,7 +167,7 @@ pwTest(
     const taskRow = page.locator(".task-list li").filter({ hasText: taskId.slice(0, 8) }).first()
     await expect(taskRow).toBeVisible({ timeout: 20_000 })
 
-    const cancelButton = taskRow.getByRole("button", { name: "取消" })
+    const cancelButton = taskRow.getByRole("button", { name: "Cancel" })
     await expect(cancelButton).toBeVisible({ timeout: 20_000 })
     await cancelButton.click()
 

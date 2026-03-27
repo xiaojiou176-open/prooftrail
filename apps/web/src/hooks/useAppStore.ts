@@ -314,7 +314,7 @@ export function useAppStore() {
   const [commandState, setCommandState] = useState<CommandState>("loading")
   const [taskState, setTaskState] = useState<TaskState>("loading")
   const [actionState, setActionState] = useState<ActionState>("idle")
-  const [feedbackText, setFeedbackText] = useState("等待执行命令")
+  const [feedbackText, setFeedbackText] = useState("Waiting for a command")
   const [taskSyncError, setTaskSyncError] = useState("")
   const [submittingId, setSubmittingId] = useState("")
   const [activeTab, setActiveTab] = useState<"all" | CommandCategory>("all")

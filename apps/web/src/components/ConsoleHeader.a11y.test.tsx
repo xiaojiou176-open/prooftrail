@@ -48,7 +48,7 @@ describe("ConsoleHeader tab semantics", () => {
     )
 
     expect(html).toContain('role="tablist"')
-    expect(html).toContain('aria-label="主导航"')
+    expect(html).toContain('aria-label="Primary navigation"')
 
     const quickLaunchTabAttrs = getButtonAttributesByTestId(html, CONSOLE_TAB_QUICK_LAUNCH_TEST_ID)
     const taskCenterTabAttrs = getButtonAttributesByTestId(html, CONSOLE_TAB_TASK_CENTER_TEST_ID)

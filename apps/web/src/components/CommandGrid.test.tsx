@@ -64,7 +64,7 @@ describe("CommandGrid", () => {
     expect(onActiveTabChange).toHaveBeenCalled()
 
     const buttons = Array.from(container.querySelectorAll("button")).filter((button) =>
-      ["执行", "危险执行"].includes(button.textContent ?? "")
+      ["Run", "Dangerous run"].includes(button.textContent ?? "")
     )
     act(() => {
       buttons[0]?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
@@ -92,7 +92,7 @@ describe("CommandGrid", () => {
         />
       )
     })
-    expect(container.textContent).toContain("命令加载中...")
+    expect(container.textContent).toContain("Loading commands...")
 
     act(() => {
       root.render(
@@ -122,7 +122,7 @@ describe("CommandGrid", () => {
         />
       )
     })
-    expect(container.textContent).toContain("暂无可用命令")
+    expect(container.textContent).toContain("No commands available")
 
     act(() => {
       root.render(
@@ -137,7 +137,7 @@ describe("CommandGrid", () => {
         />
       )
     })
-    expect(container.textContent).toContain("该分类下暂无命令")
+    expect(container.textContent).toContain("No commands in this category")
 
     act(() => {
       root.render(
@@ -207,7 +207,7 @@ describe("CommandGrid", () => {
     })
 
     const runButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "执行中..."
+      (button) => button.textContent === "Running..."
     ) as HTMLButtonElement | undefined
     expect(runButton).not.toBeUndefined()
     expect(runButton?.disabled).toBe(true)

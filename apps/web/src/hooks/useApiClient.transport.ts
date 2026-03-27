@@ -37,8 +37,8 @@ export function useApiClientTransport(store: AppStore): ApiClientTransport {
   const formatActionableError = useCallback(
     (
       message: string,
-      action = "按当前步骤修正输入后重试。",
-      entry = "查看任务中心运行日志与浏览器开发者工具网络请求。"
+      action = "Correct the current step input and try again.",
+      entry = "Review the Task Center run log and the browser developer-tools network panel."
     ) => formatActionableApiError(message, action, entry),
     []
   )

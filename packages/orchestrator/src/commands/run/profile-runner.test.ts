@@ -1,5 +1,5 @@
 import assert from "node:assert/strict"
-import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { dirname, join, resolve } from "node:path"
 import test from "node:test"
@@ -27,6 +27,7 @@ function withEnv<T>(overrides: Record<string, string | undefined>, task: () => T
 
 function writeFixtureFile(dir: string, relativePath: string, content: string): string {
   const filePath = resolve(dir, relativePath)
+  mkdirSync(dirname(filePath), { recursive: true })
   writeFileSync(filePath, content, "utf8")
   return filePath
 }
@@ -59,7 +60,7 @@ test("runProfile executes suite stages for web target with fake pnpm and writes 
   const profileName = `tmp-profile-runner-web-${Date.now()}`
   const targetName = `tmp-target-runner-web-${Date.now()}`
   const profilePath = writeFixtureFile(
-    resolve(process.cwd(), "profiles"),
+    resolve(process.cwd(), "configs/profiles"),
     `${profileName}.yaml`,
     [
       `name: ${profileName}`,
@@ -77,7 +78,7 @@ test("runProfile executes suite stages for web target with fake pnpm and writes 
     ].join("\n")
   )
   const targetPath = writeFixtureFile(
-    resolve(process.cwd(), "targets"),
+    resolve(process.cwd(), "configs/targets"),
     `${targetName}.yaml`,
     [
       `name: ${targetName}`,
@@ -125,7 +126,7 @@ test("runProfile records blocked web-only steps for tauri target without startin
   const profileName = `tmp-profile-runner-tauri-${Date.now()}`
   const targetName = `tmp-target-runner-tauri-${Date.now()}`
   const profilePath = writeFixtureFile(
-    resolve(process.cwd(), "profiles"),
+    resolve(process.cwd(), "configs/profiles"),
     `${profileName}.yaml`,
     [
       `name: ${profileName}`,
@@ -143,7 +144,7 @@ test("runProfile records blocked web-only steps for tauri target without startin
     ].join("\n")
   )
   const targetPath = writeFixtureFile(
-    resolve(process.cwd(), "targets"),
+    resolve(process.cwd(), "configs/targets"),
     `${targetName}.yaml`,
     [
       `name: ${targetName}`,

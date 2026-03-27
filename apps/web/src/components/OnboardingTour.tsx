@@ -12,20 +12,20 @@ interface TourStep {
 const STEPS: TourStep[] = [
   {
     selector: '[data-tour="welcome"]',
-    title: "第 1 步：明确目标并检查参数区",
-    body: "先确认你要完成的网页操作，再看一眼右侧参数区，结果是能先用默认值快速起跑。若执行失败，下一步只改 1 个参数再重试。",
+    title: "Step 1: decide the goal and inspect the parameter rail",
+    body: "Confirm the browser task you want to complete, then inspect the parameter rail on the right. The goal is to start quickly with defaults first. If the run fails, adjust one parameter and retry.",
     position: "bottom",
   },
   {
     selector: '[data-tour="tab-launch"]',
-    title: "第 2 步：在「快速启动」提交任务",
-    body: "先选一个最接近目标的任务，再按提示补齐必要参数并点击「执行」，结果是系统开始处理任务。若失败，下一步去「任务中心」看最后一条日志。",
+    title: 'Step 2: submit the task from "Quick Launch"',
+    body: 'Choose the task that best matches your goal, fill the required inputs, and click "Run". The result is that the system starts processing the task. If it fails, switch to "Task Center" and read the latest log entry.',
     position: "bottom",
   },
   {
     selector: '[data-tour="tab-tasks"]',
-    title: "第 3 步：到「任务中心」确认结果",
-    body: "执行后切到这里看状态和日志，结果是你能确认任务是否成功。若失败，下一步按末尾报错调整 1 个参数后再次执行。",
+    title: 'Step 3: confirm the result in "Task Center"',
+    body: "After the run starts, switch here to inspect the status and logs. The goal is to confirm whether the task succeeded. If it failed, use the last visible error to change one parameter before rerunning.",
     position: "bottom",
   },
 ]
@@ -160,7 +160,7 @@ function OnboardingTour({ active, onComplete }: OnboardingTourProps) {
         size="sm"
         className="tour-backdrop"
         onClick={handleSkip}
-        aria-label="跳过首用引导"
+        aria-label="Skip the first-use guide"
         data-uiq-ignore-button-inventory="tour-backdrop-dismiss-surface"
       />
       <div
@@ -194,7 +194,7 @@ function OnboardingTour({ active, onComplete }: OnboardingTourProps) {
               onClick={handleSkip}
               data-uiq-ignore-button-inventory="tour-dismiss-secondary-action"
             >
-              {"稍后再看"}
+              {"Maybe later"}
             </Button>
             {step > 0 && (
               <Button
@@ -204,11 +204,11 @@ function OnboardingTour({ active, onComplete }: OnboardingTourProps) {
                 onClick={handlePrev}
                 data-uiq-ignore-button-inventory="tour-back-secondary-action"
               >
-                {"上一步"}
+                {"Previous"}
               </Button>
             )}
             <Button type="button" size="sm" onClick={handleNext}>
-              {step === STEPS.length - 1 ? "开始使用" : "下一步"}
+              {step === STEPS.length - 1 ? "Start using ProofTrail" : "Next"}
             </Button>
           </div>
         </div>

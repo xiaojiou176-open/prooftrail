@@ -80,7 +80,7 @@ describe("TerminalPanel", () => {
     expect(container.textContent).toContain("booting")
     expect(container.textContent).toContain("failed to load")
     expect(container.textContent).toContain("task-output-tail")
-    expect(container.querySelector('[data-testid="terminal-size-value"]')?.textContent).toBe("12 行")
+    expect(container.querySelector('[data-testid="terminal-size-value"]')?.textContent).toBe("12 rows")
 
     const slider = container.querySelector("#terminal-size") as HTMLInputElement
     act(() => {
@@ -93,7 +93,7 @@ describe("TerminalPanel", () => {
     })
     expect(onTerminalRowsChange).toHaveBeenCalledWith(20)
 
-    const filterSelect = container.querySelector('select[aria-label="日志级别过滤"]') as HTMLSelectElement
+    const filterSelect = container.querySelector('select[aria-label="Filter log level"]') as HTMLSelectElement
     act(() => {
       filterSelect.value = "error"
       filterSelect.dispatchEvent(new Event("change", { bubbles: true }))
@@ -109,7 +109,7 @@ describe("TerminalPanel", () => {
     expect(onAutoScrollChange).toHaveBeenCalledWith(false)
 
     const clearButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "清空"
+      (button) => button.textContent === "Clear"
     )
     act(() => {
       clearButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
@@ -137,7 +137,7 @@ describe("TerminalPanel", () => {
         />
       )
     })
-    expect(container.textContent).toContain("终端日志为空")
+    expect(container.textContent).toContain("The terminal log is empty")
 
     act(() => {
       root.render(

@@ -37,7 +37,7 @@ export function usePolling(
 
     const handlePollError = (error: unknown) => {
       consecutiveErrors += 1
-      const message = error instanceof Error ? error.message : "任务自动刷新失败"
+      const message = error instanceof Error ? error.message : "Background task refresh failed"
       storeRef.current.setTaskSyncError(message)
       storeRef.current.addLog("warn", message)
       // Only show notice on first failure, not every retry
