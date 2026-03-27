@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "generatedAt": "2026-03-25",
+  "exceptions": [
+    {
+      "id": "CVE-2026-4539",
+      "package": "pygments",
+      "ticket": "SEC-2163",
+      "expiresOn": "2026-04-07",
+      "reason": "Dev-only toolchain path via pytest/rich/textual. Current index still reports 2.19.2 as latest, so no repo-side upgrade path exists yet."
+    }
+  ]
+}
