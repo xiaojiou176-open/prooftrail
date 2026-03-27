@@ -1,0 +1,378 @@
+import { useCallback } from "react"
+import type {
+  ProfileResolvePayload,
+  ReconstructionGeneratePayload,
+  ReconstructionPreviewPayload,
+  UniversalRun,
+} from "../types"
+import type { ApiClientTransport } from "./useApiClient.transport"
+import type { AppStore, StudioSchemaRow } from "./useAppStore"
+
+type StudioParams = {
+  store: AppStore
+  transport: ApiClientTransport
+  fetchStudioData: () => Promise<void>
+  fetchTasks: () => Promise<void>
+}
+
+export function useApiClientStudio({
+  store,
+  transport,
+  fetchStudioData,
+  fetchTasks,
+}: StudioParams) {
+  const { buildHeaders, formatActionableError, requestJson, runAction, unwrapRunPayload } =
+    transport
+
+  const resolveProfile = useCallback(async () => {
+    const payload = await runAction<ProfileResolvePayload>(
+      "Profile 解析失败",
+      (formatted) => {
+        store.setReconstructionError(formatted)
+        store.pushNotice("error", formatted)
+      },
+      async () =>
+        requestJson<ProfileResolvePayload>("/api/profiles/resolve", "Profile 解析失败", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...buildHeaders() },
+          body: JSON.stringify({
+            artifacts: store.reconstructionArtifacts,
+            extractor_strategy: store.reconstructionStrategy,
+          }),
+        })
+    )
+    if (!payload) return
+    store.setProfileResolved(payload)
+    store.setReconstructionError("")
+  }, [buildHeaders, requestJson, runAction, store])
+
+  const previewReconstruction = useCallback(async () => {
+    const payload = await runAction<ReconstructionPreviewPayload>(
+      "重建预览失败",
+      (formatted) => {
+        store.setReconstructionError(formatted)
+        store.pushNotice("error", formatted)
+      },
+      async () =>
+        requestJson<ReconstructionPreviewPayload>("/api/reconstruction/preview", "重建预览失败", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...buildHeaders() },
+          body: JSON.stringify({
+            artifacts: store.reconstructionArtifacts,
+            video_analysis_mode: store.reconstructionMode,
+            extractor_strategy: store.reconstructionStrategy,
+            auto_refine_iterations: 3,
+          }),
+        })
+    )
+    if (!payload) return
+    store.setReconstructionPreview(payload)
+    store.setReconstructionGenerated(null)
+    store.setReconstructionError("")
+  }, [buildHeaders, requestJson, runAction, store])
+
+  const generateReconstruction = useCallback(async () => {
+    const payload = await runAction<ReconstructionGeneratePayload>(
+      "重建生成失败",
+      (formatted) => {
+        store.setReconstructionError(formatted)
+        store.pushNotice("error", formatted)
+      },
+      async () => {
+        const preview = store.reconstructionPreview
+        if (!preview) throw new Error("请先执行 Preview")
+        return requestJson<ReconstructionGeneratePayload>(
+          "/api/reconstruction/generate",
+          "重建生成失败",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...buildHeaders() },
+            body: JSON.stringify({
+              preview_id: preview.preview_id,
+              template_name: store.studioTemplateName || "reconstructed-template",
+              create_run: false,
+              run_params: {},
+            }),
+          }
+        )
+      }
+    )
+    if (!payload) return
+    store.setReconstructionGenerated(payload)
+    store.setReconstructionError("")
+    await fetchStudioData()
+  }, [buildHeaders, fetchStudioData, requestJson, runAction, store])
+
+  const orchestrateFromArtifacts = useCallback(async () => {
+    try {
+      await requestJson<unknown>("/api/command-tower/orchestrate-from-artifacts", "编排执行失败", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...buildHeaders() },
+        body: JSON.stringify({
+          artifacts: store.reconstructionArtifacts,
+          video_analysis_mode: store.reconstructionMode,
+          extractor_strategy: store.reconstructionStrategy,
+          auto_refine_iterations: 3,
+          template_name: store.studioTemplateName || "reconstructed-template",
+          create_run: false,
+          run_params: {},
+        }),
+      })
+      store.pushNotice("success", "已完成 artifacts 编排")
+      await fetchStudioData()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "编排执行失败"
+      const formatted = formatActionableError(message)
+      store.setReconstructionError(formatted)
+      store.pushNotice("error", formatted)
+    }
+  }, [buildHeaders, fetchStudioData, formatActionableError, requestJson, store])
+
+  const buildStudioSchemaPayload = useCallback(() => {
+    return store.studioSchemaRows
+      .map((row) => (row.key.trim() ? row : null))
+      .filter((row): row is StudioSchemaRow => Boolean(row))
+      .map((row) => ({
+        key: row.key.trim(),
+        type: row.type,
+        required: row.required,
+        description: row.description.trim() || null,
+        enum_values:
+          row.type === "enum"
+            ? row.enum_values
+                .split(",")
+                .map((value) => value.trim())
+                .filter(Boolean)
+            : [],
+        pattern: row.type === "regex" ? row.pattern.trim() || null : null,
+      }))
+  }, [store.studioSchemaRows])
+
+  const importLatestFlow = useCallback(async () => {
+    const result = await runAction<unknown>(
+      "导入最新 Flow 失败",
+      (formatted) => {
+        store.setStudioError(formatted)
+        store.pushNotice("error", formatted)
+      },
+      async () =>
+        requestJson<unknown>("/api/flows/import-latest", "导入最新 Flow 失败", {
+          method: "POST",
+          headers: buildHeaders(),
+        })
+    )
+    if (result === null) return
+    store.pushNotice("success", "已导入最新 Flow")
+    await fetchStudioData()
+  }, [buildHeaders, fetchStudioData, requestJson, runAction, store])
+
+  const createTemplate = useCallback(async () => {
+    try {
+      const schema = buildStudioSchemaPayload()
+      const defaults = { ...store.studioDefaults }
+      const policies = {
+        retries: store.studioPolicies.retries,
+        timeout_seconds: store.studioPolicies.timeout_seconds,
+        otp: {
+          required: store.studioPolicies.otp.required,
+          provider: store.studioPolicies.otp.provider,
+          timeout_seconds: store.studioPolicies.otp.timeout_seconds,
+          regex: store.studioPolicies.otp.regex,
+          sender_filter: store.studioPolicies.otp.sender_filter || null,
+          subject_filter: store.studioPolicies.otp.subject_filter || null,
+        },
+        branches: {},
+      }
+      const flowId = store.selectedStudioFlowId || store.flowDraft?.flow_id || ""
+      if (!flowId) throw new Error("请选择一个 Flow")
+      await requestJson<unknown>("/api/templates", "创建模板失败", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...buildHeaders() },
+        body: JSON.stringify({
+          flow_id: flowId,
+          name: store.studioTemplateName,
+          params_schema: schema,
+          defaults,
+          policies,
+        }),
+      })
+      store.pushNotice("success", "模板创建成功")
+      await fetchStudioData()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "创建模板失败"
+      const formatted = formatActionableError(message)
+      store.setStudioError(formatted)
+      store.pushNotice("error", formatted)
+    }
+  }, [
+    buildHeaders,
+    buildStudioSchemaPayload,
+    fetchStudioData,
+    formatActionableError,
+    requestJson,
+    store,
+  ])
+
+  const updateTemplate = useCallback(async () => {
+    try {
+      if (!store.selectedStudioTemplateId) throw new Error("请选择一个模板")
+      const schema = buildStudioSchemaPayload()
+      const defaults = { ...store.studioDefaults }
+      const policies = {
+        retries: store.studioPolicies.retries,
+        timeout_seconds: store.studioPolicies.timeout_seconds,
+        otp: {
+          required: store.studioPolicies.otp.required,
+          provider: store.studioPolicies.otp.provider,
+          timeout_seconds: store.studioPolicies.otp.timeout_seconds,
+          regex: store.studioPolicies.otp.regex,
+          sender_filter: store.studioPolicies.otp.sender_filter || null,
+          subject_filter: store.studioPolicies.otp.subject_filter || null,
+        },
+        branches: {},
+      }
+      await requestJson<unknown>(
+        `/api/templates/${store.selectedStudioTemplateId}`,
+        "更新模板失败",
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", ...buildHeaders() },
+          body: JSON.stringify({
+            name: store.studioTemplateName,
+            params_schema: schema,
+            defaults,
+            policies,
+          }),
+        }
+      )
+      store.pushNotice("success", "模板更新成功")
+      await fetchStudioData()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "更新模板失败"
+      const formatted = formatActionableError(message)
+      store.setStudioError(formatted)
+      store.pushNotice("error", formatted)
+    }
+  }, [
+    buildHeaders,
+    buildStudioSchemaPayload,
+    fetchStudioData,
+    formatActionableError,
+    requestJson,
+    store,
+  ])
+
+  const createRun = useCallback(async () => {
+    try {
+      if (!store.selectedStudioTemplateId) throw new Error("请选择一个模板")
+      const payload = await requestJson<unknown>("/api/runs", "创建运行任务失败", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...buildHeaders() },
+        body: JSON.stringify({
+          template_id: store.selectedStudioTemplateId,
+          params: { ...store.studioRunParams },
+          otp_code: store.studioOtpCode.trim() || undefined,
+        }),
+      })
+      const run = unwrapRunPayload(payload)
+      if (run?.run_id) store.setSelectedStudioRunId(run.run_id)
+      store.pushNotice("success", "运行任务创建成功")
+      await Promise.all([fetchStudioData(), fetchTasks()])
+      return true
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "创建运行任务失败"
+      const formatted = formatActionableError(message)
+      store.setStudioError(formatted)
+      store.pushNotice("error", formatted)
+      return false
+    }
+  }, [
+    buildHeaders,
+    fetchStudioData,
+    fetchTasks,
+    formatActionableError,
+    requestJson,
+    store,
+    unwrapRunPayload,
+  ])
+
+  const submitRunOtp = useCallback(
+    async (
+      runId: string,
+      status: UniversalRun["status"],
+      waitContext?: UniversalRun["wait_context"]
+    ) => {
+      try {
+        const isProviderProtectedWaitingUser =
+          status === "waiting_user" &&
+          waitContext?.reason_code === "provider_protected_payment_step"
+        const inputLabel =
+          status === "waiting_otp"
+            ? "验证码"
+            : isProviderProtectedWaitingUser
+              ? "继续执行"
+              : "补充输入"
+        const normalizedOtpCode = store.studioOtpCode.trim()
+        if (!normalizedOtpCode && !isProviderProtectedWaitingUser) {
+          throw new Error(`请输入${inputLabel}`)
+        }
+        const payload = await requestJson<unknown>(
+          `/api/runs/${runId}/otp`,
+          `提交${inputLabel}失败`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...buildHeaders() },
+            body: JSON.stringify({ otp_code: normalizedOtpCode || "" }),
+          }
+        )
+        const run = unwrapRunPayload(payload)
+        if (run?.run_id) store.setSelectedStudioRunId(run.run_id)
+        store.pushNotice("success", `${inputLabel}已提交，运行任务已继续`)
+        await Promise.all([fetchStudioData(), fetchTasks()])
+      } catch (error) {
+        const isProviderProtectedWaitingUser =
+          status === "waiting_user" &&
+          waitContext?.reason_code === "provider_protected_payment_step"
+        const inputLabel =
+          status === "waiting_otp"
+            ? "验证码"
+            : isProviderProtectedWaitingUser
+              ? "继续执行"
+              : "补充输入"
+        const message = error instanceof Error ? error.message : `提交${inputLabel}失败`
+        const formatted = formatActionableError(message)
+        store.setStudioError(formatted)
+        store.pushNotice("error", formatted)
+      }
+    },
+    [
+      buildHeaders,
+      fetchStudioData,
+      fetchTasks,
+      formatActionableError,
+      requestJson,
+      store,
+      unwrapRunPayload,
+    ]
+  )
+
+  const refreshStudio = useCallback(() => {
+    void fetchStudioData().catch((error: unknown) => {
+      const message = error instanceof Error ? error.message : "Universal Studio 刷新失败"
+      store.setStudioError(formatActionableError(message))
+    })
+  }, [fetchStudioData, formatActionableError, store])
+
+  return {
+    resolveProfile,
+    previewReconstruction,
+    generateReconstruction,
+    orchestrateFromArtifacts,
+    importLatestFlow,
+    createTemplate,
+    updateTemplate,
+    createRun,
+    submitRunOtp,
+    refreshStudio,
+  }
+}
