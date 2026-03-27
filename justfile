@@ -36,7 +36,7 @@ diagnose:
     @find apps packages -type f \( -name "*.py" -o -name "*.ts" -o -name "*.tsx" \) -exec wc -l {} + | awk '$1 > 500 { print }'
 
 dev-backend:
-    zsh -lc 'p=${TM_BACKEND_PORT:-17380}; while lsof -iTCP:$p -sTCP:LISTEN >/dev/null 2>&1; do p=$((p+1)); done; echo "api on :$p"; ./.venv/bin/uvicorn apps.api.app.main:app --reload --port $p'
+    zsh -lc 'source scripts/lib/python-runtime.sh; ensure_project_python_env_exports; p=${TM_BACKEND_PORT:-17380}; while lsof -iTCP:$p -sTCP:LISTEN >/dev/null 2>&1; do p=$((p+1)); done; echo "api on :$p"; "$(project_uvicorn_bin)" apps.api.app.main:app --reload --port $p'
 
 dev-up:
     ./scripts/dev-up.sh
@@ -89,6 +89,15 @@ backup-runtime:
 rollback-runtime backup_file:
     ./scripts/rollback-runtime.sh {{backup_file}}
 
+space-report:
+    PYTHONDONTWRITEBYTECODE=1 python3 -B scripts/space-report.py --pretty
+
+space-clean-safe *args='':
+    PYTHONDONTWRITEBYTECODE=1 python3 -B scripts/space-clean-safe.py {{args}}
+
+runtime-gc *args='':
+    ./scripts/runtime-gc.sh {{args}}
+
 compose-up:
     docker compose up -d --build
 
@@ -100,3 +109,12 @@ preflight:
 
 security-scan:
     ./scripts/security-scan.sh
+
+github-closure-report:
+    PYTHONDONTWRITEBYTECODE=1 python3 -B scripts/github/collect-closure-evidence.py --pretty
+
+github-closure-social-preview-template:
+    PYTHONDONTWRITEBYTECODE=1 python3 -B scripts/github/write-social-preview-manual-evidence-template.py
+
+github-closure-social-preview-pass:
+    PYTHONDONTWRITEBYTECODE=1 python3 -B scripts/github/write-social-preview-manual-evidence-template.py --status pass
