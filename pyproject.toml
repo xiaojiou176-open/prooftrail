@@ -73,6 +73,7 @@ include = ["apps*", "configs*"]
 [tool.mutmut]
 also_copy = [
   "apps/api/app",
+  "apps/api/config",
   "apps/api/tests",
   "scripts",
   "packages",

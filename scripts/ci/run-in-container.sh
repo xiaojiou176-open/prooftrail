@@ -290,7 +290,28 @@ ensure_baseline_contract() {
       ;;
   esac
   if [[ "$TASK" != "contract" && "$DRY_RUN" != "true" ]] && ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
-    run_cmd docker pull "$IMAGE"
+    if [[ "$IMAGE" == ghcr.io/* && -n "${GITHUB_TOKEN:-}" ]]; then
+      local ghcr_home ghcr_config
+      ghcr_home="${ROOT_DIR}/.runtime-cache/container-home/ghcr-login"
+      ghcr_config="${ghcr_home}/.docker"
+      mkdir -p "$ghcr_config"
+      printf '%s\n' '{"auths":{},"credsStore":"","credHelpers":{}}' > "${ghcr_config}/config.json"
+      HOME="$ghcr_home" DOCKER_CONFIG="$ghcr_config" \
+        run_cmd bash -lc 'printf "%s" "$GITHUB_TOKEN" | docker login ghcr.io -u "${GITHUB_ACTOR:-github-actions[bot]}" --password-stdin'
+    fi
+    if ! run_cmd docker pull "$IMAGE"; then
+      if [[ "$IMAGE" == ghcr.io/*/ci:* || "$IMAGE" == ghcr.io/*/ci@sha256:* ]]; then
+        echo "[container-gate] repo-owned CI image pull failed; rebuilding locally from runtime lock" >&2
+        local built_image_ref
+        built_image_ref="$(bash scripts/ci/build-ci-image.sh | tail -n 1)"
+        if [[ "$built_image_ref" != "$IMAGE" ]]; then
+          echo "[container-gate] local CI image fallback resolved '$built_image_ref' while gate expected '$IMAGE'" >&2
+          exit 1
+        fi
+      else
+        exit 1
+      fi
+    fi
   fi
 }
 
@@ -429,7 +450,7 @@ case "$TASK" in
     echo "[container-gate] passed: lint executed in container"
     ;;
   backend-lint)
-    run_task_in_container "uv sync --frozen --extra dev >/dev/null 2>&1 && RUFF_CACHE_DIR=.runtime-cache/cache/ruff uv run ruff check backend"
+    run_task_in_container "uv sync --frozen --extra dev >/dev/null 2>&1 && RUFF_CACHE_DIR=.runtime-cache/cache/ruff uv run ruff check apps/api/app apps/api/tests"
     echo "[container-gate] passed: backend lint executed in container"
     ;;
   backend-smoke)
@@ -622,7 +643,7 @@ EOF
     echo "[container-gate] passed: automation tests executed in container"
     ;;
   frontend-authenticity)
-    run_task_in_container "pnpm exec playwright install --with-deps chromium >/dev/null 2>&1 && pnpm gate:e2e:authenticity"
+    run_task_in_container "pnpm gate:e2e:authenticity"
     echo "[container-gate] passed: frontend authenticity executed in container"
     ;;
   frontend-nonstub)
@@ -754,7 +775,7 @@ fi
 DATABASE_URL="sqlite+pysqlite:///./.runtime-cache/artifacts/ci/test-output/${ISOLATED_SCOPE}.sqlite3" \
 UNIVERSAL_PLATFORM_DATA_DIR="./.runtime-cache/automation/universal" \
 UNIVERSAL_AUTOMATION_RUNTIME_DIR="./.runtime-cache/automation" \
-pnpm test:e2e:frontend -- tests/frontend-e2e --shard="${SHARD_INDEX}/${SHARD_TOTAL}"
+bash scripts/run-frontend-e2e-nonstub.sh -- --shard="${SHARD_INDEX}/${SHARD_TOTAL}"
 EOF
 )"
     echo "[container-gate] passed: pr frontend e2e behavior shard executed in container"
@@ -780,7 +801,7 @@ fi
 DATABASE_URL="sqlite+pysqlite:///./.runtime-cache/artifacts/ci/test-output/${ISOLATED_SCOPE}.sqlite3" \
 UNIVERSAL_PLATFORM_DATA_DIR="./.runtime-cache/automation/universal" \
 UNIVERSAL_AUTOMATION_RUNTIME_DIR="./.runtime-cache/automation" \
-pnpm test:e2e:frontend -- tests/frontend-e2e --shard="${SHARD_INDEX}/${SHARD_TOTAL}"
+bash scripts/run-frontend-e2e-nonstub.sh -- --shard="${SHARD_INDEX}/${SHARD_TOTAL}"
 EOF
 )"
     echo "[container-gate] passed: pr frontend e2e shard alias executed in container"

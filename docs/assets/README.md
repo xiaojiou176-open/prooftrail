@@ -24,6 +24,7 @@ The current storefront asset set is intentionally split:
 
 - real product screenshots are the public-facing truth for README / GitHub preview
 - SVG concept art stays as an auditable draft reference, not as the primary hero
+- tracked PNG storefront assets are an explicit public-surface exception, not an accidental heavy-artifact leak
 
 The copy is grounded in:
 

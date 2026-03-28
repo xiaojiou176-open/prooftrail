@@ -47,7 +47,7 @@ job_name="$(normalize_job_name "$job_raw")"
 case "$job_name" in
   backend)
     cat <<'CMD'
-python -m pip install --upgrade pip uv && uv sync --frozen --all-extras && uv run ruff check backend && uv run pytest && bash scripts/check-db-migrations.sh
+python -m pip install --upgrade pip uv && uv sync --frozen --all-extras && uv run ruff check apps/api/app apps/api/tests && uv run pytest && bash scripts/check-db-migrations.sh
 CMD
     ;;
   core_contract_load)

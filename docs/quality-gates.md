@@ -37,6 +37,7 @@ These answer questions like:
 - does the README still explain the right public road?
 - do the supporting docs pages actually exist?
 - did a legacy name or helper path leak back into the public surface?
+- do the tracked storefront assets match the same policy used by public readiness checks?
 
 ## Security and collaboration gates
 
@@ -51,6 +52,7 @@ These answer questions like:
 - are the public collaboration files present and readable?
 - are the docs links still valid?
 - did secrets or unsafe dependencies leak into the tracked tree?
+- are the tracked storefront PNG assets explicitly allowed as public-facing proof surfaces instead of being treated as accidental heavy artifacts?
 - are the GitHub storefront settings still aligned with the current public story?
 - do we have a current machine-readable closure verdict for storefront/community/security and any manual-required GitHub evidence?
 

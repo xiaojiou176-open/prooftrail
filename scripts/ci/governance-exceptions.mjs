@@ -88,20 +88,20 @@ function validateDebtRegisterRows(rows) {
   for (const row of rows.values()) {
     if (!row.id) failures.push("debt register row missing ID")
     if (!DEBT_TYPES.has(row.type)) {
-      failures.push(`debt register row '${row.id}' has invalid 类型 '${row.type}'`)
+      failures.push(`debt register row '${row.id}' has an invalid type '${row.type}'`)
     }
-    if (!row.path) failures.push(`debt register row '${row.id}' missing 路径`)
-    if (!row.risk) failures.push(`debt register row '${row.id}' missing 风险`)
+    if (!row.path) failures.push(`debt register row '${row.id}' is missing a path`)
+    if (!row.risk) failures.push(`debt register row '${row.id}' is missing a risk value`)
     if (!OWNER_ROLES.has(row.owner_role)) {
       failures.push(`debt register row '${row.id}' has invalid owner_role '${row.owner_role}'`)
     }
     if (!parseDateOnly(row.due_date)) {
-      failures.push(`debt register row '${row.id}' has invalid 截止日期 '${row.due_date}'`)
+      failures.push(`debt register row '${row.id}' has an invalid due_date '${row.due_date}'`)
     }
     if (!row.exit_criteria) {
-      failures.push(`debt register row '${row.id}' missing 退出标准`)
+      failures.push(`debt register row '${row.id}' is missing exit_criteria`)
     }
-    if (!row.status) failures.push(`debt register row '${row.id}' missing 状态`)
+    if (!row.status) failures.push(`debt register row '${row.id}' is missing status`)
   }
   return failures
 }
@@ -148,7 +148,7 @@ function validateExceptionEntry(entry, index, debtRows, today, maxExpiry) {
     failures.push(`${prefix}.debt_ref ${debtRef} is missing from docs/governance/debt-register.md`)
   } else if (debtRow) {
     if (!debtRow.exit_criteria) {
-      failures.push(`${prefix}.debt_ref ${debtRef} must reference a row with 退出标准`)
+      failures.push(`${prefix}.debt_ref ${debtRef} must reference a row with exit_criteria`)
     }
     if (debtRow.owner_role !== ownerRole) {
       failures.push(
