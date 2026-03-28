@@ -17,6 +17,9 @@ runs:
         workspace="${GITHUB_WORKSPACE:?GITHUB_WORKSPACE is required}"
         runner_temp="${RUNNER_TEMP:?RUNNER_TEMP is required}"
         home_dir="${HOME:-}"
+        have_passwordless_sudo() {
+          command -v sudo >/dev/null 2>&1 && sudo -n true >/dev/null 2>&1
+        }
 
         assert_safe_path() {
           local label="$1"
@@ -66,7 +69,7 @@ runs:
               "$playwright_cache_dir" \
               "$precommit_home" \
               "$sanitize_tmp_dir"
-            if command -v sudo >/dev/null 2>&1; then
+            if have_passwordless_sudo; then
               sudo chown -R "$(id -u):$(id -g)" "$workspace" || true
             fi
             free_before_kb="$(free_kb)"

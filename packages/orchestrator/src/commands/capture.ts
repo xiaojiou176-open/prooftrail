@@ -91,7 +91,7 @@ export function resolveCaptureApiMock(pathname: string): CaptureMockResponse | n
         commands: [
           {
             command_id: "run-ui",
-            title: "仅 UI 流程（manual）",
+            title: "UI-only flow (manual)",
             description: "CI capture API mock command",
             tags: ["safe"],
           },

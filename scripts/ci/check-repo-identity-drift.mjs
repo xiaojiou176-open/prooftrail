@@ -16,6 +16,8 @@ const currentSurfaces = [
   "docs/quality-gates.md",
   "docs/ai/agent-guide.md",
   "docs/ai/maintainer-governance-canon.md",
+  "apps/web/package.json",
+  "apps/automation-runner/package.json",
   "apps/api/app/services/automation_commands.py",
   "apps/api/config/default.json",
   "apps/api/config/development.json",
@@ -36,6 +38,8 @@ const forbiddenTokens = [
   { token: "browser-automation-playground", reason: "legacy repo/product name must not remain in current surfaces" },
   { token: "uiq-platform-repo", reason: "legacy repo/package/cache namespace must not remain in current surfaces" },
   { token: "browser-automation-recorder", reason: "previous repo/package/runtime identity must not remain in current surfaces" },
+  { token: "browser-automation-frontend", reason: "legacy web package identity must not remain in current surfaces" },
+  { token: "browser-automation-pipeline", reason: "legacy automation package identity must not remain in current surfaces" },
   { token: "[其他项目]Useful_Tools/🤖自动化浏览器操作", reason: "old absolute repo path must not remain in current execution surfaces" },
   { token: "/Users/yuyifeng/Documents/VS Code/1_Personal_Project/开源/browser-automation-recorder", reason: "old relocated root path must not remain in current execution surfaces" },
 ]

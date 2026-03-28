@@ -11,7 +11,7 @@ const PACKAGE_JSON_PATHS = [
   "packages/ui/package.json",
   "packages/ai-prompts/package.json",
 ]
-const DISALLOWED_CHILD_LOCKS = ["apps/web/pnpm-lock.yaml"]
+const DISALLOWED_CHILD_LOCKS = ["apps/web/pnpm-lock.yaml", "apps/mcp-server/pnpm-lock.yaml"]
 const DOCKERFILES = ["docker/ci/Dockerfile", "apps/api/Dockerfile", "apps/web/Dockerfile"]
 const COMPOSE_FILES = ["docker-compose.yml"]
 const RANGE_PATTERN =
@@ -156,6 +156,6 @@ if (errors.length > 0) {
 
 console.log("lockfile sync check passed.")
 console.log("- root pnpm lockfile present with unified workspace importers")
-console.log("- no child pnpm lockfiles found")
+console.log("- no disallowed child pnpm lockfiles found")
 console.log("- package.json and pyproject direct dependencies are exact")
 console.log("- runtime lock and Docker image references are digest-pinned")

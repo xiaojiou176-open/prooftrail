@@ -115,11 +115,15 @@ jobs:
       - name: Login to GHCR
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCKER_CONFIG: ${{ runner.temp }}/docker-config
         run: |
           set -euo pipefail
+          mkdir -p "$DOCKER_CONFIG"
           printf '%s' "$GITHUB_TOKEN" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
       - name: Build repo-owned CI image
         id: build
+        env:
+          DOCKER_CONFIG: ${{ runner.temp }}/docker-config
         run: |
           set -euo pipefail
           image_ref="$(bash scripts/ci/build-ci-image.sh --push | tail -n 1)"
@@ -392,6 +396,7 @@ jobs:
     if: ${{ always() }}
     needs:
       - changes
+      - build_ci_image
       - pr-lint-backend
       - pr-lint-frontend
       - openai-residue-gate
@@ -439,6 +444,8 @@ jobs:
             allow_skipped "pr-quality-gate" "${{ needs.pr-quality-gate.result }}"
             exit 0
           fi
+
+          require_success "build_ci_image" "${{ needs.build_ci_image.result }}"
 
           pr_static_required="1"
           pr_mcp_required="${{ (github.event_name == 'workflow_dispatch' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.apps == 'true' || needs.changes.outputs.packages == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.shared == 'true' || needs.changes.outputs.ci == 'true') && '1' || '0' }}"

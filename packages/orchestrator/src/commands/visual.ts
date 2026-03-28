@@ -130,8 +130,8 @@ async function installVisualApiMocks(page: import("playwright").Page): Promise<v
         commands: [
           {
             command_id: "run-ui",
-            title: "仅 UI 流程（manual）",
-            description: "视觉基线稳定命令",
+            title: "UI-only flow (manual)",
+            description: "Stable visual baseline command",
             tags: ["safe"],
           },
         ],
