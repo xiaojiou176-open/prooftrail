@@ -429,7 +429,7 @@ jobs:
 
   pr_truth_gate:
     name: pr truth deterministic gate (aggregate)
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-24.04
     if: ${{ always() }}
     needs:
       - changes
@@ -447,6 +447,11 @@ jobs:
       - fork-readonly-governance
     steps:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
+      - uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: "20"
+      - name: Install root dependencies
+        run: pnpm install --frozen-lockfile
       - name: Aggregate deterministic PR truth gates
         run: |
           set -euo pipefail
