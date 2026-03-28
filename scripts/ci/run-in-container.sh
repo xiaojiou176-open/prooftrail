@@ -643,7 +643,7 @@ EOF
     echo "[container-gate] passed: automation tests executed in container"
     ;;
   frontend-authenticity)
-    run_task_in_container "pnpm exec playwright install --with-deps chromium >/dev/null 2>&1 && pnpm gate:e2e:authenticity"
+    run_task_in_container "pnpm gate:e2e:authenticity"
     echo "[container-gate] passed: frontend authenticity executed in container"
     ;;
   frontend-nonstub)
@@ -775,7 +775,7 @@ fi
 DATABASE_URL="sqlite+pysqlite:///./.runtime-cache/artifacts/ci/test-output/${ISOLATED_SCOPE}.sqlite3" \
 UNIVERSAL_PLATFORM_DATA_DIR="./.runtime-cache/automation/universal" \
 UNIVERSAL_AUTOMATION_RUNTIME_DIR="./.runtime-cache/automation" \
-pnpm test:e2e:frontend -- tests/frontend-e2e --shard="${SHARD_INDEX}/${SHARD_TOTAL}"
+bash scripts/run-frontend-e2e-nonstub.sh -- --shard="${SHARD_INDEX}/${SHARD_TOTAL}"
 EOF
 )"
     echo "[container-gate] passed: pr frontend e2e behavior shard executed in container"
@@ -801,7 +801,7 @@ fi
 DATABASE_URL="sqlite+pysqlite:///./.runtime-cache/artifacts/ci/test-output/${ISOLATED_SCOPE}.sqlite3" \
 UNIVERSAL_PLATFORM_DATA_DIR="./.runtime-cache/automation/universal" \
 UNIVERSAL_AUTOMATION_RUNTIME_DIR="./.runtime-cache/automation" \
-pnpm test:e2e:frontend -- tests/frontend-e2e --shard="${SHARD_INDEX}/${SHARD_TOTAL}"
+bash scripts/run-frontend-e2e-nonstub.sh -- --shard="${SHARD_INDEX}/${SHARD_TOTAL}"
 EOF
 )"
     echo "[container-gate] passed: pr frontend e2e shard alias executed in container"

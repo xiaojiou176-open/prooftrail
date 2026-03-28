@@ -224,7 +224,7 @@ test("run-in-container supports pr frontend behavior shard workflow task routing
   assert.equal(run.status, 0)
   assert.match(run.stdout, /SHARD_INDEX="\$\{UIQ_SHARD_INDEX:-1\}"/)
   assert.match(run.stdout, /counterfactual-report/)
-  assert.match(run.stdout, /pnpm test:e2e:frontend -- tests\/frontend-e2e --shard=/)
+  assert.match(run.stdout, /bash scripts\/run-frontend-e2e-nonstub\.sh -- --shard=/)
 })
 
 test("run-in-container supports nightly backend shard workflow task routing", () => {

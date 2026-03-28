@@ -21,6 +21,7 @@ export default defineConfig({
       all: true,
       include: ["src/**/*.{ts,tsx}", "../../packages/ui/src/**/*.{ts,tsx}"],
       exclude: [
+        "src/api-gen/**",
         "src/**/*.d.ts",
         "src/**/*.{test,spec}.{ts,tsx}",
         "src/**/__tests__/**",
