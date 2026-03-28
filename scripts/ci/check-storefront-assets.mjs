@@ -1,18 +1,11 @@
 #!/usr/bin/env node
 
 import fs from "node:fs"
+import { REQUIRED_STOREFRONT_ASSETS } from "./lib/storefront-asset-policy.mjs"
 
 const failures = []
 
-const requiredFiles = [
-  "assets/storefront/prooftrail-hero.png",
-  "assets/storefront/prooftrail-hero.svg",
-  "assets/storefront/prooftrail-social-preview.svg",
-  "assets/storefront/prooftrail-social-preview.png",
-  "docs/assets/README.md",
-]
-
-for (const file of requiredFiles) {
+for (const file of REQUIRED_STOREFRONT_ASSETS) {
   if (!fs.existsSync(file)) {
     failures.push(`missing storefront asset file: ${file}`)
   }
@@ -28,7 +21,7 @@ if (readmeHeroMatches.length !== 1) {
   failures.push(`README.md must reference exactly one storefront hero asset (found ${readmeHeroMatches.length})`)
 }
 
-for (const file of requiredFiles) {
+for (const file of REQUIRED_STOREFRONT_ASSETS) {
   if (!fs.existsSync(file)) continue
   const content = fs.readFileSync(file, "utf8")
   if (content.includes("AutoBrowser")) {

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { execFileSync } from "node:child_process"
+import { ALLOWED_TRACKED_STOREFRONT_ARTIFACTS } from "./lib/storefront-asset-policy.mjs"
 
 const suspiciousExtensions = [
   ".har",
@@ -27,10 +28,6 @@ const allowedFixturePrefixes = [
   "apps/automation-runner/tests/fixtures/wrappers/",
 ]
 
-const allowedTrackedArtifacts = new Set([
-  "assets/storefront/prooftrail-social-preview.png",
-])
-
 const tracked = execFileSync("git", ["ls-files"], { encoding: "utf8" })
   .trim()
   .split("\n")
@@ -48,7 +45,7 @@ const failures = tracked.filter((file) => {
     return false
   }
 
-  if (allowedTrackedArtifacts.has(file)) {
+  if (ALLOWED_TRACKED_STOREFRONT_ARTIFACTS.has(file)) {
     return false
   }
 

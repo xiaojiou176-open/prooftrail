@@ -5,8 +5,8 @@ const port = Number(process.env.UI_AUDIT_BACKEND_PORT || 17380)
 
 const command = {
   command_id: "run",
-  title: "完整流程（manual）",
-  description: "完整流水线：record/extract/generate/replay",
+  title: "Full flow (manual)",
+  description: "Full pipeline: record/extract/generate/replay",
   tags: ["pipeline", "full"],
   accepts_env: true,
 }

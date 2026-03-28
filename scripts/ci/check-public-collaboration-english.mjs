@@ -30,10 +30,15 @@ const canonicalPublicFiles = [
 ]
 
 const engineeringFacingEnglishFiles = [
+  "scripts/ci/check-gemini-sdk-versions.mjs",
+  "scripts/ci/governance-exceptions.mjs",
   "scripts/computer-use/README.md",
   "scripts/computer-use/gemini-computer-use.py",
   "scripts/train-and-auto-replay.sh",
   "scripts/usability/lane-d-usability.ts",
+  "apps/web/scripts/mock-backend.mjs",
+  "packages/orchestrator/src/commands/capture.ts",
+  "packages/orchestrator/src/commands/visual.ts",
   "apps/web/src/testing/button-manifest.ts",
   "tests/frontend-e2e/support/button-behavior-harness.ts",
 ]
