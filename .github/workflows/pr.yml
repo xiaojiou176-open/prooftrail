@@ -140,7 +140,7 @@ jobs:
   pr-lint-backend:
     needs: [changes, build_ci_image]
     if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.shared == 'true' || needs.changes.outputs.ci == 'true') }}
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: read
@@ -155,7 +155,7 @@ jobs:
   pr-lint-frontend:
     needs: [changes, build_ci_image]
     if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.shared == 'true' || needs.changes.outputs.ci == 'true') }}
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: read
@@ -228,7 +228,7 @@ jobs:
   pr-static-gate:
     needs: [changes, build_ci_image]
     if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.docs == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.apps == 'true' || needs.changes.outputs.packages == 'true' || needs.changes.outputs.scripts == 'true' || needs.changes.outputs.shared == 'true' || needs.changes.outputs.ci == 'true') }}
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: read
@@ -267,7 +267,7 @@ jobs:
   pr-mcp-gate:
     needs: [changes, build_ci_image]
     if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.apps == 'true' || needs.changes.outputs.packages == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.shared == 'true' || needs.changes.outputs.ci == 'true') }}
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: read
@@ -293,7 +293,7 @@ jobs:
   pr-run-gate:
     needs: [changes, build_ci_image]
     if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.apps == 'true' || needs.changes.outputs.packages == 'true' || needs.changes.outputs.shared == 'true' || needs.changes.outputs.ci == 'true') }}
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       actions: read
@@ -331,7 +331,7 @@ jobs:
   pr-frontend-e2e-behavior:
     needs: [changes, build_ci_image]
     if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.apps == 'true' || needs.changes.outputs.packages == 'true' || needs.changes.outputs.shared == 'true' || needs.changes.outputs.ci == 'true') }}
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: read
@@ -383,7 +383,7 @@ jobs:
   pr-quality-gate:
     needs: [changes, build_ci_image]
     if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.apps == 'true' || needs.changes.outputs.packages == 'true' || needs.changes.outputs.scripts == 'true' || needs.changes.outputs.shared == 'true' || needs.changes.outputs.ci == 'true') }}
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: read
