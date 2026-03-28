@@ -141,22 +141,30 @@ jobs:
     needs: [changes, build_ci_image]
     if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.shared == 'true' || needs.changes.outputs.ci == 'true') }}
     runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    permissions:
+      contents: read
+      packages: read
     steps:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
       - name: Backend lint (ruff)
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/ci/run-in-container.sh --task backend-lint --gate pr-backend-lint
 
   pr-lint-frontend:
     needs: [changes, build_ci_image]
     if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.shared == 'true' || needs.changes.outputs.ci == 'true') }}
     runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    permissions:
+      contents: read
+      packages: read
     steps:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
       - name: Frontend + automation lint
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/ci/run-in-container.sh --task pr-lint-frontend --gate pr-frontend-lint
 
   openai-residue-gate:
@@ -221,6 +229,9 @@ jobs:
     needs: [changes, build_ci_image]
     if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.docs == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.apps == 'true' || needs.changes.outputs.packages == 'true' || needs.changes.outputs.scripts == 'true' || needs.changes.outputs.shared == 'true' || needs.changes.outputs.ci == 'true') }}
     runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    permissions:
+      contents: read
+      packages: read
     steps:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
         with:
@@ -230,6 +241,7 @@ jobs:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
           UIQ_COMMITLINT_FROM: ${{ format('origin/{0}', github.base_ref) }}
           UIQ_COMMITLINT_TO: ${{ github.sha }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/ci/run-in-container.sh --task pr-static-gate --gate pr-static-gate
       - name: Upload test truthiness gate artifacts (always)
         if: ${{ always() }}
@@ -256,6 +268,9 @@ jobs:
     needs: [changes, build_ci_image]
     if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.apps == 'true' || needs.changes.outputs.packages == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.shared == 'true' || needs.changes.outputs.ci == 'true') }}
     runs-on: [self-hosted, shared-pool]
+    permissions:
+      contents: read
+      packages: read
     steps:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
         with:
@@ -263,6 +278,7 @@ jobs:
       - name: PR MCP gate
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/ci/run-in-container.sh --task pr-mcp-gate --gate pr-mcp-gate
       - name: Upload MCP stress gate artifacts (always)
         if: ${{ always() }}
@@ -281,6 +297,7 @@ jobs:
     permissions:
       contents: read
       actions: read
+      packages: read
     steps:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
         with:
@@ -288,6 +305,7 @@ jobs:
       - name: PR run profile
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/ci/run-in-container.sh --task pr-run-profile --gate pr-run-profile
       - name: Upload AI review artifacts (always)
         if: ${{ always() }}
@@ -314,6 +332,9 @@ jobs:
     needs: [changes, build_ci_image]
     if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.apps == 'true' || needs.changes.outputs.packages == 'true' || needs.changes.outputs.shared == 'true' || needs.changes.outputs.ci == 'true') }}
     runs-on: [self-hosted, shared-pool]
+    permissions:
+      contents: read
+      packages: read
     strategy:
       fail-fast: false
       matrix:
@@ -327,11 +348,13 @@ jobs:
         if: ${{ matrix.shard_index == 1 }}
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/ci/run-in-container.sh --task frontend-authenticity --gate pr-frontend-authenticity
       - name: frontend-e2e non-stub bootstrap gate (required)
         if: ${{ matrix.shard_index == 1 }}
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/ci/run-in-container.sh --task frontend-nonstub --gate pr-frontend-nonstub
       - name: Upload counterfactual audit report (always, shard1)
         if: ${{ always() && matrix.shard_index == 1 }}
@@ -347,23 +370,29 @@ jobs:
         if: ${{ matrix.shard_index == 1 }}
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/ci/run-in-container.sh --task frontend-critical --gate pr-frontend-critical
       - name: frontend-e2e-behavior-suite (shard)
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
           UIQ_E2E_SHARD_INDEX: ${{ matrix.shard_index }}
           UIQ_E2E_SHARD_TOTAL: "2"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/ci/run-in-container.sh --task pr-frontend-e2e-shard --gate pr-frontend-e2e-shard
 
   pr-quality-gate:
     needs: [changes, build_ci_image]
     if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.apps == 'true' || needs.changes.outputs.packages == 'true' || needs.changes.outputs.scripts == 'true' || needs.changes.outputs.shared == 'true' || needs.changes.outputs.ci == 'true') }}
     runs-on: [self-hosted, shared-pool]
+    permissions:
+      contents: read
+      packages: read
     steps:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
       - name: PR quality gate
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/ci/run-in-container.sh --task pr-quality-gate --gate pr-quality-gate
       - name: Upload mutation reports (always)
         if: ${{ always() }}
