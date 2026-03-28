@@ -290,6 +290,15 @@ ensure_baseline_contract() {
       ;;
   esac
   if [[ "$TASK" != "contract" && "$DRY_RUN" != "true" ]] && ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
+    if [[ "$IMAGE" == ghcr.io/* && -n "${GITHUB_TOKEN:-}" ]]; then
+      local ghcr_home ghcr_config
+      ghcr_home="${ROOT_DIR}/.runtime-cache/container-home/ghcr-login"
+      ghcr_config="${ghcr_home}/.docker"
+      mkdir -p "$ghcr_config"
+      printf '%s\n' '{"auths":{},"credsStore":"","credHelpers":{}}' > "${ghcr_config}/config.json"
+      HOME="$ghcr_home" DOCKER_CONFIG="$ghcr_config" \
+        run_cmd bash -lc 'printf "%s" "$GITHUB_TOKEN" | docker login ghcr.io -u "${GITHUB_ACTOR:-github-actions[bot]}" --password-stdin'
+    fi
     run_cmd docker pull "$IMAGE"
   fi
 }
