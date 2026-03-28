@@ -429,7 +429,7 @@ case "$TASK" in
     echo "[container-gate] passed: lint executed in container"
     ;;
   backend-lint)
-    run_task_in_container "uv sync --frozen --extra dev >/dev/null 2>&1 && RUFF_CACHE_DIR=.runtime-cache/cache/ruff uv run ruff check backend"
+    run_task_in_container "uv sync --frozen --extra dev >/dev/null 2>&1 && RUFF_CACHE_DIR=.runtime-cache/cache/ruff uv run ruff check apps/api/app apps/api/tests"
     echo "[container-gate] passed: backend lint executed in container"
     ;;
   backend-smoke)
