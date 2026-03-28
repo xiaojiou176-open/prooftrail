@@ -104,14 +104,16 @@ jobs:
   build_ci_image:
     needs: changes
     if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' }}
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
     outputs:
       image_ref: ${{ steps.build.outputs.image_ref }}
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
+        with:
+          fetch-depth: 0
       - name: Login to GHCR
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
