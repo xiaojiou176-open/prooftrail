@@ -747,8 +747,7 @@ payload = {
         "safe_cleanup_exclusions": {
             "always_protected_paths": [
                 ".runtime-cache/backups",
-                ".runtime-cache/toolchains",
-                ".venv"
+                ".runtime-cache/toolchains"
             ],
             "conditional_rules": [
                 {

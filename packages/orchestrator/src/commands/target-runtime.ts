@@ -16,6 +16,7 @@ type SpawnedProcess = {
 type ParsedSpawnCommand = {
   executable: string
   args: string[]
+  envAssignments: Record<string, string>
   sanitized: string
 }
 
@@ -51,6 +52,7 @@ const SENSITIVE_FLAG_KEYS = new Set([
   "--authorization",
 ])
 const SHELL_OPERATOR_PATTERN = /[;&|><`$]/
+const ENV_ASSIGNMENT_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*=.*$/u
 
 export type RuntimeStartConfig = {
   enabled: boolean
@@ -189,7 +191,11 @@ function tokenizeCommand(command: string): string[] {
   return tokens
 }
 
-export function parseCommandString(rawCommand: string): { command: string; args: string[] } {
+export function parseCommandString(rawCommand: string): {
+  command: string
+  args: string[]
+  envAssignments: Record<string, string>
+} {
   const input = rawCommand.trim()
   if (!input) {
     throw new Error("runtime start command is empty")
@@ -206,7 +212,18 @@ export function parseCommandString(rawCommand: string): { command: string; args:
     throw new Error("runtime start command is empty")
   }
 
-  return { command: tokens[0], args: tokens.slice(1) }
+  const envAssignments: Record<string, string> = {}
+  let commandIndex = 0
+  while (commandIndex < tokens.length && ENV_ASSIGNMENT_PATTERN.test(tokens[commandIndex] ?? "")) {
+    const [name, ...rest] = tokens[commandIndex]!.split("=")
+    envAssignments[name] = rest.join("=")
+    commandIndex += 1
+  }
+  if (commandIndex >= tokens.length) {
+    throw new Error("runtime start command is missing an executable")
+  }
+
+  return { command: tokens[commandIndex], args: tokens.slice(commandIndex + 1), envAssignments }
 }
 
 function isSensitiveKey(token: string): boolean {
@@ -288,6 +305,7 @@ function parseCommandForSpawn(key: string, command: string): ParsedSpawnCommand 
   return {
     executable: resolvedExecutable,
     args,
+    envAssignments: parsed.envAssignments,
     sanitized: sanitizeCommandForLogs(command),
   }
 }
@@ -318,7 +336,7 @@ function spawnCommandWithEnv(
   const parsed = parseCommandForSpawn(key, command)
   const proc = spawn(parsed.executable, parsed.args, {
     cwd: process.cwd(),
-    env: { ...process.env, ...(envOverrides ?? {}) },
+    env: { ...process.env, ...parsed.envAssignments, ...(envOverrides ?? {}) },
     stdio: "ignore",
   })
 

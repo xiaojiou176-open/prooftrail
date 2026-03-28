@@ -190,11 +190,8 @@ start_frontend() {
   mkdir -p "$RUNTIME_DIR" "$LOG_DIR"
   local frontend_vite_bin="$ROOT_DIR/apps/web/node_modules/vite/bin/vite.js"
   if [[ ! -f "$frontend_vite_bin" ]]; then
-    echo "warn: frontend vite runtime is missing or stale; repairing apps/web dependencies"
-    (
-      cd "$ROOT_DIR/apps/web"
-      CI="${CI:-true}" pnpm install --frozen-lockfile --ignore-workspace || CI="${CI:-true}" pnpm install --no-frozen-lockfile --ignore-workspace
-    )
+    echo "error: frontend vite runtime is missing; run 'just setup' to restore workspace dependencies"
+    exit 1
   fi
   if [[ -f "$FRONTEND_PID_FILE" ]]; then
     local pid

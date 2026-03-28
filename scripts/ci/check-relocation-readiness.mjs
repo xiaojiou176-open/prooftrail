@@ -53,7 +53,6 @@ try {
   copyTree(repoRoot, relocatedRoot)
   linkIfPresent(".git")
   linkIfPresent("node_modules")
-  linkIfPresent(".venv")
 
   for (const step of steps) {
     const result = spawnSync(step.command, step.args, {

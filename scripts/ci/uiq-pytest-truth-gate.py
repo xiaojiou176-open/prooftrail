@@ -20,7 +20,6 @@ SKIP_DIR_NAMES = {
     "node_modules",
     "dist",
     "build",
-    ".venv",
     ".pytest_cache",
 }
 

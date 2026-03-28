@@ -3,6 +3,8 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
+source "$ROOT_DIR/scripts/lib/python-runtime.sh"
+ensure_project_python_env_exports
 
 MIGRATION_DB_PATH="${DB_MIGRATION_DB_PATH:-$ROOT_DIR/.runtime-cache/migrations/ci-migration-check.db}"
 SQL_DRY_RUN_OUTPUT="${DB_MIGRATION_SQL_OUT:-$ROOT_DIR/.runtime-cache/migrations/ci-migration-dry-run.sql}"

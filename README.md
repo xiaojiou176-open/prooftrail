@@ -122,22 +122,26 @@ ProofTrail treats disk cleanup as a governed maintenance path, not an ad-hoc
 "delete the biggest folder" exercise.
 
 - `just space-report` emits a repo-exclusive JSON report for runtime buckets,
-  cleanup classes, safe-clean candidates, and the dedicated external pnpm layer
+  `safe-clean` residue, explicit `reclaim` candidates, protected totals, and the
+  dedicated external pnpm layer
 - `just space-clean-safe` runs a default **dry-run** for the low-risk cleanup
   wave; use `./scripts/space-clean-safe.py --apply` only when you want to
   execute the same safe-clean list
+- `just space-clean-reclaim` runs a default **dry-run** for large
+  repo-exclusive reclaim targets such as the root `.venv`, isolated
+  `node_modules`, and the repo-scoped pnpm store; use explicit `--scope ...`
+  plus `--apply` only after the matching validation gate passes
 - `just runtime-gc -- --dry-run` previews retention-based cleanup for the
   review-class runtime buckets before you let the same policy delete old files
 - canonical run evidence under `.runtime-cache/artifacts/runs/`, runtime
-  backups under `.runtime-cache/backups/`, managed toolchains under
-  `.runtime-cache/toolchains/`, and the root `.venv` are intentionally outside
-  the first cleanup wave
+  backups under `.runtime-cache/backups/`, and managed toolchains under
+  `.runtime-cache/toolchains/` are intentionally outside the first cleanup wave
 - empty run stub directories under `.runtime-cache/artifacts/runs/` are the
   one explicit exception: they may enter the first safe-clean wave only when
   they are still empty and have no evidence files yet
 - the canonical Python runtime target is `.runtime-cache/toolchains/python/.venv`;
-  the root `.venv` remains a migration/review surface until every active
-  launcher stops depending on it
+  the root `.venv` is a retired legacy surface and may only be reclaimed
+  through `space-clean-reclaim --scope root-venv` after single-track validation
 
 ## FAQ
 

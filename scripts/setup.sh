@@ -37,15 +37,6 @@ fi
 # install through the workspace root instead of pretending apps/web is isolated.
 CI="${CI:-true}" pnpm install --frozen-lockfile || CI="${CI:-true}" pnpm install --no-frozen-lockfile
 
-(
-  cd apps/automation-runner
-  CI="${CI:-true}" pnpm install --frozen-lockfile --ignore-workspace || CI="${CI:-true}" pnpm install --no-frozen-lockfile --ignore-workspace
-  CI="${CI:-true}" pnpm exec playwright install chromium
-)
-
-(
-  cd apps/mcp-server
-  CI="${CI:-true}" pnpm install --frozen-lockfile --ignore-workspace || CI="${CI:-true}" pnpm install --no-frozen-lockfile --ignore-workspace
-)
+CI="${CI:-true}" pnpm --filter @prooftrail/automation-runner exec playwright install chromium
 
 echo "setup complete"

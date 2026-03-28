@@ -491,8 +491,7 @@
     },
     "protectedPaths": [
       ".runtime-cache/backups",
-      ".runtime-cache/toolchains",
-      ".venv"
+      ".runtime-cache/toolchains"
     ],
     "protectedPathRules": [
       {

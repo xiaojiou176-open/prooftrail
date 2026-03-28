@@ -317,8 +317,8 @@ if [[ -f package.json ]] && command -v pnpm >/dev/null 2>&1; then
   printf '  pnpm lint\n'
 fi
 
-if [[ -x ".venv/bin/pytest" ]]; then
-  printf '  ./.venv/bin/pytest -q\n'
+if command -v uv >/dev/null 2>&1; then
+  printf '  PROJECT_PYTHON_ENV=.runtime-cache/toolchains/python/.venv UV_PROJECT_ENVIRONMENT=.runtime-cache/toolchains/python/.venv uv run --extra dev pytest -q\n'
 elif command -v pytest >/dev/null 2>&1; then
   printf '  pytest -q\n'
 fi

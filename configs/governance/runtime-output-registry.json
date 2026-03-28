@@ -219,10 +219,68 @@
       "path": "${HOME}/.cache/pnpm/prooftrail",
       "kind": "dependency-store",
       "owner": ".npmrc",
-      "cleanupClass": "review",
+      "cleanupClass": "reclaim",
       "sizeBudgetMb": 2048,
       "mustKeepLatest": true,
       "notes": "Repo-scoped host pnpm store and virtual-store namespace for ProofTrail."
+    }
+  ],
+  "reclaimScopes": [
+    {
+      "id": "root-venv",
+      "path": ".venv",
+      "kind": "legacy-python-env",
+      "owner": "scripts/space-clean-reclaim.py",
+      "cleanupClass": "reclaim",
+      "rebuildCommand": "just setup",
+      "risk": "high",
+      "preconditions": [
+        "All repo-owned entrypoints and governance allowlists must stop depending on the root .venv path.",
+        "The managed Python environment under .runtime-cache/toolchains/python/.venv must exist and pass validation."
+      ],
+      "notes": "Retired legacy root Python environment. Apply only after single-track validation succeeds."
+    },
+    {
+      "id": "repo-pnpm-store",
+      "path": "${HOME}/.cache/pnpm/prooftrail",
+      "kind": "repo-exclusive-dependency-store",
+      "owner": "scripts/space-clean-reclaim.py",
+      "cleanupClass": "reclaim",
+      "rebuildCommand": "just setup",
+      "risk": "medium",
+      "preconditions": [
+        "Workspace install must remain the only supported dependency restore path.",
+        "No repo-owned mainline script may recreate isolated installs with pnpm install --ignore-workspace."
+      ],
+      "notes": "Repo-exclusive host pnpm store and virtual-store namespace for ProofTrail."
+    },
+    {
+      "id": "automation-runner-node-modules",
+      "path": "apps/automation-runner/node_modules",
+      "kind": "isolated-app-dependency-layer",
+      "owner": "scripts/space-clean-reclaim.py",
+      "cleanupClass": "reclaim",
+      "rebuildCommand": "just setup",
+      "risk": "medium",
+      "preconditions": [
+        "Workspace root install must be the only supported dependency restore path.",
+        "No repo-owned mainline script may recreate isolated installs with pnpm install --ignore-workspace."
+      ],
+      "notes": "Historical isolated dependency layer for the automation runner workspace."
+    },
+    {
+      "id": "mcp-server-node-modules",
+      "path": "apps/mcp-server/node_modules",
+      "kind": "isolated-app-dependency-layer",
+      "owner": "scripts/space-clean-reclaim.py",
+      "cleanupClass": "reclaim",
+      "rebuildCommand": "just setup",
+      "risk": "medium",
+      "preconditions": [
+        "Workspace root install must be the only supported dependency restore path.",
+        "No repo-owned mainline script may recreate isolated installs with pnpm install --ignore-workspace."
+      ],
+      "notes": "Historical isolated dependency layer for the MCP server workspace."
     }
   ],
   "rootNoisePaths": [

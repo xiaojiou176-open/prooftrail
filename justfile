@@ -95,6 +95,9 @@ space-report:
 space-clean-safe *args='':
     PYTHONDONTWRITEBYTECODE=1 python3 -B scripts/space-clean-safe.py {{args}}
 
+space-clean-reclaim *args='':
+    PYTHONDONTWRITEBYTECODE=1 python3 -B scripts/space-clean-reclaim.py {{args}}
+
 runtime-gc *args='':
     ./scripts/runtime-gc.sh {{args}}
 

@@ -115,7 +115,10 @@ test("validateTargetConfig accepts and rejects rich target branches", () => {
   const target = validateTargetConfig(
     {
       ...validTarget(),
-      start: { web: "pnpm dev", api: "uv run uvicorn app:app" },
+      start: {
+        web: "pnpm dev",
+        api: "PROJECT_PYTHON_ENV=.runtime-cache/toolchains/python/.venv UV_PROJECT_ENVIRONMENT=.runtime-cache/toolchains/python/.venv uv run uvicorn app:app",
+      },
       healthcheck: { url: "http://127.0.0.1:4173/health" },
       explore: { budgetSeconds: 3, maxDepth: 2, maxStates: 4, seed: 1, denylist: ["foo"], engine: "builtin" },
       chaos: { seed: 9, budgetSeconds: 3, eventRatio: { click: 10, input: 10, scroll: 10, keyboard: 70 } },

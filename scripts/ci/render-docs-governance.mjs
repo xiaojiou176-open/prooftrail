@@ -421,6 +421,33 @@ function renderRuntimeOutputRegistryDoc() {
       ])
     ),
     "",
+    "## Repo-exclusive External Layers",
+    "",
+    renderTable(
+      ["ID", "Path", "Kind", "Cleanup Class", "Owner"],
+      runtimeRegistry.repoExclusiveExternalLayers.map((layer) => [
+        `\`${layer.id}\``,
+        `\`${layer.path}\``,
+        `\`${layer.kind}\``,
+        `\`${layer.cleanupClass}\``,
+        `\`${layer.owner}\``,
+      ])
+    ),
+    "",
+    "## Reclaim Scopes",
+    "",
+    renderTable(
+      ["ID", "Path", "Kind", "Cleanup Class", "Rebuild Command", "Risk"],
+      (runtimeRegistry.reclaimScopes ?? []).map((scope) => [
+        `\`${scope.id}\``,
+        `\`${scope.path}\``,
+        `\`${scope.kind}\``,
+        `\`${scope.cleanupClass}\``,
+        `\`${scope.rebuildCommand}\``,
+        `\`${scope.risk}\``,
+      ])
+    ),
+    "",
     "## Tool Output Registration",
     "",
     renderTable(

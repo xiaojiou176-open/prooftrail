@@ -33,6 +33,51 @@ class Candidate:
         }
 
 
+@dataclass(frozen=True)
+class ReclaimCandidate:
+    id: str
+    path: Path
+    kind: str
+    owner: str
+    rebuild_command: str
+    risk: str
+    preconditions: tuple[str, ...]
+    cleanup_class: str = "reclaim"
+    notes: str = ""
+    blocked_by: tuple[str, ...] = ()
+
+    @property
+    def exists(self) -> bool:
+        return self.path.exists() or self.path.is_symlink()
+
+    @property
+    def size_bytes(self) -> int:
+        return size_bytes(self.path)
+
+    @property
+    def apply_allowed(self) -> bool:
+        return self.exists and not self.blocked_by
+
+    def to_dict(self, repo_root: Path) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "path": str(self.path),
+            "relative_path": relative_to_root(self.path, repo_root),
+            "kind": self.kind,
+            "owner": self.owner,
+            "cleanup_class": self.cleanup_class,
+            "exists": self.exists,
+            "size_bytes": self.size_bytes,
+            "size_human": human_bytes(self.size_bytes),
+            "rebuild_command": self.rebuild_command,
+            "risk": self.risk,
+            "preconditions": list(self.preconditions),
+            "apply_allowed": self.apply_allowed,
+            "blocked_by": list(self.blocked_by),
+            "notes": self.notes,
+        }
+
+
 def repo_root_from(default: Path | None = None) -> Path:
     if default is None:
         default = Path(__file__).resolve().parents[2]
@@ -233,29 +278,10 @@ def remove_candidate(candidate: Candidate) -> None:
 
 
 def resolve_external_layers(repo_root: Path, registry: dict[str, Any]) -> list[dict[str, Any]]:
-    fallback_homes: list[Path] = []
-    for candidate in (
-        Path.home(),
-        Path(pwd.getpwuid(repo_root.stat().st_uid).pw_dir),
-    ):
-        resolved = candidate.expanduser().resolve()
-        if resolved not in fallback_homes:
-            fallback_homes.append(resolved)
-
+    fallback_homes = fallback_home_dirs(repo_root)
     layers = []
     for layer in registry.get("repoExclusiveExternalLayers", []):
-        layer_path: Path | None = None
-        raw_path = layer["path"]
-        if "${HOME}" in raw_path:
-            for home_dir in fallback_homes:
-                candidate = Path(raw_path.replace("${HOME}", str(home_dir))).expanduser()
-                if candidate.exists():
-                    layer_path = candidate
-                    break
-        if layer_path is None:
-            expanded = os.path.expandvars(raw_path)
-            expanded = expanded.replace("${HOME}", str(Path.home()))
-            layer_path = Path(expanded).expanduser()
+        layer_path = resolve_registry_path(repo_root, layer["path"], fallback_homes=fallback_homes)
         exists = layer_path.exists()
         size = size_bytes(layer_path) if exists else 0
         layers.append(
@@ -274,6 +300,101 @@ def resolve_external_layers(repo_root: Path, registry: dict[str, Any]) -> list[d
             }
         )
     return layers
+
+
+def fallback_home_dirs(repo_root: Path) -> list[Path]:
+    fallback_homes: list[Path] = []
+    for candidate in (
+        Path.home(),
+        Path(pwd.getpwuid(repo_root.stat().st_uid).pw_dir),
+    ):
+        resolved = candidate.expanduser().resolve()
+        if resolved not in fallback_homes:
+            fallback_homes.append(resolved)
+    return fallback_homes
+
+
+def resolve_registry_path(repo_root: Path, raw_path: str, *, fallback_homes: list[Path] | None = None) -> Path:
+    if fallback_homes is None:
+        fallback_homes = fallback_home_dirs(repo_root)
+    if "${HOME}" in raw_path:
+        for home_dir in fallback_homes:
+            candidate = Path(raw_path.replace("${HOME}", str(home_dir))).expanduser()
+            if candidate.exists():
+                return candidate.resolve()
+    expanded = os.path.expandvars(raw_path)
+    expanded = expanded.replace("${HOME}", str(Path.home()))
+    candidate = Path(expanded).expanduser()
+    if not candidate.is_absolute():
+        candidate = repo_root / candidate
+    return candidate.resolve()
+
+
+def root_venv_retirement_blockers(repo_root: Path) -> list[str]:
+    checks = (
+        ("scripts/thirdparty/sync-upstream.sh", "./.venv/bin/", "legacy sync guidance still recommends root .venv"),
+        ("scripts/ci/check-relocation-readiness.mjs", 'linkIfPresent(".venv")', "relocation readiness still injects root .venv"),
+        ("scripts/ci/uiq-pytest-truth-gate.py", '".venv"', "truth gate still special-cases root .venv"),
+        ("configs/governance/root-allowlist.json", '".venv"', "root allowlist still permits root .venv"),
+        ("configs/governance/runtime-live-policy.json", '".venv"', "runtime live policy still protects root .venv"),
+        ("scripts/runtime-gc.sh", '".venv"', "runtime-gc payload still advertises root .venv as a protected path"),
+    )
+    blockers: list[str] = []
+    for relative_path, needle, message in checks:
+        path = repo_root / relative_path
+        if not path.exists():
+            continue
+        if needle in path.read_text(encoding="utf-8"):
+            blockers.append(f"{message} ({relative_path})")
+    managed_python_env = repo_root / ".runtime-cache/toolchains/python/.venv/bin/python"
+    if not managed_python_env.exists():
+        blockers.append("managed Python environment is missing (.runtime-cache/toolchains/python/.venv/bin/python)")
+    return blockers
+
+
+def isolated_install_blockers(repo_root: Path) -> list[str]:
+    checks = (
+        ("scripts/setup.sh", "--ignore-workspace", "setup still rebuilds isolated installs with pnpm --ignore-workspace"),
+        ("scripts/dev-up.sh", "--ignore-workspace", "dev-up still auto-repairs isolated installs with pnpm --ignore-workspace"),
+    )
+    blockers: list[str] = []
+    for relative_path, needle, message in checks:
+        path = repo_root / relative_path
+        if not path.exists():
+            continue
+        if needle in path.read_text(encoding="utf-8"):
+            blockers.append(f"{message} ({relative_path})")
+    return blockers
+
+
+def gather_reclaim_candidates(repo_root: Path, registry: dict[str, Any]) -> list[ReclaimCandidate]:
+    fallback_homes = fallback_home_dirs(repo_root)
+    shared_blockers = tuple(isolated_install_blockers(repo_root))
+    reclaim_candidates: list[ReclaimCandidate] = []
+    for scope in registry.get("reclaimScopes", []):
+        candidate_path = resolve_registry_path(repo_root, scope["path"], fallback_homes=fallback_homes)
+        blocked_by: tuple[str, ...]
+        if scope["id"] == "root-venv":
+            blocked_by = tuple(root_venv_retirement_blockers(repo_root))
+        elif scope["id"] in {"repo-pnpm-store", "automation-runner-node-modules", "mcp-server-node-modules"}:
+            blocked_by = shared_blockers
+        else:
+            blocked_by = ()
+        reclaim_candidates.append(
+            ReclaimCandidate(
+                id=scope["id"],
+                path=candidate_path,
+                kind=scope["kind"],
+                owner=scope["owner"],
+                rebuild_command=scope["rebuildCommand"],
+                risk=scope["risk"],
+                preconditions=tuple(scope.get("preconditions", [])),
+                cleanup_class=scope.get("cleanupClass", "reclaim"),
+                notes=scope.get("notes", ""),
+                blocked_by=blocked_by,
+            )
+        )
+    return sorted(reclaim_candidates, key=lambda item: item.id)
 
 
 def summarize_bucket(

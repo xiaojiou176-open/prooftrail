@@ -13,6 +13,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR / "lib"))
 
 from space_governance import (  # noqa: E402
+    gather_reclaim_candidates,
     gather_safe_clean_candidates,
     human_bytes,
     load_space_governance,
@@ -45,11 +46,17 @@ def main() -> int:
 
     buckets = [summarize_bucket(repo_root, runtime_root, policy, bucket) for bucket in registry.get("managedBuckets", [])]
     safe_candidates = [candidate.to_dict(repo_root) for candidate in gather_safe_clean_candidates(repo_root, runtime_root, policy)]
+    reclaim_candidates = [candidate.to_dict(repo_root) for candidate in gather_reclaim_candidates(repo_root, registry)]
     external_layers = resolve_external_layers(repo_root, registry)
 
     repo_total_bytes = size_bytes(repo_root)
     runtime_total_bytes = size_bytes(runtime_root)
     external_total_bytes = sum(layer["size_bytes"] for layer in external_layers)
+    safe_clean_total_bytes = sum(candidate["size_bytes"] for candidate in safe_candidates)
+    reclaim_total_bytes = sum(candidate["size_bytes"] for candidate in reclaim_candidates)
+    protected_total_bytes = sum(
+        bucket["size_bytes"] for bucket in buckets if bucket["cleanup_class"] in {"review", "preserve"}
+    )
 
     payload = {
         "version": 1,
@@ -62,8 +69,15 @@ def main() -> int:
         "runtime_total_human": human_bytes(runtime_total_bytes),
         "repo_exclusive_external_total_bytes": external_total_bytes,
         "repo_exclusive_external_total_human": human_bytes(external_total_bytes),
+        "safe_clean_total_bytes": safe_clean_total_bytes,
+        "safe_clean_total_human": human_bytes(safe_clean_total_bytes),
+        "reclaim_total_bytes": reclaim_total_bytes,
+        "reclaim_total_human": human_bytes(reclaim_total_bytes),
+        "protected_total_bytes": protected_total_bytes,
+        "protected_total_human": human_bytes(protected_total_bytes),
         "managed_buckets": buckets,
         "safe_clean_candidates": safe_candidates,
+        "reclaim_candidates": reclaim_candidates,
         "repo_exclusive_external_layers": external_layers,
         "protected_paths": policy.get("spaceGovernance", {}).get("protectedPaths", []),
         "protected_path_rules": [

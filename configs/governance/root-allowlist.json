@@ -50,7 +50,6 @@
     ".cursorrules",
     ".env",
     ".opencode",
-    ".venv",
     "node_modules",
     "prooftrail.egg-info"
   ],

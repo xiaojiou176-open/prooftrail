@@ -3,11 +3,29 @@ import { readFileSync } from "node:fs"
 import { resolve } from "node:path"
 import YAML from "yaml"
 
-const BASELINE_DEFAULTS = new Map([
-  ["AUTOMATION_MAX_PARALLEL", "8"],
-  ["CACHE_TTL_SECONDS", "3600"],
-  ["CACHE_MAX_ENTRIES", "2000"],
-])
+const DEFAULT_VALUE_CHECKS = [
+  {
+    key: "AUTOMATION_MAX_PARALLEL",
+    baseline: "8",
+  },
+  {
+    key: "CACHE_TTL_SECONDS",
+    baseline: "3600",
+  },
+  {
+    key: "CACHE_MAX_ENTRIES",
+    baseline: "2000",
+  },
+  {
+    key: "UIQ_TEST_LOG_DIR",
+    baseline: ".runtime-cache/artifacts/ci/test-matrix",
+    script: {
+      path: "scripts/test-matrix.sh",
+      pattern: /LOG_BASE="\$\{UIQ_TEST_LOG_DIR:-([^"]+)\}"/,
+    },
+    docsPath: "docs/reference/configuration.md",
+  },
+]
 
 function normalizeDefault(value) {
   if (value === null || value === undefined) return ""
@@ -48,12 +66,41 @@ function loadEnvExampleDefaults(envPathInput) {
   return defaults
 }
 
+function loadDocsDefaults(docPathInput) {
+  const docPath = resolve(docPathInput)
+  const content = readFileSync(docPath, "utf8")
+  const defaults = new Map()
+  for (const rawLine of content.split(/\r?\n/)) {
+    if (!rawLine.startsWith("|")) continue
+    const parts = rawLine.split("|").map((part) => part.trim())
+    if (parts.length < 7) continue
+    const key = parts[1]?.replaceAll("`", "").trim()
+    const defaultValue = parts[5]?.replaceAll("`", "").trim()
+    if (!key || !/^[A-Z][A-Z0-9_]*$/.test(key)) continue
+    defaults.set(key, defaultValue ?? "")
+  }
+  return defaults
+}
+
+function loadScriptDefault(scriptConfig) {
+  const scriptPath = resolve(scriptConfig.path)
+  const content = readFileSync(scriptPath, "utf8")
+  const match = content.match(scriptConfig.pattern)
+  if (!match) {
+    throw new Error(`missing script default pattern in ${scriptConfig.path}`)
+  }
+  return String(match[1] ?? "").trim()
+}
+
 function main() {
   const contractDefaults = loadContractDefaults("configs/env/contract.yaml")
   const envDefaults = loadEnvExampleDefaults(".env.example")
+  const docsDefaults = loadDocsDefaults("docs/reference/configuration.md")
 
   const errors = []
-  for (const [key, baselineValue] of BASELINE_DEFAULTS.entries()) {
+  for (const check of DEFAULT_VALUE_CHECKS) {
+    const key = check.key
+    const baselineValue = check.baseline
     const contractValue = contractDefaults.get(key)
     const envValue = envDefaults.get(key)
     if (contractValue === undefined) {
@@ -79,6 +126,20 @@ function main() {
         `${key} drifted from baseline in .env.example: expected ${baselineValue}, got ${envValue}`
       )
     }
+    if (check.docsPath) {
+      const docsValue = docsDefaults.get(key)
+      if (docsValue === undefined) {
+        errors.push(`missing in ${check.docsPath}: ${key}`)
+      } else if (docsValue !== baselineValue) {
+        errors.push(`${key} drifted from baseline in ${check.docsPath}: expected ${baselineValue}, got ${docsValue}`)
+      }
+    }
+    if (check.script) {
+      const scriptValue = loadScriptDefault(check.script)
+      if (scriptValue !== baselineValue) {
+        errors.push(`${key} drifted from script baseline in ${check.script.path}: expected ${baselineValue}, got ${scriptValue}`)
+      }
+    }
   }
 
   if (errors.length > 0) {
@@ -90,7 +151,7 @@ function main() {
   }
 
   console.log("[config-drift] PASS")
-  console.log(`[config-drift] checked keys: ${Array.from(BASELINE_DEFAULTS.keys()).join(", ")}`)
+  console.log(`[config-drift] checked keys: ${DEFAULT_VALUE_CHECKS.map((item) => item.key).join(", ")}`)
 }
 
 main()

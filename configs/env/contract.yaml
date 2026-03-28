@@ -954,7 +954,7 @@ variables:
     description: frontend e2e target port.
   - name: UIQ_TEST_LOG_DIR
     section: tests
-    default: .runtime-cache/logs/test-matrix
+    default: .runtime-cache/artifacts/ci/test-matrix
     required: false
     sensitive: false
     description: Test matrix log directory.

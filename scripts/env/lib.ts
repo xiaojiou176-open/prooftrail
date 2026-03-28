@@ -82,8 +82,8 @@ export function renderEnvExample(contract: EnvContract): string {
   const lines: string[] = []
   lines.push("# Generated file. Do not edit directly.")
   lines.push("# Source: configs/env/contract.yaml")
-  lines.push("# Regenerate: pnpm env:generate")
-  lines.push("# Validate : pnpm env:check")
+  lines.push("# Regenerate: pnpm env:contract:generate")
+  lines.push("# Validate : pnpm env:contract:check")
   lines.push("")
 
   let currentSection = ""
