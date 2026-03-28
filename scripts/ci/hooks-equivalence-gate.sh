@@ -246,7 +246,7 @@ verify_precommit_policy_contract() {
 failed_steps=0
 run_step "container_contract_gate" bash scripts/ci/run-in-container.sh --task contract --gate hooks-equivalence || ((failed_steps += 1))
 run_gate_with_container_toggle "lint" "lint_all" bash scripts/ci/lint-all.sh || ((failed_steps += 1))
-run_gate_with_container_toggle "backend-lint" "backend_lint" env RUFF_CACHE_DIR=".runtime-cache/cache/ruff" uv run ruff check backend || ((failed_steps += 1))
+run_gate_with_container_toggle "backend-lint" "backend_lint" env RUFF_CACHE_DIR=".runtime-cache/cache/ruff" uv run ruff check apps/api/app apps/api/tests || ((failed_steps += 1))
 run_gate_with_container_toggle "frontend-lint" "frontend_lint" bash -lc "cd apps/web && pnpm run lint" || ((failed_steps += 1))
 run_step "observability_contract" bash scripts/ci/check-observability-contract.sh || ((failed_steps += 1))
 run_gate_with_container_toggle "coverage" "unit_coverage_gate" bash scripts/ci/run-unit-coverage-gate.sh || ((failed_steps += 1))
