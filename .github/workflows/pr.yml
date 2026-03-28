@@ -330,7 +330,7 @@ jobs:
 
   pr-frontend-e2e-behavior:
     needs: [changes, build_ci_image]
-    if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.apps == 'true' || needs.changes.outputs.packages == 'true' || needs.changes.outputs.shared == 'true' || needs.changes.outputs.ci == 'true') }}
+    if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' && github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -382,7 +382,7 @@ jobs:
 
   pr-quality-gate:
     needs: [changes, build_ci_image]
-    if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.apps == 'true' || needs.changes.outputs.packages == 'true' || needs.changes.outputs.scripts == 'true' || needs.changes.outputs.shared == 'true' || needs.changes.outputs.ci == 'true') }}
+    if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' && github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -487,8 +487,8 @@ jobs:
           pr_static_required="1"
           pr_mcp_required="${{ (github.event_name == 'workflow_dispatch' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.apps == 'true' || needs.changes.outputs.packages == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.shared == 'true' || needs.changes.outputs.ci == 'true') && '1' || '0' }}"
           pr_run_required="${{ (github.event_name == 'workflow_dispatch' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.apps == 'true' || needs.changes.outputs.packages == 'true' || needs.changes.outputs.shared == 'true' || needs.changes.outputs.ci == 'true') && '1' || '0' }}"
-          pr_frontend_e2e_required="${{ (github.event_name == 'workflow_dispatch' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.apps == 'true' || needs.changes.outputs.packages == 'true' || needs.changes.outputs.shared == 'true' || needs.changes.outputs.ci == 'true') && '1' || '0' }}"
-          pr_quality_required="${{ (github.event_name == 'workflow_dispatch' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.apps == 'true' || needs.changes.outputs.packages == 'true' || needs.changes.outputs.scripts == 'true' || needs.changes.outputs.shared == 'true' || needs.changes.outputs.ci == 'true') && '1' || '0' }}"
+          pr_frontend_e2e_required="${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}"
+          pr_quality_required="${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}"
 
           if [[ "$pr_static_required" == "1" ]]; then
             require_success "pr-static-gate" "${{ needs.pr-static-gate.result }}"
