@@ -92,8 +92,8 @@ if [[ "$social_preview_exists" != "true" ]]; then
   social_preview_status="fail"
   social_preview_reason="missing repo social preview asset assets/storefront/prooftrail-social-preview.png"
 elif [[ "$(jq -r '.open_graph_image_url // ""' <<<"$json")" == "" ]]; then
-  social_preview_status="fail"
-  social_preview_reason="GitHub Social Preview is not configured"
+  social_preview_status="manual_required"
+  social_preview_reason="GitHub does not expose a stable API proof for Social Preview; confirm the UI state with manual evidence"
 fi
 
 community_status="pass"
