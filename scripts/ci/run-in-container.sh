@@ -303,7 +303,7 @@ ensure_baseline_contract() {
       if [[ "$IMAGE" == ghcr.io/*/ci:* || "$IMAGE" == ghcr.io/*/ci@sha256:* ]]; then
         echo "[container-gate] repo-owned CI image pull failed; rebuilding locally from runtime lock" >&2
         local built_image_ref
-        built_image_ref="$(bash scripts/ci/build-ci-image.sh --load | tail -n 1)"
+        built_image_ref="$(bash scripts/ci/build-ci-image.sh | tail -n 1)"
         if [[ "$built_image_ref" != "$IMAGE" ]]; then
           echo "[container-gate] local CI image fallback resolved '$built_image_ref' while gate expected '$IMAGE'" >&2
           exit 1
