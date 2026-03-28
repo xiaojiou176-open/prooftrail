@@ -4,7 +4,7 @@ Generated from `configs/governance/dependency-baselines.json`. Do not edit this 
 
 | Manifest | Section | Dependency | Pinned Version |
 | --- | --- | --- | --- |
-| `package.json` | `devDependencies` | `@modelcontextprotocol/sdk` | `1.27.1` |
+| `package.json` | `devDependencies` | `@modelcontextprotocol/sdk` | `1.28.0` |
 | `package.json` | `devDependencies` | `@playwright/test` | `1.58.2` |
 | `package.json` | `devDependencies` | `@vitejs/plugin-react` | `5.1.4` |
 | `package.json` | `devDependencies` | `@vitest/coverage-v8` | `3.2.4` |
@@ -30,7 +30,7 @@ Generated from `configs/governance/dependency-baselines.json`. Do not edit this 
 | `apps/automation-runner/package.json` | `devDependencies` | `playwright` | `1.58.2` |
 | `apps/automation-runner/package.json` | `devDependencies` | `tsx` | `4.21.0` |
 | `apps/automation-runner/package.json` | `devDependencies` | `typescript` | `5.9.3` |
-| `apps/mcp-server/package.json` | `dependencies` | `@modelcontextprotocol/sdk` | `1.27.1` |
+| `apps/mcp-server/package.json` | `dependencies` | `@modelcontextprotocol/sdk` | `1.28.0` |
 | `apps/mcp-server/package.json` | `dependencies` | `zod` | `4.3.6` |
 | `apps/mcp-server/package.json` | `devDependencies` | `tsx` | `4.21.0` |
 | `apps/mcp-server/package.json` | `devDependencies` | `typescript` | `5.9.3` |
