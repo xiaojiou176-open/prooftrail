@@ -278,12 +278,7 @@ jobs:
             echo 'pr_runner_json=["self-hosted","shared-pool"]' >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
-            # Keep standard PR jobs on the shared self-hosted pool.
-            echo 'pr_runner_json=["self-hosted","shared-pool"]' >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          echo 'pr_runner_json=["self-hosted","shared-pool"]' >> "$GITHUB_OUTPUT"
+          echo 'pr_runner_json=["ubuntu-latest"]' >> "$GITHUB_OUTPUT"
       - uses: ./.github/actions/workspace-sanitize
         if: ${{ always() }}
         with:
