@@ -5,7 +5,7 @@ of guesswork.
 
 [Docs](docs/index.md) | [Quickstart](docs/getting-started/human-first-10-min.md) | [Minimal Success Case](docs/showcase/minimal-success-case.md) | [Release Guide](docs/release/README.md)
 
-![ProofTrail studio preview](assets/storefront/prooftrail-studio-preview.svg)
+<img src="assets/storefront/prooftrail-studio-preview.svg" alt="ProofTrail studio preview" />
 
 ![ProofTrail command center showing the canonical run path, evidence-focused navigation, and operator parameter rail](assets/storefront/prooftrail-hero.png)
 
