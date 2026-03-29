@@ -272,14 +272,14 @@ function renderCiTopologyDoc() {
     {
       workflow: "PR Gate",
       path: ".github/workflows/pr.yml",
-      truthSurface: "pr-gate-aggregate",
-      requiredNeeds: extractIndentedListBlock(readRepoFile(".github/workflows/pr.yml"), "pr-gate-aggregate", "needs"),
+      truthSurface: "pr truth deterministic gate (aggregate)",
+      requiredNeeds: extractIndentedListBlock(readRepoFile(".github/workflows/pr.yml"), "pr_truth_gate", "needs"),
     },
     {
       workflow: "CI",
       path: ".github/workflows/ci.yml",
-      truthSurface: "required_ci_gate",
-      requiredNeeds: extractIndentedListBlock(readRepoFile(".github/workflows/ci.yml"), "required_ci_gate", "needs"),
+      truthSurface: "repo truth deterministic gate (aggregate)",
+      requiredNeeds: extractIndentedListBlock(readRepoFile(".github/workflows/ci.yml"), "repo_truth_required_gate", "needs"),
     },
     {
       workflow: "Nightly Gate",

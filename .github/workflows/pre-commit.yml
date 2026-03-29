@@ -26,12 +26,12 @@ concurrency:
 
 jobs:
   workflow-hygiene:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
         with:
           fetch-depth: 2
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
         with:
           fetch-depth: 2
       - name: Workflow hygiene gate
@@ -44,12 +44,12 @@ jobs:
 
   actionlint:
     needs: [workflow-hygiene]
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
         with:
           fetch-depth: 2
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
         with:
           fetch-depth: 2
       - uses: ./.github/actions/setup-python-uv
@@ -78,12 +78,12 @@ jobs:
 
   precommit-config-contract:
     needs: [workflow-hygiene]
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
         with:
           fetch-depth: 0
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup-python-uv
@@ -106,12 +106,12 @@ jobs:
   hooks-equivalence-gate:
     needs: [workflow-hygiene]
     if: ${{ github.repository_owner != 'xiaojiou176-open' }}
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
         with:
           fetch-depth: 2
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
         with:
           fetch-depth: 2
       - uses: ./.github/actions/setup-python-uv

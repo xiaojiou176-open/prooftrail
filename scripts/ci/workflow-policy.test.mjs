@@ -37,10 +37,20 @@ function getTopLevelPermissionsBlock(content) {
 }
 
 function getJobSection(content, jobName) {
-  const escaped = jobName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-  const match = content.match(new RegExp(`(^  ${escaped}:[\\s\\S]*?)(?=^  [A-Za-z0-9_.-]+:|\\Z)`, "m"))
-  assert.ok(match, `expected workflow to contain job ${jobName}`)
-  return match[1]
+  const lines = content.split(/\r?\n/)
+  const startIndex = lines.findIndex((line) => line === `  ${jobName}:`)
+  assert.ok(startIndex !== -1, `expected workflow to contain job ${jobName}`)
+
+  const collected = []
+  for (let index = startIndex; index < lines.length; index += 1) {
+    const line = lines[index]
+    if (index > startIndex && /^  [A-Za-z0-9_.-]+:$/.test(line)) {
+      break
+    }
+    collected.push(line)
+  }
+
+  return collected.join("\n")
 }
 
 test("mainline CI no longer triggers on pull_request", () => {
@@ -74,21 +84,16 @@ test("build image and attestation-like jobs use job-level elevated permissions",
     const section = getJobSection(content, "build_ci_image")
     assert.match(section, /permissions:\s*\n\s+contents:\s+read\n\s+packages:\s+write/m, `${name} build_ci_image must declare job-level packages: write`)
   }
-
-  const runnerBootstrap = getJobSection(CI_WORKFLOW, "runner-bootstrap")
-  assert.match(
-    runnerBootstrap,
-    /permissions:\s*\n\s+contents:\s+read\n\s+id-token:\s+write/m,
-    "ci runner-bootstrap must hold id-token at the job level"
-  )
 })
 
 test("fork PR lane is GitHub-hosted and receives a readonly governance subset", () => {
   const changesSection = getJobSection(PR_WORKFLOW, "changes")
   assert.match(changesSection, /runs-on:\s+ubuntu-24\.04/)
-  assert.match(changesSection, /pr_runner_json=\["ubuntu-24\.04"\]/)
   assert.match(changesSection, /is_untrusted_fork=true/)
-  assert.match(changesSection, /runner_lane=untrusted-fork/)
+  assert.doesNotMatch(changesSection, /self-hosted|shared-pool/)
+
+  const residueSection = getJobSection(PR_WORKFLOW, "openai-residue-gate")
+  assert.match(residueSection, /runs-on:\s+ubuntu-24\.04/)
 
   const forkReadonlySection = getJobSection(PR_WORKFLOW, "fork-readonly-governance")
   assert.match(forkReadonlySection, /runs-on:\s+ubuntu-24\.04/)
@@ -107,7 +112,7 @@ test("release candidate workflow routes required gates through run-in-container 
   )
 })
 
-test("scheduled and helper self-hosted workflows use shared self-hosted checkout contract", () => {
+test("helper workflows consume the shared repo checkout contract", () => {
   for (const [name, content] of [
     ["pre-commit", PRECOMMIT_WORKFLOW],
     ["nightly", NIGHTLY_WORKFLOW],
@@ -119,8 +124,68 @@ test("scheduled and helper self-hosted workflows use shared self-hosted checkout
   ]) {
     assert.match(
       content,
-      /uses: \.\/\.github\/actions\/self-hosted-checkout/,
-      `${name} should consume shared self-hosted checkout contract`
+      /uses: \.\/\.github\/actions\/repo-checkout/,
+      `${name} should consume shared repo checkout contract`
     )
+  }
+})
+
+test("public collaboration workflows no longer advertise self-hosted pool routes", () => {
+  for (const [name, content] of [
+    ["pr", PR_WORKFLOW],
+    ["ci", CI_WORKFLOW],
+    ["nightly", NIGHTLY_WORKFLOW],
+    ["weekly", WEEKLY_WORKFLOW],
+    ["release", RELEASE_WORKFLOW],
+    ["pre-commit", PRECOMMIT_WORKFLOW],
+    ["upstream-drift", UPSTREAM_DRIFT_WORKFLOW],
+    ["runtime-gc", RUNTIME_GC_WORKFLOW],
+    ["desktop-smoke", DESKTOP_SMOKE_WORKFLOW],
+  ]) {
+    assert.doesNotMatch(content, /self-hosted|shared-pool/, `${name} should not advertise self-hosted or shared-pool current truth`)
+  }
+})
+
+test("manual sensitive workflows require workflow_dispatch plus protected environments", () => {
+  for (const [name, content] of [
+    ["nightly", NIGHTLY_WORKFLOW],
+    ["weekly", WEEKLY_WORKFLOW],
+    ["upstream-drift", UPSTREAM_DRIFT_WORKFLOW],
+    ["desktop-smoke", DESKTOP_SMOKE_WORKFLOW],
+  ]) {
+    assert.match(content, /^  workflow_dispatch:/m, `${name} must remain manually dispatchable`)
+    assert.doesNotMatch(content, /^  schedule:/m, `${name} must not auto-run on schedule`)
+  }
+
+  const ciLiveAudits = getJobSection(CI_WORKFLOW, "manual_live_audits")
+  assert.match(ciLiveAudits, /environment:\s+owner-approved-sensitive/)
+
+  const upstreamBinding = getJobSection(PR_WORKFLOW, "upstream-binding-check")
+  assert.match(upstreamBinding, /environment:\s+owner-approved-sensitive/)
+
+  for (const [workflow, jobName] of [
+    [NIGHTLY_WORKFLOW, "nightly-integration-full"],
+    [NIGHTLY_WORKFLOW, "nightly-core-run"],
+    [NIGHTLY_WORKFLOW, "desktop-regression-macos"],
+    [WEEKLY_WORKFLOW, "weekly-core-run"],
+    [WEEKLY_WORKFLOW, "weekly-trend-post-run"],
+    [WEEKLY_WORKFLOW, "desktop-regression-macos"],
+  ]) {
+    const section = getJobSection(workflow, jobName)
+    assert.match(section, /environment:\s+owner-approved-sensitive/, `${jobName} must require protected environment approval`)
+  }
+})
+
+test("macOS-only jobs use GitHub-hosted macOS runners", () => {
+  const nightlyDesktop = getJobSection(NIGHTLY_WORKFLOW, "desktop-regression-macos")
+  const weeklyDesktop = getJobSection(WEEKLY_WORKFLOW, "desktop-regression-macos")
+  const smokeDesktop = getJobSection(DESKTOP_SMOKE_WORKFLOW, "desktop-smoke")
+
+  for (const [name, section] of [
+    ["nightly desktop regression", nightlyDesktop],
+    ["weekly desktop regression", weeklyDesktop],
+    ["desktop smoke", smokeDesktop],
+  ]) {
+    assert.match(section, /runs-on:\s+macos-latest/, `${name} must use GitHub-hosted macOS runners`)
   }
 })
