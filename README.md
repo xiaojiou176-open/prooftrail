@@ -1,16 +1,27 @@
 # ProofTrail
 
-ProofTrail is an auditable browser automation platform for teams that need
-repeatable runs, inspectable evidence, and a recoverable path when workflows
-break.
+Run one workflow, inspect one evidence bundle, and recover with facts instead
+of guesswork.
 
 [Docs](docs/index.md) | [Quickstart](docs/getting-started/human-first-10-min.md) | [Minimal Success Case](docs/showcase/minimal-success-case.md) | [Release Guide](docs/release/README.md)
+
+<img src="assets/storefront/prooftrail-studio-preview.svg" alt="ProofTrail studio preview" />
 
 ![ProofTrail command center showing the canonical run path, evidence-focused navigation, and operator parameter rail](assets/storefront/prooftrail-hero.png)
 
 > ProofTrail is for people who want browser automation to feel like an
 > inspectable product workflow, not a pile of one-off scripts that become
 > impossible to debug a week later.
+
+## First Practical Win
+
+Choose the shortest path that matches what you want to confirm first:
+
+| I want to... | Run this first | What I get |
+| --- | --- | --- |
+| produce one canonical run | `just setup && just run` | a new run directory under `.runtime-cache/artifacts/runs/<runId>/` with manifest and proof reports |
+| know what good evidence should look like | [docs/reference/run-evidence-example.md](docs/reference/run-evidence-example.md) | the concrete report shape you should expect from a healthy run |
+| follow the guided operator path | [docs/getting-started/human-first-10-min.md](docs/getting-started/human-first-10-min.md) | the shortest human-readable route from fresh checkout to inspectable proof |
 
 ## What This Repo Actually Does
 
