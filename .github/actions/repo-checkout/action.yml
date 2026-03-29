@@ -1,5 +1,5 @@
-name: Self-Hosted Checkout
-description: Normalize self-hosted workspace state before checkout, then run the standard workspace sanitize action.
+name: Repo Checkout
+description: Prepare a clean GitHub Actions workspace before checkout, then run the standard workspace sanitize action.
 inputs:
   fetch-depth:
     description: Fetch depth passed to actions/checkout.

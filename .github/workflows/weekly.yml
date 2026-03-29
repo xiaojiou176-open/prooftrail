@@ -1,8 +1,6 @@
 name: Weekly Gate
 
 on:
-  schedule:
-    - cron: "0 10 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -14,14 +12,14 @@ concurrency:
 
 jobs:
   build_ci_image:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     outputs:
       image_ref: ${{ steps.build.outputs.image_ref }}
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - name: Login to GHCR
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -47,9 +45,9 @@ jobs:
 
   weekly-trend-signals:
     needs: build_ci_image
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - uses: ./.github/actions/setup-deps
         with:
           enable-python: "false"
@@ -114,9 +112,10 @@ jobs:
 
   weekly-core-run:
     needs: build_ci_image
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
+    environment: owner-approved-sensitive
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - name: Weekly core run (Linux/Web required, containerized)
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
@@ -126,10 +125,11 @@ jobs:
         run: bash scripts/ci/run-in-container.sh --task weekly-core-run --gate weekly-core-run
 
   weekly-trend-post-run:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     needs: [build_ci_image, weekly-core-run]
+    environment: owner-approved-sensitive
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - uses: ./.github/actions/setup-deps
         with:
           enable-python: "false"
@@ -214,9 +214,9 @@ jobs:
 
   weekly-hard-gates:
     needs: [build_ci_image, weekly-core-run]
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && '["self-hosted","shared-pool"]' || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-24.04
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - uses: ./.github/actions/setup-deps
         with:
           enable-python: "false"
@@ -268,10 +268,10 @@ jobs:
           if-no-files-found: error
 
   weekly-release-notes:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     needs: weekly-core-run
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - name: Generate Release Notes (non-blocking)
         continue-on-error: true
         run: ./scripts/release/generate-release-notes.sh
@@ -284,14 +284,14 @@ jobs:
           path: .runtime-cache/artifacts/release/release-notes-vnext.md
 
   weekly-upload-artifacts:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     if: ${{ always() }}
     needs:
       - weekly-core-run
       - weekly-hard-gates
       - weekly-trend-post-run
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - name: Upload Artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
@@ -303,14 +303,15 @@ jobs:
 
   desktop-regression-macos:
     if: ${{ vars.UIQ_ENABLE_DESKTOP_REGRESSION == 'true' }}
-    runs-on: [self-hosted, shared-pool, macos, arm64]
-    # The only required host-bound exception: macOS desktop regression depends on Xcode,
-    # tauri-driver, bundle IDs, and native app runtime that cannot be expressed as linux/amd64 CI image tasks.
+    runs-on: macos-latest
+    environment: owner-approved-sensitive
+    # The only host-specific public exception uses GitHub-hosted macOS because Xcode,
+    # tauri-driver, bundle IDs, and the native app runtime cannot be expressed as linux/amd64 CI image tasks.
     env:
       UIQ_TAURI_APP_PATH: ${{ vars.UIQ_TAURI_APP_PATH || secrets.UIQ_TAURI_APP_PATH || '' }}
       UIQ_SWIFT_BUNDLE_ID: ${{ vars.UIQ_SWIFT_BUNDLE_ID || secrets.UIQ_SWIFT_BUNDLE_ID || '' }}
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - uses: ./.github/actions/setup-deps
         with:
           enable-python: "false"
@@ -355,7 +356,7 @@ jobs:
             .runtime-cache/artifacts/runs/
 
   weekly-summary-gate:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     if: ${{ always() }}
     needs:
       - weekly-trend-signals

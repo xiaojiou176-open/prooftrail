@@ -116,6 +116,12 @@ governance checks.
 - [Release supply-chain policy](docs/reference/release-supply-chain-policy.md)
 - Maintainer GitHub closure evidence: `just github-closure-report`
 
+Public collaboration contract:
+
+- external pull requests stay on GitHub-hosted, low-risk governance and build lanes
+- live, external, and owner-secret workflows are manual-only and require the protected `owner-approved-sensitive` environment
+- macOS-only smoke and regression lanes use GitHub-hosted `macos-latest`; `self-hosted` / `shared-pool` are not part of the public collaboration contract
+
 ## Maintainer Space Hygiene
 
 ProofTrail treats disk cleanup as a governed maintenance path, not an ad-hoc
