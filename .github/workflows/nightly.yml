@@ -1,8 +1,6 @@
 name: Nightly Gate
 
 on:
-  schedule:
-    - cron: "0 9 * * *"
   workflow_dispatch:
 
 permissions:
@@ -21,7 +19,7 @@ jobs:
     outputs:
       image_ref: ${{ steps.build.outputs.image_ref }}
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - name: Login to GHCR
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -54,7 +52,7 @@ jobs:
         shard_index: [1, 2, 3]
         shard_total: [3]
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - name: frontend-e2e-shard
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
@@ -71,7 +69,7 @@ jobs:
         shard_index: [1, 2, 3, 4]
         shard_total: [4]
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - name: backend-tests-shard
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
@@ -92,8 +90,9 @@ jobs:
   nightly-integration-full:
     needs: build_ci_image
     runs-on: ubuntu-latest
+    environment: owner-approved-sensitive
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - name: Integration marker full gate (nightly)
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
@@ -102,7 +101,7 @@ jobs:
   nightly-trend-signals:
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - uses: ./.github/actions/setup-deps
         with:
           enable-python: "false"
@@ -174,8 +173,9 @@ jobs:
       - frontend-e2e-sharded
       - backend-tests-sharded
       - nightly-integration-full
+    environment: owner-approved-sensitive
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - name: Run Nightly Core Gate
         id: midscene_primary
         env:
@@ -239,7 +239,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: nightly-core-run
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - uses: ./.github/actions/setup-deps
         with:
           enable-python: "false"
@@ -302,7 +302,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build_ci_image, nightly-core-run]
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - name: Nightly hard gates (Linux/Web required, containerized)
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
@@ -329,7 +329,7 @@ jobs:
       - nightly-hard-gates
       - nightly-trend-post-run
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - name: Upload Artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
@@ -343,14 +343,15 @@ jobs:
 
   desktop-regression-macos:
     if: ${{ vars.UIQ_ENABLE_DESKTOP_REGRESSION == 'true' }}
-    runs-on: ubuntu-latest
-    # The only required host-bound exception: macOS desktop regression depends on Xcode,
-    # tauri-driver, bundle IDs, and native app runtime that cannot be expressed as linux/amd64 CI image tasks.
+    runs-on: macos-latest
+    environment: owner-approved-sensitive
+    # The only host-specific public exception uses GitHub-hosted macOS because Xcode,
+    # tauri-driver, bundle IDs, and the native app runtime cannot be expressed as linux/amd64 CI image tasks.
     env:
       UIQ_TAURI_APP_PATH: ${{ vars.UIQ_TAURI_APP_PATH || secrets.UIQ_TAURI_APP_PATH || '' }}
       UIQ_SWIFT_BUNDLE_ID: ${{ vars.UIQ_SWIFT_BUNDLE_ID || secrets.UIQ_SWIFT_BUNDLE_ID || '' }}
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - uses: ./.github/actions/setup-deps
         with:
           enable-python: "false"
@@ -409,7 +410,7 @@ jobs:
       - nightly-upload-artifacts
       - desktop-regression-macos
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - name: Aggregate nightly job graph hard gates
         env:
           FRONTEND_E2E_SHARDED_RESULT: ${{ needs.frontend-e2e-sharded.result }}
@@ -513,7 +514,7 @@ jobs:
       - nightly-trend-post-run
       - nightly-summary-gate
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - uses: ./.github/actions/setup-deps
         with:
           enable-python: "false"

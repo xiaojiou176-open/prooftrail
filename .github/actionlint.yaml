@@ -1,5 +1,0 @@
-self-hosted-runner:
-  labels:
-    - e2-core
-    - e2-core-dedicated
-    - shared-pool

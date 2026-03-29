@@ -1,5 +1,5 @@
 name: Workspace Sanitize
-description: Guard self-hosted workspace paths and keep tool/tmp state out of the checkout directory.
+description: Guard workspace paths and keep tool/tmp state out of the checkout directory.
 inputs:
   mode:
     description: pre or post

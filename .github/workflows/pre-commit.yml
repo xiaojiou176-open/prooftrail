@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
         with:
           fetch-depth: 2
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
         with:
           fetch-depth: 2
       - name: Workflow hygiene gate
@@ -49,7 +49,7 @@ jobs:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
         with:
           fetch-depth: 2
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
         with:
           fetch-depth: 2
       - uses: ./.github/actions/setup-python-uv
@@ -83,7 +83,7 @@ jobs:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
         with:
           fetch-depth: 0
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup-python-uv
@@ -111,7 +111,7 @@ jobs:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
         with:
           fetch-depth: 2
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
         with:
           fetch-depth: 2
       - uses: ./.github/actions/setup-python-uv

@@ -16,7 +16,7 @@ jobs:
   runtime-gc:
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - name: Validate runtime-gc scripts syntax
         run: bash -n scripts/runtime-gc.sh scripts/tests/runtime-gc-smoke.sh
       - name: Execute runtime-gc (all scopes)

@@ -23,7 +23,7 @@ jobs:
     outputs:
       image_ref: ${{ steps.build.outputs.image_ref }}
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - name: Login to GHCR
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -51,7 +51,7 @@ jobs:
     needs: build_ci_image
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - name: Docs gate
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
@@ -61,7 +61,7 @@ jobs:
     needs: build_ci_image
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - name: Root typecheck gate
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
@@ -71,7 +71,7 @@ jobs:
     needs: build_ci_image
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - name: Release security scan
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
@@ -90,7 +90,7 @@ jobs:
       attestations: write
       artifact-metadata: write
     steps:
-      - uses: ./.github/actions/self-hosted-checkout
+      - uses: ./.github/actions/repo-checkout
       - name: Release candidate gate (containerized)
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}

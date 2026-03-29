@@ -22,176 +22,7 @@ concurrency:
 # .runtime-cache/artifacts/ci/failure-bundles/
 
 jobs:
-  runner-bootstrap:
-    permissions:
-      contents: read
-      id-token: write
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Resolve bootstrap mode
-        id: bootstrap_mode
-        env:
-          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
-          GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-          GCP_WIF_PROVIDER: ${{ vars.GCP_WIF_PROVIDER }}
-          GCP_WIF_SERVICE_ACCOUNT: ${{ vars.GCP_WIF_SERVICE_ACCOUNT }}
-          ORG_RUNNER_TOKEN: ${{ secrets.ORG_RUNNER_TOKEN }}
-        run: |
-          set -euo pipefail
-          if [[ "${GITHUB_REPOSITORY_OWNER}" == "xiaojiou176-open" ]]; then
-            echo "::notice::runner bootstrap disabled for public org repository ${GITHUB_REPOSITORY_OWNER}"
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          missing=0
-          for key in GCP_PROJECT_ID GCP_WIF_PROVIDER GCP_WIF_SERVICE_ACCOUNT ORG_RUNNER_TOKEN; do
-            if [[ -z "${!key:-}" ]]; then
-              echo "::warning::missing bootstrap config: $key"
-              missing=1
-            fi
-          done
-          if [[ "$missing" -eq 0 ]]; then
-            echo "enabled=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-          fi
-      - name: Skip bootstrap when cloud/org config is not set
-        if: ${{ steps.bootstrap_mode.outputs.enabled != 'true' }}
-        run: |
-          echo "::warning::runner bootstrap skipped (missing cloud/org runner config in this repository)"
-      - name: Authenticate to Google Cloud (WIF)
-        if: ${{ steps.bootstrap_mode.outputs.enabled == 'true' }}
-        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2
-        with:
-          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
-          service_account: ${{ vars.GCP_WIF_SERVICE_ACCOUNT }}
-      - name: Setup gcloud
-        if: ${{ steps.bootstrap_mode.outputs.enabled == 'true' }}
-        uses: google-github-actions/setup-gcloud@e427ad8a34f8676edf47cf7d7925499adf3eb74f # v2
-        with:
-          project_id: ${{ vars.GCP_PROJECT_ID }}
-      - name: Start offline runner instances and wait for 9 runners online
-        if: ${{ steps.bootstrap_mode.outputs.enabled == 'true' }}
-        env:
-          GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-          GCP_ZONE: ${{ vars.GCP_ZONE != '' && vars.GCP_ZONE || 'us-central1-a' }}
-          GH_TOKEN: ${{ secrets.ORG_RUNNER_TOKEN }}
-          ORG: ${{ github.repository_owner }}
-        run: |
-          set -euo pipefail
-
-          instances=(
-            "github-runner-core-01"
-            "github-runner-core-02"
-            "github-runner-core-03"
-          )
-
-          for inst in "${instances[@]}"; do
-            status="$(gcloud compute instances describe "$inst" --project "$GCP_PROJECT_ID" --zone "$GCP_ZONE" --format='value(status)' || true)"
-            if [[ "$status" != "RUNNING" ]]; then
-              echo "starting $inst (current status: ${status:-UNKNOWN})"
-              gcloud compute instances start "$inst" --project "$GCP_PROJECT_ID" --zone "$GCP_ZONE"
-            else
-              echo "$inst already RUNNING"
-            fi
-          done
-
-          max_attempts=20
-          sleep_seconds=30
-          fetch_runners_json() {
-            local api_attempt
-            local response_file
-            local http_code
-            response_file="$(mktemp)"
-            for api_attempt in $(seq 1 5); do
-              http_code="$(
-                curl -sS -o "$response_file" -w '%{http_code}' \
-                  -H "Authorization: Bearer ${GH_TOKEN}" \
-                  -H "Accept: application/vnd.github+json" \
-                  -H "X-GitHub-Api-Version: 2022-11-28" \
-                  "https://api.github.com/orgs/${ORG}/actions/runners"
-              )"
-              if [[ "$http_code" == "200" ]]; then
-                cat "$response_file"
-                rm -f "$response_file"
-                return 0
-              fi
-              echo "::warning::org runner query attempt ${api_attempt}/5 returned HTTP ${http_code}"
-              cat "$response_file" || true
-              if [[ "$api_attempt" -lt 5 ]]; then
-                sleep 5
-              fi
-            done
-            rm -f "$response_file"
-            return 1
-          }
-          for attempt in $(seq 1 "$max_attempts"); do
-            all_running=true
-            for inst in "${instances[@]}"; do
-              status="$(gcloud compute instances describe "$inst" --project "$GCP_PROJECT_ID" --zone "$GCP_ZONE" --format='value(status)' || true)"
-              echo "instance $inst status=$status"
-              if [[ "$status" != "RUNNING" ]]; then
-                all_running=false
-              fi
-            done
-            if [[ "$all_running" == true ]]; then
-              break
-            fi
-            if [[ "$attempt" -eq "$max_attempts" ]]; then
-              echo "::error::instances did not become RUNNING within timeout"
-              exit 1
-            fi
-            sleep "$sleep_seconds"
-          done
-
-          expected_runners_json='["pool-core01-01","pool-core01-02","pool-core01-03","pool-core02-01","pool-core02-02","pool-core02-03","pool-core03-01","pool-core03-02","pool-core03-03"]'
-          for attempt in $(seq 1 "$max_attempts"); do
-            runners_json="$(fetch_runners_json)"
-            check_json="$(
-              jq -cn \
-                --argjson expected "$expected_runners_json" \
-                --argjson current "$runners_json" '
-                  def sorted: sort;
-                  ($current.runners | map(.name) | sorted) as $org_names
-                  | ($current.runners | map(select(.status == "online") | .name) | sorted) as $online_names
-                  | ($expected | sorted) as $expected_names
-                  | {
-                      expected: $expected_names,
-                      org_names: $org_names,
-                      online_names: $online_names,
-                      missing: ($expected_names - $org_names),
-                      unexpected: ($org_names - $expected_names),
-                      offline_expected: ($expected_names - $online_names),
-                      expected_registered: (((($expected_names - $org_names) | length) == 0)),
-                      all_online: (((($expected_names - $online_names) | length) == 0))
-                    }'
-            )"
-            expected_registered="$(jq -r '.expected_registered' <<<"$check_json")"
-            all_online="$(jq -r '.all_online' <<<"$check_json")"
-            missing="$(jq -rc '.missing' <<<"$check_json")"
-            unexpected="$(jq -rc '.unexpected' <<<"$check_json")"
-            offline_expected="$(jq -rc '.offline_expected' <<<"$check_json")"
-            echo "runner check expected_registered=$expected_registered all_online=$all_online missing=$missing unexpected=$unexpected offline_expected=$offline_expected"
-            if [[ "$expected_registered" == "true" && "$all_online" == "true" ]]; then
-              if [[ "$unexpected" != "[]" ]]; then
-                echo "::notice::additional organization runners detected but ignored: $unexpected"
-              fi
-              echo "expected runners are registered and online"
-              exit 0
-            fi
-            if [[ "$attempt" -eq "$max_attempts" ]]; then
-              echo "::error::expected runners are missing or offline"
-              jq -r '.runners[] | "\(.name)\tstatus=\(.status)\tbusy=\(.busy)"' <<<"$runners_json" || true
-              echo "expected runners: $expected_runners_json"
-              echo "check details: $check_json"
-              exit 1
-            fi
-            sleep "$sleep_seconds"
-          done
   changes:
-    needs: [runner-bootstrap]
-    if: ${{ always() }}
     runs-on: ubuntu-latest
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
@@ -199,7 +30,6 @@ jobs:
       automation: ${{ steps.filter.outputs.automation }}
       docs: ${{ steps.filter.outputs.docs }}
       ci_gatechain: ${{ steps.filter.outputs.ci_gatechain }}
-      pr_runner_json: ${{ steps.runner_lane.outputs.pr_runner_json }}
     steps:
       - name: Pre-checkout workspace sanitize
         shell: bash
@@ -270,15 +100,6 @@ jobs:
               - '.github/workflows/pre-commit.yml'
               - 'scripts/ci/*gate*'
               - 'scripts/ci/*truth*'
-      - name: Resolve PR runner lane
-        id: runner_lane
-        run: |
-          set -euo pipefail
-          if [[ "${{ github.event_name }}" != "pull_request" ]]; then
-            echo 'pr_runner_json=["self-hosted","shared-pool"]' >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          echo 'pr_runner_json=["ubuntu-latest"]' >> "$GITHUB_OUTPUT"
       - uses: ./.github/actions/workspace-sanitize
         if: ${{ always() }}
         with:
@@ -451,7 +272,7 @@ jobs:
           python-version: "3.11"
           enable-playwright: "false"
           uv-sync-command: uv sync --frozen --extra dev
-      - name: Ensure docker compose plugin (Linux self-hosted strict gate prerequisite)
+      - name: Ensure docker compose plugin (Linux hosted strict gate prerequisite)
         if: ${{ runner.os == 'Linux' }}
         run: |
           set -euo pipefail
@@ -822,27 +643,44 @@ jobs:
         env:
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
         run: bash scripts/ci/run-in-container.sh --task core-static-gates --gate ci-core-static-gates
-      - name: Enforce live API key and external base URL contract (required)
-        id: live_ci_contract
-        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+      - name: Runtime cache cleanup (lightweight)
+        if: ${{ always() }}
+        run: |
+          ./scripts/runtime-gc.sh --scope logs --max-delete-per-run 100
+          ./scripts/runtime-gc.sh --scope runs --keep-runs 20 --max-delete-per-run 100
+          ./scripts/runtime-gc.sh --scope cache --max-delete-per-run 200
+      - uses: ./.github/actions/workspace-sanitize
+        if: ${{ always() }}
+        with:
+          mode: post
+
+  manual_live_audits:
+    needs: [changes, build_ci_image, core_contract_load]
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_automation_profile == 'true' }}
+    runs-on: ubuntu-latest
+    environment: owner-approved-sensitive
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: ./.github/actions/repo-checkout
+        with:
+          fetch-depth: 0
+      - name: Enforce live API key and external base URL contract
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || secrets.GOOGLE_API_KEY || '' }}
           UIQ_BASE_URL: ${{ vars.UIQ_BASE_URL || secrets.UIQ_BASE_URL || vars.BASE_URL || secrets.BASE_URL || '' }}
         run: |
           set -euo pipefail
           if [[ -z "${GEMINI_API_KEY}" ]]; then
-            echo "::notice::skipping live-only core contract gates: missing GEMINI_API_KEY/GOOGLE_API_KEY"
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-            exit 0
+            echo "missing GEMINI_API_KEY/GOOGLE_API_KEY for manual live audits" >&2
+            exit 1
           fi
           if [[ -z "${UIQ_BASE_URL}" ]]; then
-            echo "::notice::skipping live-only core contract gates: missing UIQ_BASE_URL/BASE_URL"
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-            exit 0
+            echo "missing UIQ_BASE_URL/BASE_URL for manual live audits" >&2
+            exit 1
           fi
-          echo "enabled=true" >> "$GITHUB_OUTPUT"
-      - name: Gemini live API smoke gate (workflow_dispatch advisory)
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_automation_profile == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false) && steps.live_ci_contract.outputs.enabled == 'true' }}
+      - name: Gemini live API smoke gate
         continue-on-error: true
         env:
           UIQ_GEMINI_LIVE_SMOKE_REQUIRED: "true"
@@ -851,8 +689,7 @@ jobs:
           UIQ_BASE_URL: ${{ vars.UIQ_BASE_URL || secrets.UIQ_BASE_URL || vars.BASE_URL || secrets.BASE_URL || '' }}
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
         run: bash scripts/ci/run-in-container.sh --task live-smoke --gate ci-live-smoke
-      - name: Gemini web audit gate (workflow_dispatch advisory)
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_automation_profile == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false) && steps.live_ci_contract.outputs.enabled == 'true' }}
+      - name: Gemini web audit gate
         continue-on-error: true
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || secrets.GOOGLE_API_KEY || '' }}
@@ -860,12 +697,6 @@ jobs:
           UIQ_BASE_URL: ${{ vars.UIQ_BASE_URL || secrets.UIQ_BASE_URL || vars.BASE_URL || secrets.BASE_URL || '' }}
           UIQ_CI_IMAGE_REF: ${{ needs.build_ci_image.outputs.image_ref }}
         run: bash scripts/ci/run-in-container.sh --task gemini-web-audit --gate ci-gemini-web-audit
-      - name: Runtime cache cleanup (lightweight)
-        if: ${{ always() }}
-        run: |
-          ./scripts/runtime-gc.sh --scope logs --max-delete-per-run 100
-          ./scripts/runtime-gc.sh --scope runs --keep-runs 20 --max-delete-per-run 100
-          ./scripts/runtime-gc.sh --scope cache --max-delete-per-run 200
       - uses: ./.github/actions/workspace-sanitize
         if: ${{ always() }}
         with:

@@ -27,9 +27,7 @@ jobs:
       scripts: ${{ steps.filter.outputs.scripts }}
       shared: ${{ steps.filter.outputs.shared }}
       ci: ${{ steps.filter.outputs.ci }}
-      pr_runner_json: ${{ steps.runner_lane.outputs.pr_runner_json }}
       is_untrusted_fork: ${{ steps.runner_lane.outputs.is_untrusted_fork }}
-      runner_lane: ${{ steps.runner_lane.outputs.runner_lane }}
     steps:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
         with:
@@ -75,31 +73,19 @@ jobs:
               - 'pyproject.toml'
               - 'uv.lock'
               - 'apps/api/alembic.ini'
-      - name: Resolve PR runner lane
+      - name: Resolve PR trust boundary
         id: runner_lane
         run: |
           set -euo pipefail
           if [[ "${{ github.event_name }}" != "pull_request" ]]; then
-            {
-              echo 'pr_runner_json=["self-hosted","shared-pool"]'
-              echo 'is_untrusted_fork=false'
-              echo 'runner_lane=trusted'
-            } >> "$GITHUB_OUTPUT"
+            echo 'is_untrusted_fork=false' >> "$GITHUB_OUTPUT"
             exit 0
           fi
           if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
-            {
-              echo 'pr_runner_json=["ubuntu-24.04"]'
-              echo 'is_untrusted_fork=true'
-              echo 'runner_lane=untrusted-fork'
-            } >> "$GITHUB_OUTPUT"
+            echo 'is_untrusted_fork=true' >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          {
-            echo 'pr_runner_json=["self-hosted","shared-pool"]'
-            echo 'is_untrusted_fork=false'
-            echo 'runner_lane=trusted'
-          } >> "$GITHUB_OUTPUT"
+          echo 'is_untrusted_fork=false' >> "$GITHUB_OUTPUT"
 
   build_ci_image:
     needs: changes
@@ -169,7 +155,7 @@ jobs:
 
   openai-residue-gate:
     needs: changes
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
         with:
@@ -195,8 +181,9 @@ jobs:
 
   upstream-binding-check:
     needs: [changes, upstream-mode-check]
-    if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false && needs.upstream-mode-check.outputs.repo_upstream_mode != 'none' }}
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' && github.event_name == 'workflow_dispatch' && needs.upstream-mode-check.outputs.repo_upstream_mode != 'none' }}
+    runs-on: ubuntu-24.04
+    environment: owner-approved-sensitive
     env:
       UIQ_UPSTREAM_REPO_URL: ${{ vars.UIQ_UPSTREAM_REPO_URL || secrets.UIQ_UPSTREAM_REPO_URL || '' }}
       UIQ_UPSTREAM_BRANCH: ${{ vars.UIQ_UPSTREAM_BRANCH || 'main' }}
@@ -332,6 +319,7 @@ jobs:
     needs: [changes, build_ci_image]
     if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' && github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-24.04
+    environment: owner-approved-sensitive
     permissions:
       contents: read
       packages: read
@@ -384,6 +372,7 @@ jobs:
     needs: [changes, build_ci_image]
     if: ${{ needs.changes.outputs.is_untrusted_fork != 'true' && github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-24.04
+    environment: owner-approved-sensitive
     permissions:
       contents: read
       packages: read
