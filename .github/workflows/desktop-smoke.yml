@@ -20,7 +20,7 @@ permissions:
 jobs:
   desktop-smoke:
     if: ${{ vars.UIQ_ENABLE_DESKTOP_SMOKE == 'true' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.tauri_app_path != '' || github.event.inputs.swift_bundle_id != '')) }}
-    runs-on: [self-hosted, shared-pool, macos, arm64]
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:

@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   build_ci_image:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -49,7 +49,7 @@ jobs:
 
   docs-gate:
     needs: build_ci_image
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
       - uses: ./.github/actions/self-hosted-checkout
       - name: Docs gate
@@ -59,7 +59,7 @@ jobs:
 
   type-gate:
     needs: build_ci_image
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
       - uses: ./.github/actions/self-hosted-checkout
       - name: Root typecheck gate
@@ -69,7 +69,7 @@ jobs:
 
   security-gate:
     needs: build_ci_image
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
       - uses: ./.github/actions/self-hosted-checkout
       - name: Release security scan
@@ -78,7 +78,7 @@ jobs:
         run: bash scripts/ci/run-in-container.sh --task security-scan --gate release-security-gate
 
   release-gate:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     needs:
       - build_ci_image
       - docs-gate

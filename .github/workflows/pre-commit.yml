@@ -26,7 +26,7 @@ concurrency:
 
 jobs:
   workflow-hygiene:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
         with:
@@ -44,7 +44,7 @@ jobs:
 
   actionlint:
     needs: [workflow-hygiene]
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
         with:
@@ -78,7 +78,7 @@ jobs:
 
   precommit-config-contract:
     needs: [workflow-hygiene]
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
         with:
@@ -106,7 +106,7 @@ jobs:
   hooks-equivalence-gate:
     needs: [workflow-hygiene]
     if: ${{ github.repository_owner != 'xiaojiou176-open' }}
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
         with:

@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   build_ci_image:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -47,7 +47,7 @@ jobs:
 
   frontend-e2e-sharded:
     needs: build_ci_image
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -64,7 +64,7 @@ jobs:
 
   backend-tests-sharded:
     needs: build_ci_image
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -91,7 +91,7 @@ jobs:
 
   nightly-integration-full:
     needs: build_ci_image
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
       - uses: ./.github/actions/self-hosted-checkout
       - name: Integration marker full gate (nightly)
@@ -100,7 +100,7 @@ jobs:
         run: bash scripts/ci/run-in-container.sh --task nightly-integration-full --gate nightly-integration-full
 
   nightly-trend-signals:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
       - uses: ./.github/actions/self-hosted-checkout
       - uses: ./.github/actions/setup-deps
@@ -168,7 +168,7 @@ jobs:
           echo "[nightly-trend] pre-run non-blocking warning count=${warn_count}"
 
   nightly-core-run:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     needs:
       - build_ci_image
       - frontend-e2e-sharded
@@ -236,7 +236,7 @@ jobs:
         run: node scripts/ci/verify-run-evidence.mjs --profile nightly-core
 
   nightly-trend-post-run:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     needs: nightly-core-run
     steps:
       - uses: ./.github/actions/self-hosted-checkout
@@ -299,7 +299,7 @@ jobs:
           echo "[nightly-trend] post-run non-blocking warning count=${warn_count}"
 
   nightly-hard-gates:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     needs: [build_ci_image, nightly-core-run]
     steps:
       - uses: ./.github/actions/self-hosted-checkout
@@ -322,7 +322,7 @@ jobs:
           retention-days: 7
 
   nightly-upload-artifacts:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     if: ${{ always() }}
     needs:
       - nightly-core-run
@@ -343,7 +343,7 @@ jobs:
 
   desktop-regression-macos:
     if: ${{ vars.UIQ_ENABLE_DESKTOP_REGRESSION == 'true' }}
-    runs-on: [self-hosted, shared-pool, macos, arm64]
+    runs-on: ubuntu-latest
     # The only required host-bound exception: macOS desktop regression depends on Xcode,
     # tauri-driver, bundle IDs, and native app runtime that cannot be expressed as linux/amd64 CI image tasks.
     env:
@@ -396,7 +396,7 @@ jobs:
           retention-days: 7
 
   nightly-summary-gate:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     if: ${{ always() }}
     needs:
       - frontend-e2e-sharded
@@ -506,7 +506,7 @@ jobs:
           if-no-files-found: error
 
   nightly-consecutive-anomaly-gate:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     if: ${{ always() }}
     needs:
       - nightly-trend-signals

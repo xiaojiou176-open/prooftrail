@@ -26,7 +26,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - name: Resolve bootstrap mode
@@ -192,7 +192,7 @@ jobs:
   changes:
     needs: [runner-bootstrap]
     if: ${{ always() }}
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
@@ -292,7 +292,7 @@ jobs:
   build_ci_image:
     needs: [changes]
     if: ${{ github.repository_owner != 'xiaojiou176-open' }}
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -749,7 +749,7 @@ jobs:
   backend_full:
     needs: [changes, build_ci_image]
     if: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.ci_gatechain == 'true' }}
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
       - name: Pre-checkout workspace sanitize
         shell: bash
@@ -792,7 +792,7 @@ jobs:
   core_contract_load:
     needs: [changes, build_ci_image]
     if: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.ci_gatechain == 'true' }}
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
       - name: Pre-checkout workspace sanitize
         shell: bash
@@ -1017,7 +1017,7 @@ jobs:
   root_web_e2e:
     needs: [changes, build_ci_image]
     if: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.ci_gatechain == 'true' }}
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
       - name: Pre-checkout workspace sanitize
         shell: bash
@@ -1063,7 +1063,7 @@ jobs:
   frontend_e2e_required:
     needs: [changes, build_ci_image]
     if: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.ci_gatechain == 'true' }}
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     env:
       BACKEND_PORT: "17382"
       BACKEND_BASE_URL: "http://127.0.0.1:17382"
@@ -1120,7 +1120,7 @@ jobs:
   functional_regression_gate:
     needs: [changes, build_ci_image]
     if: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.ci_gatechain == 'true' }}
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
       - name: Pre-checkout workspace sanitize
         shell: bash
@@ -1498,7 +1498,7 @@ jobs:
   mutation_report:
     needs: [changes, build_ci_image]
     if: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.ci_gatechain == 'true' }}
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
       - name: Pre-checkout workspace sanitize
         shell: bash
@@ -1566,7 +1566,7 @@ jobs:
     name: control-plane green (internal governance)
     needs: [changes]
     if: ${{ github.repository_owner != 'xiaojiou176-open' && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.docs == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.ci_gatechain == 'true') }}
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@64ffef1ea610c4052efefeb955034987fb104bc4 # v4
         with:

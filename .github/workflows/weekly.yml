@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   build_ci_image:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -47,7 +47,7 @@ jobs:
 
   weekly-trend-signals:
     needs: build_ci_image
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
       - uses: ./.github/actions/self-hosted-checkout
       - uses: ./.github/actions/setup-deps
@@ -114,7 +114,7 @@ jobs:
 
   weekly-core-run:
     needs: build_ci_image
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     steps:
       - uses: ./.github/actions/self-hosted-checkout
       - name: Weekly core run (Linux/Web required, containerized)
@@ -126,7 +126,7 @@ jobs:
         run: bash scripts/ci/run-in-container.sh --task weekly-core-run --gate weekly-core-run
 
   weekly-trend-post-run:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     needs: [build_ci_image, weekly-core-run]
     steps:
       - uses: ./.github/actions/self-hosted-checkout
@@ -268,7 +268,7 @@ jobs:
           if-no-files-found: error
 
   weekly-release-notes:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     needs: weekly-core-run
     steps:
       - uses: ./.github/actions/self-hosted-checkout
@@ -284,7 +284,7 @@ jobs:
           path: .runtime-cache/artifacts/release/release-notes-vnext.md
 
   weekly-upload-artifacts:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     if: ${{ always() }}
     needs:
       - weekly-core-run
@@ -303,7 +303,7 @@ jobs:
 
   desktop-regression-macos:
     if: ${{ vars.UIQ_ENABLE_DESKTOP_REGRESSION == 'true' }}
-    runs-on: [self-hosted, shared-pool, macos, arm64]
+    runs-on: ubuntu-latest
     # The only required host-bound exception: macOS desktop regression depends on Xcode,
     # tauri-driver, bundle IDs, and native app runtime that cannot be expressed as linux/amd64 CI image tasks.
     env:
@@ -355,7 +355,7 @@ jobs:
             .runtime-cache/artifacts/runs/
 
   weekly-summary-gate:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     if: ${{ always() }}
     needs:
       - weekly-trend-signals

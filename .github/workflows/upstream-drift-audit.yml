@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   upstream-drift-audit:
-    runs-on: [self-hosted, shared-pool]
+    runs-on: ubuntu-latest
     env:
       UIQ_UPSTREAM_REPO_URL: ${{ vars.UIQ_UPSTREAM_REPO_URL || secrets.UIQ_UPSTREAM_REPO_URL || '' }}
       UIQ_UPSTREAM_BRANCH: ${{ github.event.inputs.upstream_branch || vars.UIQ_UPSTREAM_BRANCH || 'main' }}
