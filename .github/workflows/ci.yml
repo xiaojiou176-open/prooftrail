@@ -318,7 +318,7 @@ jobs:
 
   openai_residue_gate:
     needs: [changes]
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-latest
     steps:
       - name: Pre-checkout workspace sanitize
         shell: bash
@@ -361,7 +361,7 @@ jobs:
   docs:
     needs: [changes]
     if: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.docs == 'true' }}
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-latest
     steps:
       - name: Pre-checkout workspace sanitize
         shell: bash
@@ -411,7 +411,7 @@ jobs:
   hooks_equivalence_gate:
     needs: [changes]
     if: ${{ github.repository_owner != 'xiaojiou176-open' && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.ci_gatechain == 'true') }}
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-latest
     steps:
       - name: Pre-checkout workspace sanitize
         shell: bash
@@ -492,7 +492,7 @@ jobs:
 
   security:
     needs: [changes]
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-latest
     steps:
       - name: Pre-checkout workspace sanitize
         shell: bash
@@ -546,7 +546,7 @@ jobs:
   strict_invariants_gate:
     needs: [changes]
     if: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.ci_gatechain == 'true' }}
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-latest
     steps:
       - name: Pre-checkout workspace sanitize
         shell: bash
@@ -605,7 +605,7 @@ jobs:
   security_scan_script:
     needs: [changes, build_ci_image]
     if: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.ci_gatechain == 'true' }}
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-latest
     steps:
       - name: Pre-checkout workspace sanitize
         shell: bash
@@ -653,7 +653,7 @@ jobs:
   preflight_minimal:
     needs: [changes, build_ci_image]
     if: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.automation == 'true' || needs.changes.outputs.ci_gatechain == 'true' }}
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-latest
     steps:
       - name: Pre-checkout workspace sanitize
         shell: bash
@@ -701,7 +701,7 @@ jobs:
   backend:
     needs: [changes, build_ci_image]
     if: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.ci_gatechain == 'true' }}
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-latest
     steps:
       - name: Pre-checkout workspace sanitize
         shell: bash
@@ -874,7 +874,7 @@ jobs:
   root_web_typecheck:
     needs: [changes, build_ci_image]
     if: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.ci_gatechain == 'true' }}
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-latest
     steps:
       - name: Pre-checkout workspace sanitize
         shell: bash
@@ -920,7 +920,7 @@ jobs:
   root_web_unit:
     needs: [changes, build_ci_image]
     if: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.ci_gatechain == 'true' }}
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-latest
     steps:
       - name: Pre-checkout workspace sanitize
         shell: bash
@@ -966,7 +966,7 @@ jobs:
   root_web_ct:
     needs: [changes, build_ci_image]
     if: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.ci_gatechain == 'true' }}
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-latest
     steps:
       - name: Pre-checkout workspace sanitize
         shell: bash
@@ -1163,7 +1163,7 @@ jobs:
           mode: post
 
   root_web_gate:
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       actions: read
@@ -1308,7 +1308,7 @@ jobs:
   frontend:
     needs: [changes, build_ci_image]
     if: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.ci_gatechain == 'true' }}
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-latest
     steps:
       - name: Pre-checkout workspace sanitize
         shell: bash
@@ -1358,7 +1358,7 @@ jobs:
   automation:
     needs: [changes]
     if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_automation_profile == 'true' && (github.event_name != 'pull_request' || needs.changes.outputs.automation == 'true') }}
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-latest
     steps:
       - name: Pre-checkout workspace sanitize
         shell: bash
@@ -1437,7 +1437,7 @@ jobs:
 
   experimental_reconstruction:
     if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_automation_profile == 'true' }}
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-latest
     needs: [changes, automation]
     continue-on-error: true
     steps:
@@ -1591,7 +1591,7 @@ jobs:
 
   repo_truth_required_gate:
     name: repo truth deterministic gate (aggregate)
-    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && needs.changes.outputs.pr_runner_json || '["self-hosted","shared-pool"]') }}
+    runs-on: ubuntu-latest
     if: ${{ always() }}
     needs:
       - changes
