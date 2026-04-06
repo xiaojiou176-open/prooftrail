@@ -129,9 +129,7 @@
     "frontend/",
     "automation/"
   ],
-  "forbiddenRuntimeTokens": [
-    ".runtime-cache/ci/"
-  ],
+  "forbiddenRuntimeTokens": [],
   "forbiddenFloatingToolCommands": [
     "pnpm dlx curlconverter",
     "pnpm dlx har-to-k6"

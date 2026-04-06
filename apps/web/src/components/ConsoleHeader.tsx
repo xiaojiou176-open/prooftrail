@@ -1,17 +1,12 @@
-import {
-  memo,
-  type KeyboardEvent as ReactKeyboardEvent,
-  useCallback,
-  useRef,
-} from "react"
-import { useI18n } from "../i18n"
+import { Badge, Button, TabsList, TabsTrigger } from "@uiq/ui"
+import { memo, type KeyboardEvent as ReactKeyboardEvent, useCallback, useRef } from "react"
 import {
   CONSOLE_TAB_FLOW_DRAFT_TEST_ID,
   CONSOLE_TAB_QUICK_LAUNCH_TEST_ID,
   CONSOLE_TAB_TASK_CENTER_TEST_ID,
 } from "../constants/testIds"
 import type { AppView } from "../hooks/useAppStore"
-import { Badge, Button, TabsList, TabsTrigger } from "@uiq/ui"
+import { useI18n } from "../i18n"
 
 interface ConsoleHeaderProps {
   runningCount: number
@@ -34,6 +29,8 @@ const views: { key: AppView; label: string; desc: string; icon: React.ReactNode 
         height="16"
         viewBox="0 0 24 24"
         fill="none"
+        aria-hidden="true"
+        focusable="false"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
@@ -53,6 +50,8 @@ const views: { key: AppView; label: string; desc: string; icon: React.ReactNode 
         height="16"
         viewBox="0 0 24 24"
         fill="none"
+        aria-hidden="true"
+        focusable="false"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
@@ -73,6 +72,8 @@ const views: { key: AppView; label: string; desc: string; icon: React.ReactNode 
         height="16"
         viewBox="0 0 24 24"
         fill="none"
+        aria-hidden="true"
+        focusable="false"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
@@ -165,6 +166,8 @@ function ConsoleHeader({
             <svg
               viewBox="0 0 24 24"
               fill="none"
+              aria-hidden="true"
+              focusable="false"
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
@@ -195,12 +198,13 @@ function ConsoleHeader({
               {t("Failed {count}", { count: failedCount })}
             </Badge>
           </div>
-          <div className="header-locale-switch" role="group" aria-label={t("Language")}>
+          <div className="header-locale-switch">
             <Button
               type="button"
               size="sm"
               variant={locale === "en" ? "secondary" : "ghost"}
               aria-pressed={locale === "en"}
+              data-testid="header-locale-en"
               data-uiq-ignore-button-inventory="locale-switch-non-core-action"
               onClick={() => setLocale("en")}
               title={t("Language")}
@@ -212,6 +216,7 @@ function ConsoleHeader({
               size="sm"
               variant={locale === "zh-CN" ? "secondary" : "ghost"}
               aria-pressed={locale === "zh-CN"}
+              data-testid="header-locale-zh-cn"
               data-uiq-ignore-button-inventory="locale-switch-non-core-action"
               onClick={() => setLocale("zh-CN")}
               title={t("Language")}
@@ -233,6 +238,8 @@ function ConsoleHeader({
               height="16"
               viewBox="0 0 24 24"
               fill="none"
+              aria-hidden="true"
+              focusable="false"
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
@@ -258,6 +265,8 @@ function ConsoleHeader({
               height="16"
               viewBox="0 0 24 24"
               fill="none"
+              aria-hidden="true"
+              focusable="false"
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
@@ -270,7 +279,7 @@ function ConsoleHeader({
           </Button>
         </div>
       </div>
-      <nav role="tablist" aria-label="Primary navigation">
+      <nav aria-label="Primary navigation">
         <TabsList className="console-nav-tabs">
           {views.map((v, index) => {
             const label =

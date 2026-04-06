@@ -216,7 +216,7 @@
   "repoExclusiveExternalLayers": [
     {
       "id": "pnpm-prooftrail-store",
-      "path": "${HOME}/.cache/pnpm/prooftrail",
+      "path": "${HOME}/.cache/pnpm/prooftrail/store",
       "kind": "dependency-store",
       "owner": ".npmrc",
       "cleanupClass": "reclaim",
@@ -242,7 +242,7 @@
     },
     {
       "id": "repo-pnpm-store",
-      "path": "${HOME}/.cache/pnpm/prooftrail",
+      "path": "${HOME}/.cache/pnpm/prooftrail/virtual-store",
       "kind": "repo-exclusive-dependency-store",
       "owner": "scripts/space-clean-reclaim.py",
       "cleanupClass": "reclaim",
