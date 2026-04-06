@@ -55,11 +55,7 @@ run_actionlint_precommit() {
 run_commitlint_range() {
   local from_ref="$1"
   local to_ref="$2"
-  pnpm dlx \
-    --package=@commitlint/cli \
-    --package=@commitlint/config-conventional \
-    commitlint \
-    --extends @commitlint/config-conventional \
+  pnpm exec commitlint \
     --from "$from_ref" \
     --to "$to_ref" \
     --verbose
