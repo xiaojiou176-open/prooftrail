@@ -40,10 +40,20 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
+        write_env_var() {
+          local key="$1"
+          local value="$2"
+          local marker="EOF_${key}_$(date +%s%N)"
+          {
+            printf '%s<<%s\n' "$key" "$marker"
+            printf '%s\n' "$value"
+            printf '%s\n' "$marker"
+          } >> "$GITHUB_ENV"
+        }
         store_dir="${RUNNER_TEMP}/pnpm-store"
         mkdir -p "$store_dir"
         pnpm config set store-dir "$store_dir"
-        echo "PNPM_STORE_DIR=$store_dir" >> "$GITHUB_ENV"
+        write_env_var "PNPM_STORE_DIR" "$store_dir"
     - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
       with:
         node-version: ${{ inputs.node-version }}

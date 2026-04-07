@@ -21,19 +21,24 @@ runs:
   using: composite
   steps:
     - name: Build failure bundle
+      env:
+        INPUT_SCRIPT_PATH: ${{ inputs.script-path }}
+        GITHUB_JOB_NAME: ${{ github.job }}
+        GITHUB_RUN_ID_VALUE: ${{ github.run_id }}
+        GITHUB_RUN_ATTEMPT_VALUE: ${{ github.run_attempt }}
       shell: bash
       run: |
         set -euo pipefail
         cd "$GITHUB_WORKSPACE"
         mkdir -p .runtime-cache/artifacts/ci/failure-bundles
-        if [[ -f "${{ inputs.script-path }}" ]]; then
-          bash "${{ inputs.script-path }}" || true
+        if [[ -f "$INPUT_SCRIPT_PATH" ]]; then
+          bash "$INPUT_SCRIPT_PATH" || true
         else
           {
-            echo "missing ${{ inputs.script-path }}"
-            echo "job=${{ github.job }}"
-            echo "run_id=${{ github.run_id }}"
-            echo "run_attempt=${{ github.run_attempt }}"
+            echo "missing $INPUT_SCRIPT_PATH"
+            echo "job=$GITHUB_JOB_NAME"
+            echo "run_id=$GITHUB_RUN_ID_VALUE"
+            echo "run_attempt=$GITHUB_RUN_ATTEMPT_VALUE"
           } > .runtime-cache/artifacts/ci/failure-bundles/MISSING_SCRIPT.txt
         fi
     - name: Upload failure bundle artifact

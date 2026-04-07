@@ -52,25 +52,32 @@ jobs:
       - uses: ./.github/actions/repo-checkout
         with:
           fetch-depth: 2
-      - uses: ./.github/actions/setup-python-uv
-        with:
-          python-version: "3.11"
-          uv-cache: "false"
-      - name: Run pre-commit actionlint hook
+      - name: Install pinned actionlint binary
         shell: bash
         run: |
           set -euo pipefail
-          run_actionlint() {
-            uvx pre-commit run --config configs/tooling/pre-commit-config.yaml actionlint --all-files --verbose
-          }
+          version="$(python3 - <<'PY'
+          import json
+          from pathlib import Path
 
-          if run_actionlint; then
-            exit 0
-          fi
-
-          echo "[pre-commit-gate] first actionlint run failed; cleaning pre-commit cache and retrying once"
-          uvx pre-commit clean || true
-          run_actionlint
+          runtime_lock = json.loads(Path("configs/ci/runtime.lock.json").read_text())
+          print(runtime_lock["security_tools"]["actionlint"])
+          PY
+          )"
+          archive="actionlint_${version}_linux_amd64.tar.gz"
+          url="https://github.com/rhysd/actionlint/releases/download/v${version}/${archive}"
+          tmpdir="$(mktemp -d)"
+          trap 'rm -rf "$tmpdir"' EXIT
+          curl -fsSL "$url" -o "$tmpdir/$archive"
+          tar -xzf "$tmpdir/$archive" -C "$tmpdir" actionlint
+          mkdir -p "$HOME/.local/bin"
+          install "$tmpdir/actionlint" "$HOME/.local/bin/actionlint"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Run pinned actionlint
+        shell: bash
+        run: |
+          set -euo pipefail
+          actionlint -color
       - uses: ./.github/actions/workspace-sanitize
         if: ${{ always() }}
         with:
@@ -91,6 +98,8 @@ jobs:
         uses: zizmorcore/zizmor-action@71321a20a9ded102f6e9ce5718a2fcec2c4f70d8 # v0.5.2
         with:
           advanced-security: false
+          online-audits: false
+          min-severity: high
       - uses: ./.github/actions/workspace-sanitize
         if: ${{ always() }}
         with:

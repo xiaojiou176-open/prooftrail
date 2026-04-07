@@ -9,11 +9,13 @@ runs:
   using: composite
   steps:
     - name: Sanitize workspace
+      env:
+        INPUT_MODE: ${{ inputs.mode }}
       shell: bash
       run: |
         set -euo pipefail
 
-        mode="${{ inputs.mode }}"
+        mode="$INPUT_MODE"
         workspace="${GITHUB_WORKSPACE:?GITHUB_WORKSPACE is required}"
         runner_temp="${RUNNER_TEMP:?RUNNER_TEMP is required}"
         home_dir="${HOME:-}"
@@ -61,6 +63,17 @@ runs:
           fi
         }
 
+        write_env_var() {
+          local key="$1"
+          local value="$2"
+          local marker="EOF_${key}_$(date +%s%N)"
+          {
+            printf '%s<<%s\n' "$key" "$marker"
+            printf '%s\n' "$value"
+            printf '%s\n' "$marker"
+          } >> "$GITHUB_ENV"
+        }
+
         case "$mode" in
           pre)
             mkdir -p \
@@ -91,14 +104,14 @@ runs:
                 "$sanitize_tmp_dir"
             fi
             {
-              echo "RUNNER_TOOL_CACHE=$tool_cache_dir"
-              echo "AGENT_TOOLSDIRECTORY=$tool_cache_dir"
-              echo "TMPDIR=$tmp_dir"
-              echo "TMP=$tmp_dir"
-              echo "TEMP=$tmp_dir"
-              echo "PRE_COMMIT_HOME=$precommit_home"
-              echo "PLAYWRIGHT_BROWSERS_PATH=$playwright_cache_dir"
-            } >> "$GITHUB_ENV"
+              write_env_var "RUNNER_TOOL_CACHE" "$tool_cache_dir"
+              write_env_var "AGENT_TOOLSDIRECTORY" "$tool_cache_dir"
+              write_env_var "TMPDIR" "$tmp_dir"
+              write_env_var "TMP" "$tmp_dir"
+              write_env_var "TEMP" "$tmp_dir"
+              write_env_var "PRE_COMMIT_HOME" "$precommit_home"
+              write_env_var "PLAYWRIGHT_BROWSERS_PATH" "$playwright_cache_dir"
+            }
             ;;
           post)
             cleanup_paths=(

@@ -94,17 +94,32 @@ runs:
   using: composite
   steps:
     - name: Resolve toolchain versions from runtime lock
+      env:
+        INPUT_NODE_VERSION: ${{ inputs.node-version }}
+        INPUT_PYTHON_VERSION: ${{ inputs.python-version }}
+        INPUT_RUNTIME_LOCK_PATH: ${{ inputs.runtime-lock-path }}
       shell: bash
       run: |
         set -euo pipefail
-        node_version="${{ inputs.node-version }}"
-        python_version="${{ inputs.python-version }}"
-        if [[ -f "${{ inputs.runtime-lock-path }}" ]]; then
+        write_env_var() {
+          local key="$1"
+          local value="$2"
+          local marker="EOF_${key}_$(date +%s%N)"
+          {
+            printf '%s<<%s\n' "$key" "$marker"
+            printf '%s\n' "$value"
+            printf '%s\n' "$marker"
+          } >> "$GITHUB_ENV"
+        }
+
+        node_version="$INPUT_NODE_VERSION"
+        python_version="$INPUT_PYTHON_VERSION"
+        if [[ -f "$INPUT_RUNTIME_LOCK_PATH" ]]; then
           if [[ -z "$node_version" ]]; then
-            node_version="$(python3 -c 'import json, pathlib; payload=json.loads(pathlib.Path("${{ inputs.runtime-lock-path }}").read_text(encoding="utf-8")); print(str(payload.get("toolchain", {}).get("node", "")).strip())')"
+            node_version="$(INPUT_RUNTIME_LOCK_PATH="$INPUT_RUNTIME_LOCK_PATH" python3 -c 'import json, os, pathlib; path = pathlib.Path(os.environ["INPUT_RUNTIME_LOCK_PATH"]); payload = json.loads(path.read_text(encoding="utf-8")); print(str(payload.get("toolchain", {}).get("node", "")).strip())')"
           fi
           if [[ -z "$python_version" ]]; then
-            python_version="$(python3 -c 'import json, pathlib; payload=json.loads(pathlib.Path("${{ inputs.runtime-lock-path }}").read_text(encoding="utf-8")); print(str(payload.get("toolchain", {}).get("python", "")).strip())')"
+            python_version="$(INPUT_RUNTIME_LOCK_PATH="$INPUT_RUNTIME_LOCK_PATH" python3 -c 'import json, os, pathlib; path = pathlib.Path(os.environ["INPUT_RUNTIME_LOCK_PATH"]); payload = json.loads(path.read_text(encoding="utf-8")); print(str(payload.get("toolchain", {}).get("python", "")).strip())')"
           fi
         fi
         if [[ -z "$node_version" ]]; then
@@ -113,8 +128,8 @@ runs:
         if [[ -z "$python_version" ]]; then
           python_version="3.11.15"
         fi
-        echo "UIQ_SETUP_NODE_VERSION=$node_version" >> "$GITHUB_ENV"
-        echo "UIQ_SETUP_PYTHON_VERSION=$python_version" >> "$GITHUB_ENV"
+        write_env_var "UIQ_SETUP_NODE_VERSION" "$node_version"
+        write_env_var "UIQ_SETUP_PYTHON_VERSION" "$python_version"
 
     - name: Setup Node + pnpm
       if: ${{ inputs.enable-node == 'true' }}
@@ -126,13 +141,15 @@ runs:
 
     - name: Install Node dependencies
       if: ${{ inputs.enable-node == 'true' && inputs.pnpm-install == 'true' }}
+      env:
+        INPUT_PNPM_INSTALL_COMMAND: ${{ inputs.pnpm-install-command }}
       shell: bash
       run: |
         set -euo pipefail
         cd "$GITHUB_WORKSPACE"
         install_log="$(mktemp)"
         set +e
-        ${{ inputs.pnpm-install-command }} >"$install_log" 2>&1
+        bash -lc "$INPUT_PNPM_INSTALL_COMMAND" >"$install_log" 2>&1
         install_status=$?
         set -e
         if [[ "$install_status" -ne 0 ]]; then
@@ -145,7 +162,7 @@ runs:
               mkdir -p "${PNPM_STORE_DIR}"
               pnpm config set store-dir "${PNPM_STORE_DIR}"
             fi
-            ${{ inputs.pnpm-install-command }}
+            bash -lc "$INPUT_PNPM_INSTALL_COMMAND"
           else
             rm -f "$install_log"
             exit "$install_status"
@@ -164,9 +181,21 @@ runs:
 
     - name: Sync Python dependencies
       if: ${{ inputs.enable-python == 'true' && inputs.uv-sync == 'true' }}
+      env:
+        INPUT_UV_SYNC_COMMAND: ${{ inputs.uv-sync-command }}
       shell: bash
       run: |
         set -euo pipefail
+        write_env_var() {
+          local key="$1"
+          local value="$2"
+          local marker="EOF_${key}_$(date +%s%N)"
+          {
+            printf '%s<<%s\n' "$key" "$marker"
+            printf '%s\n' "$value"
+            printf '%s\n' "$marker"
+          } >> "$GITHUB_ENV"
+        }
         cd "$GITHUB_WORKSPACE"
         requested_python_version="${UIQ_SETUP_PYTHON_VERSION}"
         managed_python_env="${PROJECT_PYTHON_ENV:-${UV_PROJECT_ENVIRONMENT:-.runtime-cache/toolchains/python/.venv}}"
@@ -198,9 +227,9 @@ runs:
         fi
         export PROJECT_PYTHON_ENV="$managed_python_env"
         export UV_PROJECT_ENVIRONMENT="$managed_python_env"
-        echo "PROJECT_PYTHON_ENV=$managed_python_env" >> "$GITHUB_ENV"
-        echo "UV_PROJECT_ENVIRONMENT=$managed_python_env" >> "$GITHUB_ENV"
-        ${{ inputs.uv-sync-command }}
+        write_env_var "PROJECT_PYTHON_ENV" "$managed_python_env"
+        write_env_var "UV_PROJECT_ENVIRONMENT" "$managed_python_env"
+        bash -lc "$INPUT_UV_SYNC_COMMAND"
 
     - name: Setup Playwright
       if: ${{ inputs.enable-playwright == 'true' }}
