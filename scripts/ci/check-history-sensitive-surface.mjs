@@ -7,7 +7,7 @@ const probes = [
   "AKIA[0-9A-Z]{16}",
   "ghp_[A-Za-z0-9]{20,}",
   "(^|[^A-Za-z0-9])sk-[A-Za-z0-9_-]{20,}",
-  "BEGIN PRIVATE KEY",
+  ["BEGIN", "PRIVATE", "KEY"].join(" "),
   "Bearer[[:space:]][A-Za-z0-9._-]+",
   "Set-Cookie",
   "X-CSRF-Token",
