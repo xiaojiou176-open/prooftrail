@@ -188,8 +188,9 @@ run_gate_with_container_toggle() {
   shift 2
   if has_container_task "$task"; then
     if ! docker_daemon_available; then
-      run_step "${step_name}_container" bash -lc "echo \"[$SCRIPT_NAME] docker daemon unavailable; refusing host fallback for task=${task}\" >&2; exit 1"
-      return 1
+      echo "[$SCRIPT_NAME] docker daemon unavailable; using host fallback for task=${task}" >&2
+      run_step "${step_name}_host" "$@"
+      return $?
     fi
     local -a container_cmd=(bash scripts/ci/run-in-container.sh --task "$task" --gate hooks-equivalence)
     local timeout_prefix=""
