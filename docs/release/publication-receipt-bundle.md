@@ -106,11 +106,13 @@ If the next worker needs one reviewable repo-owned bundle before pushing
 publication again, start with these files:
 
 1. `DISTRIBUTION.md`
-2. `docs/reference/mcp-distribution-contract.md`
-3. `apps/mcp-server/package.json`
-4. `apps/mcp-server/server.json`
-5. `skills/prooftrail-mcp/README.md`
-6. `docs/release/README.md`
+2. `llms-install.md`
+3. `docs/reference/mcp-distribution-contract.md`
+4. `apps/mcp-server/package.json`
+5. `apps/mcp-server/server.json`
+6. `skills/prooftrail-mcp/README.md`
+7. `docs/release/README.md`
+8. `docs/release/mcp-listings-cockpit.md`
 
 That bundle keeps four truths separate:
 

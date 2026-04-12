@@ -56,6 +56,10 @@ because the repo carries a Docker image contract or a live ClawHub skill page.
 If you need the shortest receipt-first map for the next heavy lane, open
 [docs/release/publication-receipt-bundle.md](docs/release/publication-receipt-bundle.md).
 
+If you need the current registry / marketplace / owner-manual cockpit, open
+[llms-install.md](llms-install.md) and
+[docs/release/mcp-listings-cockpit.md](docs/release/mcp-listings-cockpit.md).
+
 That page separates:
 
 - live release/storefront receipts
