@@ -9,19 +9,15 @@ next layer of proof, operating detail, and governance boundaries.
 > The pages below help you evaluate that story from first run to side-road
 > integrations without pretending the repo is a generic AI bot platform.
 
-If you only need a fast route instead of the full map, choose one lane:
+If you only need the fastest truthful route, stay on the first-run lane:
 
-- first run and retained proof
-  - [docs/getting-started/human-first-10-min.md](getting-started/human-first-10-min.md)
-- coding-agent or MCP fit
-  - [docs/how-to/prooftrail-for-coding-agents.md](how-to/prooftrail-for-coding-agents.md)
-- builder/API integration
-  - [docs/how-to/api-builder-quickstart.md](how-to/api-builder-quickstart.md)
+1. [docs/getting-started/human-first-10-min.md](getting-started/human-first-10-min.md)
+2. [docs/showcase/minimal-success-case.md](showcase/minimal-success-case.md)
+3. [docs/reference/run-evidence-example.md](reference/run-evidence-example.md)
 
 If you arrived here because you are evaluating a browser-evidence layer for
 Codex, Claude Code, OpenHands, OpenCode, OpenClaw, or another AI-agent shell,
-use the growth matrix and builder entry together. That is the truthful
-discovery route in this repo.
+finish the first-run lane first, then continue into the second ring below.
 
 ![ProofTrail proof loop](../assets/storefront/prooftrail-readme-hero.svg)
 ![ProofTrail storefront loop](../assets/storefront/prooftrail-storefront-loop.gif)
@@ -34,10 +30,8 @@ The first-run UI lane stays intentionally strict:
 - [docs/getting-started/human-first-10-min.md](getting-started/human-first-10-min.md)
 - [docs/showcase/minimal-success-case.md](showcase/minimal-success-case.md)
 - [docs/reference/run-evidence-example.md](reference/run-evidence-example.md)
-- [docs/release/README.md](release/README.md)
-- [docs/release/publication-receipt-bundle.md](release/publication-receipt-bundle.md)
 
-## Growth Matrix
+## Second Ring: Ecosystem And Builder Discovery
 
 - [ProofTrail for AI Agents](how-to/prooftrail-for-ai-agents.md)
 - [ProofTrail for Coding Agents and Agent Ecosystems](how-to/prooftrail-for-coding-agents.md)
@@ -46,7 +40,7 @@ The first-run UI lane stays intentionally strict:
 - [Evidence, Recovery, and Review Workspace](how-to/evidence-recovery-review-workspace.md)
 - [ProofTrail vs generic browser agents](compare/prooftrail-vs-generic-browser-agents.md)
 
-These six pages are the current outward matrix:
+These six pages are the current outward matrix after the first-run lane:
 
 1. [ProofTrail for AI Agents](how-to/prooftrail-for-ai-agents.md)
 2. [ProofTrail for Coding Agents and Agent Ecosystems](how-to/prooftrail-for-coding-agents.md)
@@ -55,7 +49,8 @@ These six pages are the current outward matrix:
 5. [ProofTrail vs Generic Browser Agents](compare/prooftrail-vs-generic-browser-agents.md)
 6. [Evidence, Recovery, and Review Workspace](how-to/evidence-recovery-review-workspace.md)
 
-Read them as a connected route, not six unrelated landing pages:
+Read them as a connected second ring, not as six co-equal first-run entry
+points:
 
 - start with audience fit for AI-agent and operator use
 - make the coding-agent fit explicit for Codex, Claude Code, OpenHands,
@@ -66,7 +61,15 @@ Read them as a connected route, not six unrelated landing pages:
   current product proof
 
 Use [API builder quickstart](how-to/api-builder-quickstart.md) alongside that
-matrix when your main question is integration rather than evaluation.
+second ring when your main question is integration rather than evaluation.
+
+## Release And Publication Proof
+
+Only open this shelf after the first-run lane and second-ring product fit are
+already clear:
+
+- [docs/release/README.md](release/README.md)
+- [docs/release/publication-receipt-bundle.md](release/publication-receipt-bundle.md)
 
 If you want the one-screen visual before reading deeper pages, the README now
 also includes an ecosystem-fit map that shows the current MCP-first versus
@@ -84,7 +87,8 @@ If you arrived here from a high-intent coding-agent search such as:
 
 start with [ProofTrail for AI Agents](how-to/prooftrail-for-ai-agents.md),
 then choose either the [API builder quickstart](how-to/api-builder-quickstart.md)
-or [MCP for Browser Automation](how-to/mcp-quickstart-1pager.md).
+or [MCP for Browser Automation](how-to/mcp-quickstart-1pager.md) as the next
+layer after the first-run proof path.
 
 Use that matrix after the first-run docs, not instead of them.
 It is the growth layer that explains audience fit, governed side roads, and
@@ -169,7 +173,11 @@ Truth boundary:
 - [docs/ai/maintainer-governance-canon.md](ai/maintainer-governance-canon.md)
 - [docs/assets/README.md](assets/README.md)
 
-## Localized Help
+## Optional Localized Help
+
+This is optional reading help for Chinese-speaking readers.
+It is not a second default front door and it does not replace the English
+canonical public mainline.
 
 - [docs/localized/zh-CN/README.md](localized/zh-CN/README.md)
 
