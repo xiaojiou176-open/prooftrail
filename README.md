@@ -24,18 +24,21 @@ That is why this repo fits Codex, Claude Code, OpenHands, OpenCode, OpenClaw,
 and similar agent shells that need a browser-evidence layer instead of another
 prompt-only browser bot.
 
-Quick paths:
+Start here first:
 
-- [Docs](docs/index.md)
-- [Quickstart](docs/getting-started/human-first-10-min.md)
-- [ProofTrail for AI Agents](docs/how-to/prooftrail-for-ai-agents.md)
-- [ProofTrail for Coding Agents and Agent Ecosystems](docs/how-to/prooftrail-for-coding-agents.md)
-- [API Builder Quickstart](docs/how-to/api-builder-quickstart.md)
-- [MCP Distribution Contract](docs/reference/mcp-distribution-contract.md)
-- [Publication Receipt Bundle](docs/release/publication-receipt-bundle.md)
-- [Distribution Status](DISTRIBUTION.md)
-- [Integration Boundaries](INTEGRATIONS.md)
-- [ProofTrail MCP Skill](skills/prooftrail-mcp/SKILL.md)
+1. [Canonical evaluation path](docs/getting-started/human-first-10-min.md)
+2. [What good retained evidence looks like](docs/reference/run-evidence-example.md)
+3. [Public docs hub](docs/index.md)
+
+If this is still your first truthful pass, stop there.
+AI-agent fit, coding-agent fit, API builder entry, MCP package truth, and
+distribution pages all stay **second ring** until the canonical run already
+makes sense.
+When you are ready for that layer, continue through [docs/index.md](docs/index.md)
+instead of treating those pages as co-equal first doors.
+If the next question is specifically about package/install truth, open the
+[MCP Distribution Contract](docs/reference/mcp-distribution-contract.md) after
+that first run.
 
 ## Current primary lane vs later lanes
 
@@ -86,6 +89,24 @@ ProofTrail is an evidence-first browser automation product:
 - inspect one retained evidence bundle
 - recover with structured guidance
 - expose the same trusted surfaces to MCP clients and optional AI helpers
+
+## Canonical Evaluation Path
+
+If this is your first truthful pass through the repo, keep the order strict:
+
+1. run `just setup`
+2. run `just run`
+3. inspect the retained bundle under `.runtime-cache/artifacts/runs/<runId>/`
+4. confirm the visible result in **Task Center**
+5. use **Recovery Center** before diving into raw logs, replay, or builder side
+   roads
+
+That is the default product lane for Wave 2:
+
+- first run first
+- retained evidence second
+- recovery/review before guesswork
+- ecosystem, builder, and MCP pages only after the first proof path is clear
 
 ## Why ProofTrail
 
@@ -224,10 +245,10 @@ board:
 The ecosystem-fit visual source lives at
 `assets/storefront/prooftrail-agent-ecosystem-map.svg`.
 
-## Explore the Product Surface
+## Explore the Second Ring
 
-If you want the shortest truthful way to understand where ProofTrail fits, use
-these six pages as the current public matrix:
+Once the canonical evaluation path already makes sense, use these pages as the
+current second ring for ecosystem fit, governed side roads, and deeper proof:
 
 1. [ProofTrail for AI Agents](docs/how-to/prooftrail-for-ai-agents.md)
 2. [ProofTrail for Coding Agents and Agent Ecosystems](docs/how-to/prooftrail-for-coding-agents.md)
@@ -247,7 +268,7 @@ If your search intent sounds more like:
 - `browser evidence layer for coding agents`
 
 start with [ProofTrail for AI Agents](docs/how-to/prooftrail-for-ai-agents.md)
-before dropping into the lower-level builder pages.
+only after the first-run lane is already clear.
 
 That sequence keeps the outward story honest:
 
@@ -257,9 +278,9 @@ That sequence keeps the outward story honest:
 - alternatives framing after that
 - evidence/recovery/review loop as the deepest current product proof
 
-Use the builder entry separately.
+Use the builder entry separately from the first-run lane.
 
-The outward matrix explains category fit and product shape.
+The second ring explains category fit and product shape.
 The builder entry explains contract-level integration once that product shape
 already makes sense.
 
